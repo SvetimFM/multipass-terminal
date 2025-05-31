@@ -21,7 +21,10 @@
       "Bash(timeout 5 npm start:*)",
       "Bash(timeout 10 npm start:*)",
       "Bash(./run-simple.sh:*)",
-      "Bash(git add:*)"
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(git checkout:*)",
+      "Bash(npm run test:*)"
     ],
     "deny": []
   }
