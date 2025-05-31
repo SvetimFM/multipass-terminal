@@ -98,8 +98,8 @@ A secure, scalable server for remote command execution across Windows, Linux, an
 
 ## Environment Variables
 
-- `PORT` - HTTP server port (default: 3001)
-- `WS_PORT` - WebSocket server port (default: 3002)
+- `PORT` - HTTP server port (default: 3010)
+- `WS_PORT` - WebSocket server port (default: 3011)
 - `JWT_SECRET` - Secret for JWT tokens
 - `REDIS_URL` - Redis connection URL
 - `STRIPE_SECRET_KEY` - Stripe API key

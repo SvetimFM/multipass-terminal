@@ -41,7 +41,7 @@ export interface Command {
 }
 
 export interface WebSocketMessage {
-  type: 'auth' | 'command' | 'result' | 'heartbeat' | 'error';
+  type: 'auth' | 'command' | 'result' | 'heartbeat' | 'error' | 'ai-response';
   payload: any;
   messageId: string;
   timestamp: Date;

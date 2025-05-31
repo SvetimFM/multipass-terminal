@@ -18,7 +18,7 @@ const updateSubscriptionSchema = z.object({
   planId: z.enum(['free', 'basic', 'pro'])
 });
 
-export async function getSubscriptionPlans(_req: Request, res: Response, next: NextFunction) {
+export async function getSubscriptionPlans(_req: Request, res: Response, next: NextFunction): Promise<void> {
   try {
     const plans = billingService.getSubscriptionPlans();
     res.json({ plans });
@@ -28,7 +28,7 @@ export async function getSubscriptionPlans(_req: Request, res: Response, next: N
   }
 }
 
-export async function createCheckoutSession(req: AuthRequest, res: Response, next: NextFunction) {
+export async function createCheckoutSession(req: AuthRequest, res: Response, next: NextFunction): Promise<void> {
   try {
     const { planId, successUrl, cancelUrl } = createCheckoutSchema.parse(req.body);
     const userId = req.user!.userId;
@@ -63,7 +63,7 @@ export async function createCheckoutSession(req: AuthRequest, res: Response, nex
   }
 }
 
-export async function createPortalSession(req: AuthRequest, res: Response, next: NextFunction) {
+export async function createPortalSession(req: AuthRequest, res: Response, next: NextFunction): Promise<void> {
   try {
     const { returnUrl } = z.object({ returnUrl: z.string().url() }).parse(req.body);
     const userId = req.user!.userId;
@@ -84,7 +84,7 @@ export async function createPortalSession(req: AuthRequest, res: Response, next:
   }
 }
 
-export async function updateSubscription(req: AuthRequest, res: Response, next: NextFunction) {
+export async function updateSubscription(req: AuthRequest, res: Response, next: NextFunction): Promise<void> {
   try {
     const { planId } = updateSubscriptionSchema.parse(req.body);
     // const userId = req.user!.userId;  // Would be used for database lookup
@@ -116,7 +116,7 @@ export async function updateSubscription(req: AuthRequest, res: Response, next: 
   }
 }
 
-export async function handleWebhook(req: Request, res: Response, _next: NextFunction) {
+export async function handleWebhook(req: Request, res: Response, _next: NextFunction): Promise<void> {
   try {
     const signature = req.headers['stripe-signature'] as string;
     

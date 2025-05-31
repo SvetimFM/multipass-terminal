@@ -16,7 +16,7 @@ const executeCommandSchema = z.object({
   timeout: z.number().min(1000).max(300000).optional()
 });
 
-export async function executeCommand(req: AuthRequest, res: Response, next: NextFunction) {
+export async function executeCommand(req: AuthRequest, res: Response, next: NextFunction): Promise<void> {
   try {
     const { sessionId, ...commandPayload } = executeCommandSchema.parse(req.body);
 
@@ -56,7 +56,7 @@ export async function executeCommand(req: AuthRequest, res: Response, next: Next
   }
 }
 
-export async function getCommand(req: AuthRequest, res: Response, next: NextFunction) {
+export async function getCommand(req: AuthRequest, res: Response, next: NextFunction): Promise<void> {
   try {
     const { commandId } = req.params;
     const command = await commandService.getCommand(commandId);
@@ -78,7 +78,7 @@ export async function getCommand(req: AuthRequest, res: Response, next: NextFunc
   }
 }
 
-export async function getSessionCommands(req: AuthRequest, res: Response, next: NextFunction) {
+export async function getSessionCommands(req: AuthRequest, res: Response, next: NextFunction): Promise<void> {
   try {
     const { sessionId } = req.params;
     
@@ -96,7 +96,7 @@ export async function getSessionCommands(req: AuthRequest, res: Response, next: 
   }
 }
 
-export async function cancelCommand(req: AuthRequest, res: Response, next: NextFunction) {
+export async function cancelCommand(req: AuthRequest, res: Response, next: NextFunction): Promise<void> {
   try {
     const { commandId } = req.params;
     const command = await commandService.getCommand(commandId);
@@ -123,7 +123,7 @@ export async function cancelCommand(req: AuthRequest, res: Response, next: NextF
   }
 }
 
-export async function getCommandStats(req: AuthRequest, res: Response, next: NextFunction) {
+export async function getCommandStats(req: AuthRequest, res: Response, next: NextFunction): Promise<void> {
   try {
     const userId = req.user!.userId;
     const sessions = await sessionService.getUserSessions(userId);

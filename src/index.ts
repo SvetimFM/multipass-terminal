@@ -4,12 +4,12 @@ dotenv.config();
 import app from './app';
 import { WebSocketService } from './services/websocket.service';
 
-const PORT = parseInt(process.env.PORT || '3001');
-const WS_PORT = parseInt(process.env.WS_PORT || '3002');
+const PORT = parseInt(process.env.PORT || '3010');
+const WS_PORT = parseInt(process.env.WS_PORT || '3011');
 
 // Start Express server
 const server = app.listen(PORT, () => {
-  console.log(`=€ HTTP Server running on port ${PORT}`);
+  console.log(`=ï¿½ HTTP Server running on port ${PORT}`);
   console.log(`< Environment: ${process.env.NODE_ENV}`);
 });
 

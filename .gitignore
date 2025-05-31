@@ -36,3 +36,6 @@ temp/
 
 # Redis dump
 dump.rdb
+
+# Server logs
+server.log

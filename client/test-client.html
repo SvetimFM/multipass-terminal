@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Ship Anywhere - Test Client</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    body { 
+      font-family: system-ui, -apple-system, sans-serif; 
+      max-width: 600px; 
+      margin: 0 auto; 
+      padding: 20px;
+      background: #000;
+      color: #fff;
+    }
+    .status { 
+      padding: 10px; 
+      border-radius: 8px; 
+      margin: 10px 0;
+      font-family: monospace;
+      font-size: 14px;
+    }
+    .success { background: #10b981; color: #000; }
+    .error { background: #ef4444; }
+    .info { background: #3b82f6; }
+    .warning { background: #f59e0b; color: #000; }
+    button {
+      background: #3b82f6;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 8px;
+      cursor: pointer;
+      margin: 5px;
+    }
+    button:hover { background: #2563eb; }
+    pre { 
+      background: #111; 
+      padding: 10px; 
+      border-radius: 8px; 
+      overflow-x: auto;
+      font-size: 12px;
+    }
+  </style>
+</head>
+<body>
+  <h1>🚀 Ship Anywhere - Client Test</h1>
+  
+  <div id="results"></div>
+  
+  <div style="margin-top: 20px;">
+    <button onclick="runTests()">Run All Tests</button>
+    <button onclick="testInteractiveFlow()">Test Interactive Flow</button>
+  </div>
+
+  <script>
+    const API_URL = 'http://localhost:3010';
+    const WS_URL = 'ws://localhost:3011';
+    let token = null;
+    let sessionId = null;
+    let ws = null;
+
+    function log(message, type = 'info') {
+      const div = document.createElement('div');
+      div.className = `status ${type}`;
+      div.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+      document.getElementById('results').appendChild(div);
+    }
+
+    async function testAPI(endpoint, options = {}) {
+      try {
+        const headers = { 'Content-Type': 'application/json' };
+        if (token) headers['Authorization'] = `Bearer ${token}`;
+        
+        const response = await fetch(API_URL + endpoint, {
+          ...options,
+          headers
+        });
+        
+        const data = await response.json();
+        if (response.ok) {
+          log(`✓ ${options.method || 'GET'} ${endpoint} - Success`, 'success');
+          return data;
+        } else {
+          throw new Error(data.message || 'Request failed');
+        }
+      } catch (error) {
+        log(`✗ ${options.method || 'GET'} ${endpoint} - ${error.message}`, 'error');
+        throw error;
+      }
+    }
+
+    async function runTests() {
+      document.getElementById('results').innerHTML = '';
+      log('Starting client tests...', 'info');
+      
+      try {
+        // 1. Test health
+        await testAPI('/health');
+        
+        // 2. Create account
+        const email = `test-${Date.now()}@example.com`;
+        const authData = await testAPI('/api/auth/signup', {
+          method: 'POST',
+          body: JSON.stringify({ email, password: 'test123' })
+        });
+        token = authData.token;
+        
+        // 3. Create session
+        const sessionData = await testAPI('/api/sessions', {
+          method: 'POST',
+          body: JSON.stringify({})
+        });
+        sessionId = sessionData.session.id;
+        
+        // 4. Test WebSocket
+        await testWebSocket();
+        
+        // 5. Get providers
+        await testAPI('/api/ai/providers');
+        
+        log('All basic tests passed! ✨', 'success');
+        
+      } catch (error) {
+        log('Test suite failed', 'error');
+      }
+    }
+
+    async function testWebSocket() {
+      return new Promise((resolve, reject) => {
+        log('Testing WebSocket connection...', 'info');
+        
+        ws = new WebSocket(WS_URL);
+        const timeout = setTimeout(() => {
+          reject(new Error('WebSocket timeout'));
+        }, 5000);
+        
+        ws.onopen = () => {
+          log('WebSocket connected', 'success');
+          ws.send(JSON.stringify({
+            type: 'auth',
+            payload: { token },
+            messageId: 'test-auth',
+            timestamp: new Date().toISOString()
+          }));
+        };
+        
+        ws.onmessage = (event) => {
+          const msg = JSON.parse(event.data);
+          log(`WS Message: ${msg.type}`, 'info');
+          
+          if (msg.type === 'auth' && msg.payload.success) {
+            clearTimeout(timeout);
+            resolve();
+          }
+        };
+        
+        ws.onerror = (error) => {
+          clearTimeout(timeout);
+          reject(error);
+        };
+      });
+    }
+
+    async function testInteractiveFlow() {
+      if (!sessionId || !ws) {
+        log('Please run basic tests first', 'warning');
+        return;
+      }
+      
+      log('Starting interactive flow test...', 'info');
+      
+      // Set up listeners
+      ws.onmessage = (event) => {
+        const msg = JSON.parse(event.data);
+        
+        if (msg.type === 'ai-waiting') {
+          log('🔔 AI WAITING NOTIFICATION:', 'warning');
+          const pre = document.createElement('pre');
+          pre.textContent = JSON.stringify(msg.payload, null, 2);
+          document.getElementById('results').appendChild(pre);
+          
+          // Auto-respond after 2 seconds
+          setTimeout(async () => {
+            log('Sending response: "Yes"', 'info');
+            await testAPI(`/api/notifications/${msg.payload.id}/respond`, {
+              method: 'POST',
+              body: JSON.stringify({ response: 'Yes' })
+            });
+          }, 2000);
+        }
+        
+        if (msg.type === 'task:message') {
+          log(`AI Output: ${msg.payload.message.content}`, 'info');
+        }
+        
+        if (msg.type === 'task-update') {
+          log(`Task Update: ${msg.payload.status}`, 'info');
+        }
+      };
+      
+      // Create a task
+      const task = await testAPI('/api/ai/tasks', {
+        method: 'POST',
+        body: JSON.stringify({
+          sessionId,
+          command: 'Create a test file that asks for user confirmation',
+          provider: 'claude-code'
+        })
+      });
+      
+      log(`Task created: ${task.task.id}`, 'success');
+      log('Waiting for AI to pause and request input...', 'info');
+    }
+
+    // Auto-run tests on load
+    window.addEventListener('load', () => {
+      log('Test client loaded. Click "Run All Tests" to begin.', 'info');
+    });
+  </script>
+</body>
+</html>

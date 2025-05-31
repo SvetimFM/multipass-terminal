@@ -10,8 +10,29 @@ const app: Application = express();
 
 // Security middleware
 app.use(helmet());
+
+// CORS configuration - allow multiple origins
+const allowedOrigins = process.env.CORS_ORIGIN 
+  ? process.env.CORS_ORIGIN.split(',')
+  : ['http://localhost:3000'];
+
 app.use(cors({
-  origin: process.env.CORS_ORIGIN || 'http://localhost:3000',
+  origin: (origin, callback) => {
+    // Allow requests with no origin (like mobile apps)
+    if (!origin) return callback(null, true);
+    
+    // Allow any origin in development
+    if (process.env.NODE_ENV === 'development') {
+      return callback(null, true);
+    }
+    
+    // Check against allowed origins in production
+    if (allowedOrigins.indexOf(origin) !== -1) {
+      return callback(null, true);
+    }
+    
+    return callback(new Error('Not allowed by CORS'));
+  },
   credentials: true
 }));
 
@@ -39,12 +60,16 @@ import sessionRoutes from './routes/session.routes';
 import commandRoutes from './routes/command.routes';
 import billingRoutes from './routes/billing.routes';
 import agentRoutes from './routes/agent.routes';
+import aiRoutes from './routes/ai.routes';
+import notificationRoutes from './routes/notification.routes';
 
 app.use('/api/auth', authRoutes);
 app.use('/api/sessions', sessionRoutes);
 app.use('/api/commands', commandRoutes);
 app.use('/api/billing', billingRoutes);
 app.use('/api/agents', agentRoutes);
+app.use('/api/ai', aiRoutes);
+app.use('/api/notifications', notificationRoutes);
 
 // Error handling middleware
 app.use((err: any, _req: express.Request, res: express.Response, _next: express.NextFunction) => {

@@ -9,7 +9,7 @@ const createSessionSchema = z.object({
   agentId: z.string().uuid().optional()
 });
 
-export async function createSession(req: AuthRequest, res: Response, next: NextFunction) {
+export async function createSession(req: AuthRequest, res: Response, next: NextFunction): Promise<void> {
   try {
     const { agentId } = createSessionSchema.parse(req.body);
     const userId = req.user!.userId;
@@ -25,7 +25,7 @@ export async function createSession(req: AuthRequest, res: Response, next: NextF
   }
 }
 
-export async function getSessions(req: AuthRequest, res: Response, next: NextFunction) {
+export async function getSessions(req: AuthRequest, res: Response, next: NextFunction): Promise<void> {
   try {
     const userId = req.user!.userId;
     const sessions = await sessionService.getUserSessions(userId);
@@ -36,7 +36,7 @@ export async function getSessions(req: AuthRequest, res: Response, next: NextFun
   }
 }
 
-export async function getSession(req: AuthRequest, res: Response, next: NextFunction) {
+export async function getSession(req: AuthRequest, res: Response, next: NextFunction): Promise<void> {
   try {
     const { sessionId } = req.params;
     const session = await sessionService.getSession(sessionId);
@@ -57,7 +57,7 @@ export async function getSession(req: AuthRequest, res: Response, next: NextFunc
   }
 }
 
-export async function deleteSession(req: AuthRequest, res: Response, next: NextFunction) {
+export async function deleteSession(req: AuthRequest, res: Response, next: NextFunction): Promise<void> {
   try {
     const { sessionId } = req.params;
     const session = await sessionService.getSession(sessionId);
@@ -79,7 +79,7 @@ export async function deleteSession(req: AuthRequest, res: Response, next: NextF
   }
 }
 
-export async function extendSession(req: AuthRequest, res: Response, next: NextFunction) {
+export async function extendSession(req: AuthRequest, res: Response, next: NextFunction): Promise<void> {
   try {
     const { sessionId } = req.params;
     const session = await sessionService.getSession(sessionId);
@@ -101,7 +101,7 @@ export async function extendSession(req: AuthRequest, res: Response, next: NextF
   }
 }
 
-export async function deleteAllSessions(req: AuthRequest, res: Response, next: NextFunction) {
+export async function deleteAllSessions(req: AuthRequest, res: Response, next: NextFunction): Promise<void> {
   try {
     const userId = req.user!.userId;
     await sessionService.deleteUserSessions(userId);

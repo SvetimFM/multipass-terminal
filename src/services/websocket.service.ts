@@ -1,5 +1,6 @@
 import { WebSocketServer, WebSocket } from 'ws';
 import { v4 as uuidv4 } from 'uuid';
+import { EventEmitter } from 'events';
 import { AuthPayload, WebSocketMessage, CommandPayload, ResultPayload } from '../types';
 import { verifyToken } from '../utils/auth';
 import { createClient } from 'redis';
@@ -141,6 +142,12 @@ export class WebSocketService {
           await this.handleResult(clientId, message.payload as ResultPayload);
         }
         break;
+        
+      case 'ai-response':
+        if (client.type === 'web') {
+          await this.handleAIResponse(clientId, message.payload);
+        }
+        break;
     }
   }
 
@@ -219,6 +226,45 @@ export class WebSocketService {
     
     this.clients.delete(clientId);
     await this.redis.del(`connection:${clientId}`);
+  }
+
+  private async handleAIResponse(webClientId: string, payload: any) {
+    const { notificationId, response } = payload;
+    
+    // Forward response to notification system
+    this.emit('user:response', {
+      notificationId,
+      userId: this.clients.get(webClientId)?.userId,
+      response
+    });
+  }
+
+  async notifyUserOfAIWaiting(userId: string, notification: any) {
+    // Find all web clients for this user
+    for (const [_, client] of this.clients) {
+      if (client.type === 'web' && client.userId === userId) {
+        client.ws.send(JSON.stringify({
+          type: 'ai-waiting',
+          payload: notification,
+          messageId: uuidv4(),
+          timestamp: new Date()
+        }));
+      }
+    }
+  }
+
+  async notifyTaskUpdate(userId: string, taskId: string, update: any) {
+    // Find all web clients for this user
+    for (const [_, client] of this.clients) {
+      if (client.type === 'web' && client.userId === userId) {
+        client.ws.send(JSON.stringify({
+          type: 'task-update',
+          payload: { taskId, ...update },
+          messageId: uuidv4(),
+          timestamp: new Date()
+        }));
+      }
+    }
   }
 
   private async notifyAgentStatus(agentId: string, status: 'online' | 'offline') {

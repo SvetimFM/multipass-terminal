@@ -12,7 +12,7 @@ const updateAgentSchema = z.object({
   capabilities: z.array(z.string()).optional()
 });
 
-export async function getAgents(req: AuthRequest, res: Response, next: NextFunction) {
+export async function getAgents(req: AuthRequest, res: Response, next: NextFunction): Promise<void> {
   try {
     const userId = req.user!.userId;
     const keys = await redis.keys(`agent:*`);
@@ -35,7 +35,7 @@ export async function getAgents(req: AuthRequest, res: Response, next: NextFunct
   }
 }
 
-export async function getAgent(req: AuthRequest, res: Response, next: NextFunction) {
+export async function getAgent(req: AuthRequest, res: Response, next: NextFunction): Promise<void> {
   try {
     const { agentId } = req.params;
     const data = await redis.get(`agent:${agentId}`);
@@ -58,7 +58,7 @@ export async function getAgent(req: AuthRequest, res: Response, next: NextFuncti
   }
 }
 
-export async function updateAgent(req: AuthRequest, res: Response, next: NextFunction) {
+export async function updateAgent(req: AuthRequest, res: Response, next: NextFunction): Promise<void> {
   try {
     const { agentId } = req.params;
     const updates = updateAgentSchema.parse(req.body);
@@ -94,7 +94,7 @@ export async function updateAgent(req: AuthRequest, res: Response, next: NextFun
   }
 }
 
-export async function deleteAgent(req: AuthRequest, res: Response, next: NextFunction) {
+export async function deleteAgent(req: AuthRequest, res: Response, next: NextFunction): Promise<void> {
   try {
     const { agentId } = req.params;
     const data = await redis.get(`agent:${agentId}`);
@@ -118,7 +118,7 @@ export async function deleteAgent(req: AuthRequest, res: Response, next: NextFun
   }
 }
 
-export async function getAgentStatus(req: AuthRequest, res: Response, next: NextFunction) {
+export async function getAgentStatus(req: AuthRequest, res: Response, next: NextFunction): Promise<void> {
   try {
     const { agentId } = req.params;
     const data = await redis.get(`agent:${agentId}`);

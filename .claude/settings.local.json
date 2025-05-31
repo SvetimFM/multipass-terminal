@@ -7,7 +7,21 @@
       "Bash(npm run build:*)",
       "Bash(node:*)",
       "Bash(rm:*)",
-      "Bash(cp:*)"
+      "Bash(cp:*)",
+      "Bash(mv:*)",
+      "Bash(chmod:*)",
+      "Bash(./start-and-demo.sh:*)",
+      "Bash(grep:*)",
+      "Bash(npm run demo:no-redis:*)",
+      "Bash(find:*)",
+      "Bash(npx tsc:*)",
+      "Bash(npm ls:*)",
+      "Bash(npm install:*)",
+      "Bash(ls:*)",
+      "Bash(timeout 5 npm start:*)",
+      "Bash(timeout 10 npm start:*)",
+      "Bash(./run-simple.sh:*)",
+      "Bash(git add:*)"
     ],
     "deny": []
   }

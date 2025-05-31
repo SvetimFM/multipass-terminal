@@ -26,7 +26,7 @@ const registerAgentSchema = z.object({
 // Temporary in-memory user store (replace with database)
 const users = new Map<string, any>();
 
-export async function signUp(req: Request, res: Response, next: NextFunction) {
+export async function signUp(req: Request, res: Response, next: NextFunction): Promise<Response | void> {
   try {
     const { email, password } = signUpSchema.parse(req.body);
 
@@ -77,7 +77,7 @@ export async function signUp(req: Request, res: Response, next: NextFunction) {
   }
 }
 
-export async function signIn(req: Request, res: Response, next: NextFunction) {
+export async function signIn(req: Request, res: Response, next: NextFunction): Promise<Response | void> {
   try {
     const { email, password } = signInSchema.parse(req.body);
 
@@ -118,7 +118,7 @@ export async function signIn(req: Request, res: Response, next: NextFunction) {
   }
 }
 
-export async function registerAgent(req: Request, res: Response, next: NextFunction) {
+export async function registerAgent(req: Request, res: Response, next: NextFunction): Promise<Response | void> {
   try {
     const { name, platform } = registerAgentSchema.parse(req.body);
     const userId = (req as any).user.userId;
@@ -153,7 +153,7 @@ export async function registerAgent(req: Request, res: Response, next: NextFunct
   }
 }
 
-export async function getProfile(req: Request, res: Response, next: NextFunction) {
+export async function getProfile(req: Request, res: Response, next: NextFunction): Promise<Response | void> {
   try {
     const userId = (req as any).user.userId;
     const user = users.get(userId);
