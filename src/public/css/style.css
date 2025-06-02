@@ -1,0 +1,40 @@
+body { 
+  margin: 0;
+  overscroll-behavior: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+#main-app {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+#terminal-view {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.terminal-container {
+  flex: 1;
+  background: #1a1b26;
+  padding: 10px;
+  overflow: hidden;
+}
+
+#terminal {
+  height: 100%;
+}
+
+.file-item {
+  padding: 8px 12px;
+  border-bottom: 1px solid #374151;
+}
+
+.cubicle-terminal {
+  height: 300px;
+  background: #1a1b26;
+  border-radius: 8px;
+  padding: 8px;
+}
