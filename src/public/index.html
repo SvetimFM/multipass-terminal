@@ -112,9 +112,11 @@
       
       <!-- Quick Commands - Mobile -->
       <div class="md:hidden mobile-quick-actions">
+        <!-- Help text -->
+        <div class="text-xs text-gray-400 text-center mb-2">Tip: Long press command buttons to copy</div>
         <!-- Priority Actions -->
         <div class="mobile-button-grid mb-2">
-          <button onclick="sendToTerminal('claude\\n')" class="priority-button bg-blue-600 rounded haptic-feedback">
+          <button onclick="sendToTerminal('claude\\n')" class="priority-button bg-blue-600 rounded haptic-feedback" oncontextmenu="copyToClipboard('claude', 'Command copied!'); return false;">
             🤖 Claude
           </button>
           <button onclick="exitClaude()" class="priority-button bg-red-600 rounded haptic-feedback">
@@ -136,13 +138,16 @@
         
         <div id="mobile-commands-expanded" class="button-group-collapsed">
           <div class="terminal-commands-mobile mt-2">
-            <button onclick="sendToTerminal('\\x1b[Z')" class="bg-purple-600 rounded haptic-feedback">⇧ Tab</button>
-            <button onclick="sendToTerminal('ls -la\\n')" class="bg-gray-600 rounded haptic-feedback">📁 List Files</button>
-            <button onclick="sendToTerminal('pwd\\n')" class="bg-gray-600 rounded haptic-feedback">📍 Current Dir</button>
-            <button onclick="sendToTerminal('git status\\n')" class="bg-gray-600 rounded haptic-feedback">🔍 Git Status</button>
-            <button onclick="sendToTerminal('git log --oneline -10\\n')" class="bg-gray-600 rounded haptic-feedback">📜 Git Log</button>
-            <button onclick="sendToTerminal('npm run\\n')" class="bg-gray-600 rounded haptic-feedback">📦 NPM Scripts</button>
-            <button onclick="sendToTerminal('clear\\n')" class="bg-gray-600 rounded haptic-feedback">🧹 Clear</button>
+            <button onclick="sendToTerminal('\\x1b[Z')" class="bg-purple-600 rounded haptic-feedback relative group">
+              ⇧ Tab
+              <span onclick="event.stopPropagation(); copyToClipboard('Shift+Tab', 'Command info copied!')" class="absolute top-0 right-0 bg-gray-700 px-1 py-0.5 text-xs rounded opacity-0 group-active:opacity-100">📋</span>
+            </button>
+            <button onclick="sendToTerminal('ls -la\\n')" oncontextmenu="copyToClipboard('ls -la', 'Command copied!'); return false;" class="bg-gray-600 rounded haptic-feedback">📁 List Files</button>
+            <button onclick="sendToTerminal('pwd\\n')" oncontextmenu="copyToClipboard('pwd', 'Command copied!'); return false;" class="bg-gray-600 rounded haptic-feedback">📍 Current Dir</button>
+            <button onclick="sendToTerminal('git status\\n')" oncontextmenu="copyToClipboard('git status', 'Command copied!'); return false;" class="bg-gray-600 rounded haptic-feedback">🔍 Git Status</button>
+            <button onclick="sendToTerminal('git log --oneline -10\\n')" oncontextmenu="copyToClipboard('git log --oneline -10', 'Command copied!'); return false;" class="bg-gray-600 rounded haptic-feedback">📜 Git Log</button>
+            <button onclick="sendToTerminal('npm run\\n')" oncontextmenu="copyToClipboard('npm run', 'Command copied!'); return false;" class="bg-gray-600 rounded haptic-feedback">📦 NPM Scripts</button>
+            <button onclick="sendToTerminal('clear\\n')" oncontextmenu="copyToClipboard('clear', 'Command copied!'); return false;" class="bg-gray-600 rounded haptic-feedback">🧹 Clear</button>
             <button id="auto-accept-btn-mobile" onclick="toggleAutoAccept()" class="bg-gray-600 rounded haptic-feedback col-span-2">
               Auto-Accept: <span id="auto-accept-status-mobile">OFF</span>
             </button>
@@ -162,7 +167,8 @@
         <div class="p-4 border-b border-gray-700">
           <div class="flex items-center gap-2">
             <span class="text-sm text-gray-400">Path:</span>
-            <span id="current-path" class="text-sm font-mono"></span>
+            <span id="current-path" class="text-sm font-mono flex-1"></span>
+            <button onclick="copyToClipboard(document.getElementById('current-path').textContent, 'Path copied!')" class="text-xs bg-gray-700 px-2 py-1 rounded md:hidden" title="Copy path">📋</button>
           </div>
         </div>
         

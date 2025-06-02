@@ -42,9 +42,19 @@ async function loadProjects() {
       projectsList.innerHTML += `
         <div class="bg-gray-800 p-3 rounded ${isMobile ? 'space-y-3' : 'flex justify-between items-center'}">
           <div class="flex-1">
-            <div class="font-semibold text-base md:text-sm">${project.name}</div>
-            <div class="text-xs text-gray-400 font-mono">${project.path}</div>
-            ${project.githubUrl ? `<div class="text-xs text-blue-400 mt-1">GitHub: ${project.githubUrl}</div>` : ''}
+            <div class="flex items-center gap-2">
+              <div class="font-semibold text-base md:text-sm">${project.name}</div>
+              ${isMobile ? `<button onclick="copyToClipboard('${project.name}', 'Project name copied!')" class="text-xs bg-gray-700 px-2 py-1 rounded" title="Copy project name">📋</button>` : ''}
+            </div>
+            <div class="flex items-center gap-2">
+              <div class="text-xs text-gray-400 font-mono">${project.path}</div>
+              ${isMobile ? `<button onclick="copyToClipboard('${project.path}', 'Path copied!')" class="text-xs bg-gray-700 px-2 py-1 rounded" title="Copy path">📋</button>` : ''}
+            </div>
+            ${project.githubUrl ? `
+              <div class="flex items-center gap-2">
+                <div class="text-xs text-blue-400 mt-1">GitHub: ${project.githubUrl}</div>
+                ${isMobile ? `<button onclick="copyToClipboard('${project.githubUrl}', 'GitHub URL copied!')" class="text-xs bg-gray-700 px-2 py-1 rounded" title="Copy GitHub URL">📋</button>` : ''}
+              </div>` : ''}
             ${hasAIOffice ? `<div class="text-xs text-purple-400 mt-1">AI Office: ${project.aiOffice.cubicleCount} cubicles</div>` : ''}
           </div>
           <div class="${isMobile ? 'project-actions' : 'flex gap-2 flex-wrap'}">
@@ -430,7 +440,10 @@ async function loadSessions() {
       list.innerHTML = data.sessions.map(session => `
         <div class="bg-gray-800 p-3 rounded flex justify-between items-center">
           <div>
-            <div class="font-semibold">${session.name}</div>
+            <div class="flex items-center gap-2">
+              <div class="font-semibold">${session.name}</div>
+              ${window.innerWidth <= MOBILE_BREAKPOINT ? `<button onclick="copyToClipboard('${session.name}', 'Session name copied!')" class="text-xs bg-gray-700 px-2 py-1 rounded" title="Copy session name">📋</button>` : ''}
+            </div>
             <div class="text-xs text-gray-400">Project: ${session.project || 'Unknown'}</div>
           </div>
           <div class="flex gap-2">
@@ -764,6 +777,29 @@ function showToast(message) {
   }, 2000);
 }
 
+// Copy text to clipboard with fallback
+async function copyToClipboard(text, successMessage = 'Copied!') {
+  try {
+    await navigator.clipboard.writeText(text);
+    showToast(successMessage);
+  } catch (err) {
+    // Fallback for older browsers
+    const textarea = document.createElement('textarea');
+    textarea.value = text;
+    textarea.style.position = 'fixed';
+    textarea.style.opacity = '0';
+    document.body.appendChild(textarea);
+    textarea.select();
+    try {
+      document.execCommand('copy');
+      showToast(successMessage);
+    } catch (e) {
+      showToast('Copy failed');
+    }
+    document.body.removeChild(textarea);
+  }
+}
+
 // Update auto-accept toggle to sync mobile status
 const originalToggleAutoAccept = toggleAutoAccept;
 toggleAutoAccept = function() {
@@ -947,6 +983,23 @@ function updateMobileCommandsExpanded() {
         <button onclick="currentTerminal && currentTerminal.scrollToTop()" class="bg-gray-600 rounded haptic-feedback">⬆️ Top</button>
       `;
       expandedSection.appendChild(utilitySection);
+      
+      // Add copy commands section
+      const copySection = document.createElement('div');
+      copySection.className = 'mt-2 p-2 bg-gray-800 rounded';
+      copySection.innerHTML = `
+        <div class="text-xs text-gray-400 mb-2">Quick Copy Commands:</div>
+        <div class="flex flex-wrap gap-2">
+          <button onclick="copyToClipboard('claude', 'Command copied!')" class="text-xs bg-gray-700 px-2 py-1 rounded">claude</button>
+          <button onclick="copyToClipboard('ls -la', 'Command copied!')" class="text-xs bg-gray-700 px-2 py-1 rounded">ls -la</button>
+          <button onclick="copyToClipboard('git status', 'Command copied!')" class="text-xs bg-gray-700 px-2 py-1 rounded">git status</button>
+          <button onclick="copyToClipboard('git pull', 'Command copied!')" class="text-xs bg-gray-700 px-2 py-1 rounded">git pull</button>
+          <button onclick="copyToClipboard('git push', 'Command copied!')" class="text-xs bg-gray-700 px-2 py-1 rounded">git push</button>
+          <button onclick="copyToClipboard('npm install', 'Command copied!')" class="text-xs bg-gray-700 px-2 py-1 rounded">npm install</button>
+          <button onclick="copyToClipboard('npm start', 'Command copied!')" class="text-xs bg-gray-700 px-2 py-1 rounded">npm start</button>
+        </div>
+      `;
+      expandedSection.appendChild(copySection);
     }
   }
 }
@@ -958,6 +1011,108 @@ if (document.readyState === 'loading') {
   updateMobileCommandsExpanded();
 }
 
+// Add long press support for mobile command buttons
+function addLongPressSupport() {
+  if (window.innerWidth > MOBILE_BREAKPOINT) return;
+  
+  let pressTimer;
+  let longPressHint;
+  const longPressDuration = 500; // 500ms for long press
+  
+  // Create long press hint element
+  if (!document.getElementById('long-press-hint')) {
+    longPressHint = document.createElement('div');
+    longPressHint.id = 'long-press-hint';
+    longPressHint.className = 'long-press-hint';
+    longPressHint.textContent = 'Hold to copy command';
+    document.body.appendChild(longPressHint);
+  } else {
+    longPressHint = document.getElementById('long-press-hint');
+  }
+  
+  // Add long press to all command buttons
+  document.addEventListener('touchstart', (e) => {
+    const button = e.target.closest('button[onclick*="sendToTerminal"]');
+    if (!button) return;
+    
+    // Show hint after 200ms
+    setTimeout(() => {
+      if (pressTimer) {
+        longPressHint.classList.add('show');
+      }
+    }, 200);
+    
+    // Extract command from onclick attribute
+    const onclickAttr = button.getAttribute('onclick');
+    const match = onclickAttr.match(/sendToTerminal\('(.+?)'\)/); 
+    if (!match) return;
+    
+    let command = match[1]
+      .replace(/\\n/g, '')
+      .replace(/\\x1b\[Z/g, 'Shift+Tab')
+      .replace(/\\x03/g, 'Ctrl+C');
+    
+    pressTimer = setTimeout(() => {
+      e.preventDefault();
+      copyToClipboard(command, 'Command copied!');
+      // Haptic feedback if available
+      if (navigator.vibrate) navigator.vibrate(50);
+      button.classList.add('copying');
+      setTimeout(() => button.classList.remove('copying'), 300);
+      longPressHint.classList.remove('show');
+    }, longPressDuration);
+  });
+  
+  document.addEventListener('touchend', () => {
+    clearTimeout(pressTimer);
+    pressTimer = null;
+    longPressHint.classList.remove('show');
+  });
+  
+  document.addEventListener('touchmove', () => {
+    clearTimeout(pressTimer);
+    pressTimer = null;
+    longPressHint.classList.remove('show');
+  });
+}
+
+// Add copy functionality to path and project info on desktop too
+function addDesktopCopyButtons() {
+  // Add event delegation for dynamically created copy buttons
+  document.addEventListener('click', (e) => {
+    if (e.target.matches('[data-copy]')) {
+      const textToCopy = e.target.getAttribute('data-copy');
+      const message = e.target.getAttribute('data-copy-message') || 'Copied!';
+      copyToClipboard(textToCopy, message);
+    }
+  });
+}
+
 // Initialize
 loadProjects();
 createMobileFAB();
+addLongPressSupport();
+addDesktopCopyButtons();
+
+// Re-add long press support when switching views
+const originalAttachTerminal = attachTerminal;
+attachTerminal = function(sessionName) {
+  originalAttachTerminal(sessionName);
+  setTimeout(addLongPressSupport, 100);
+};
+
+// Show initial hint for mobile users
+if (window.innerWidth <= MOBILE_BREAKPOINT) {
+  setTimeout(() => {
+    const hint = document.createElement('div');
+    hint.className = 'fixed top-20 left-1/2 transform -translate-x-1/2 bg-blue-600 text-white px-4 py-2 rounded shadow-lg z-50 text-sm';
+    hint.innerHTML = '👆 Tip: Long press buttons to copy commands';
+    document.body.appendChild(hint);
+    
+    setTimeout(() => {
+      hint.style.opacity = '0';
+      hint.style.transition = 'opacity 0.5s';
+      setTimeout(() => hint.remove(), 500);
+    }, 4000);
+  }, 2000);
+}

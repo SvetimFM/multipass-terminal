@@ -201,3 +201,97 @@ button:focus-visible {
   width: 100%;
   height: 100%;
 }
+
+/* Copy button styles */
+@media (max-width: 768px) {
+  .copy-btn {
+    min-width: 32px;
+    min-height: 32px;
+    padding: 4px 8px;
+    font-size: 12px;
+    background-color: rgba(55, 65, 81, 0.8); /* bg-gray-700 with opacity */
+    border-radius: 4px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+  }
+  
+  .copy-btn:active {
+    background-color: rgba(34, 197, 94, 0.8); /* bg-green-600 with opacity */
+    transform: scale(0.95);
+  }
+  
+  /* Long press indicator */
+  .long-press-hint {
+    position: fixed;
+    bottom: 140px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(31, 41, 55, 0.95);
+    color: #9ca3af;
+    padding: 8px 16px;
+    border-radius: 8px;
+    font-size: 12px;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.3s;
+    z-index: 60;
+  }
+  
+  .long-press-hint.show {
+    opacity: 1;
+  }
+  
+  /* Command button with copy indicator */
+  .cmd-button {
+    position: relative;
+  }
+  
+  .cmd-button::before {
+    content: '📋';
+    position: absolute;
+    top: 2px;
+    right: 2px;
+    font-size: 10px;
+    opacity: 0;
+    transition: opacity 0.2s;
+  }
+  
+  .cmd-button.copying::before {
+    opacity: 1;
+  }
+  
+  /* Inline copy buttons */
+  .inline-copy {
+    margin-left: 4px;
+    vertical-align: middle;
+  }
+  
+  /* Copy section styling */
+  .copy-commands-section {
+    background: rgba(31, 41, 55, 0.5);
+    border: 1px solid #374151;
+    border-radius: 8px;
+    padding: 12px;
+    margin-top: 8px;
+  }
+  
+  .copy-commands-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+    gap: 6px;
+    margin-top: 8px;
+  }
+  
+  /* Visual feedback for copyable items */
+  .copyable {
+    cursor: pointer;
+    user-select: text;
+    -webkit-user-select: text;
+  }
+  
+  .copyable:active {
+    background-color: rgba(59, 130, 246, 0.2); /* blue highlight */
+  }
+}
