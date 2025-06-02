@@ -9,6 +9,7 @@
   <script src="https://cdn.jsdelivr.net/npm/xterm-addon-fit@0.8.0/lib/xterm-addon-fit.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/xterm-addon-web-links@0.9.0/lib/xterm-addon-web-links.min.js"></script>
   <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="/css/mobile.css">
 </head>
 <body class="bg-gray-900 text-white">
   <!-- Main App -->
@@ -32,8 +33,8 @@
     <div id="projects-view" class="p-4">
       <div class="mb-4">
         <button onclick="showFileBrowser()" 
-                class="w-full bg-green-600 py-3 rounded font-semibold mb-3">
-          + Add Project Folder
+                class="w-full bg-green-600 py-3 md:py-3 rounded font-semibold mb-3 priority-button">
+          📁 Add Project Folder
         </button>
         
         <div id="projects-list" class="space-y-2">
@@ -93,8 +94,8 @@
         <div id="terminal"></div>
       </div>
       
-      <!-- Quick Commands -->
-      <div class="bg-gray-700 p-2 flex gap-2 overflow-x-auto flex-shrink-0">
+      <!-- Quick Commands - Desktop -->
+      <div class="bg-gray-700 p-2 flex gap-2 overflow-x-auto flex-shrink-0 hidden md:flex">
         <button onclick="sendToTerminal('claude\\n')" class="px-3 py-1 bg-blue-600 rounded text-sm font-semibold">claude</button>
         <button onclick="exitClaude()" class="px-3 py-1 bg-red-600 rounded text-sm font-semibold" title="Exit Claude (Ctrl+C twice)">Exit Claude</button>
         <button id="auto-accept-btn" onclick="toggleAutoAccept()" class="px-3 py-1 bg-gray-600 rounded text-sm">
@@ -108,6 +109,46 @@
         <button onclick="sendToTerminal('npm run\\n')" class="px-3 py-1 bg-gray-600 rounded text-sm">npm run</button>
         <button onclick="sendToTerminal('clear\\n')" class="px-3 py-1 bg-gray-600 rounded text-sm">clear</button>
       </div>
+      
+      <!-- Quick Commands - Mobile -->
+      <div class="md:hidden mobile-quick-actions">
+        <!-- Priority Actions -->
+        <div class="mobile-button-grid mb-2">
+          <button onclick="sendToTerminal('claude\\n')" class="priority-button bg-blue-600 rounded haptic-feedback">
+            🤖 Claude
+          </button>
+          <button onclick="exitClaude()" class="priority-button bg-red-600 rounded haptic-feedback">
+            🛑 Exit
+          </button>
+          <button onclick="copyTerminalSelection()" class="priority-button bg-green-600 rounded haptic-feedback">
+            📋 Copy
+          </button>
+          <button onclick="pasteToTerminal()" class="priority-button bg-green-600 rounded haptic-feedback">
+            📝 Paste
+          </button>
+        </div>
+        
+        <!-- Expandable Commands -->
+        <button onclick="toggleMobileCommands()" class="w-full px-3 py-2 bg-gray-700 rounded text-sm flex justify-between items-center">
+          <span>More Commands</span>
+          <span id="mobile-commands-arrow">▼</span>
+        </button>
+        
+        <div id="mobile-commands-expanded" class="button-group-collapsed">
+          <div class="terminal-commands-mobile mt-2">
+            <button onclick="sendToTerminal('\\x1b[Z')" class="bg-purple-600 rounded haptic-feedback">⇧ Tab</button>
+            <button onclick="sendToTerminal('ls -la\\n')" class="bg-gray-600 rounded haptic-feedback">📁 List Files</button>
+            <button onclick="sendToTerminal('pwd\\n')" class="bg-gray-600 rounded haptic-feedback">📍 Current Dir</button>
+            <button onclick="sendToTerminal('git status\\n')" class="bg-gray-600 rounded haptic-feedback">🔍 Git Status</button>
+            <button onclick="sendToTerminal('git log --oneline -10\\n')" class="bg-gray-600 rounded haptic-feedback">📜 Git Log</button>
+            <button onclick="sendToTerminal('npm run\\n')" class="bg-gray-600 rounded haptic-feedback">📦 NPM Scripts</button>
+            <button onclick="sendToTerminal('clear\\n')" class="bg-gray-600 rounded haptic-feedback">🧹 Clear</button>
+            <button id="auto-accept-btn-mobile" onclick="toggleAutoAccept()" class="bg-gray-600 rounded haptic-feedback col-span-2">
+              Auto-Accept: <span id="auto-accept-status-mobile">OFF</span>
+            </button>
+          </div>
+        </div>
+      </div>
     </div>
 
     <!-- File Browser Modal -->
@@ -115,7 +156,7 @@
       <div class="bg-gray-800 w-full max-w-2xl mx-auto mt-10 rounded-lg shadow-xl max-h-[80vh] flex flex-col">
         <div class="p-4 border-b border-gray-700 flex justify-between items-center">
           <h3 class="text-lg font-semibold">Select Project Folder</h3>
-          <button onclick="closeFileBrowser()" class="text-gray-400 hover:text-white">✕</button>
+          <button onclick="closeFileBrowser()" class="modal-close-button text-gray-400 hover:text-white">✕</button>
         </div>
         
         <div class="p-4 border-b border-gray-700">
@@ -153,8 +194,8 @@
             Close
           </button>
         </div>
-        <!-- Quick Commands for All Terminals -->
-        <div class="mt-2 flex gap-2 overflow-x-auto">
+        <!-- Quick Commands for All Terminals - Desktop -->
+        <div class="mt-2 hidden md:flex gap-2 overflow-x-auto">
           <button onclick="broadcastToAllTerminals('claude\\n')" class="px-3 py-1 bg-blue-600 rounded text-sm font-semibold">claude (all)</button>
           <button onclick="exitClaudeAll()" class="px-3 py-1 bg-red-600 rounded text-sm font-semibold" title="Exit Claude in all terminals">Exit Claude (all)</button>
           <button onclick="broadcastToAllTerminals('\\x1b[Z')" class="px-3 py-1 bg-purple-600 rounded text-sm" title="Send Shift+Tab to all">⇧ Tab (all)</button>
@@ -166,6 +207,33 @@
           <button id="grid-auto-accept-btn" onclick="toggleGridAutoAccept()" class="px-3 py-1 bg-gray-600 rounded text-sm font-semibold" title="Send Shift+Tab once to all terminals">Accept Once: <span id="grid-auto-accept-status">OFF</span></button>
           <button onclick="addCubicle()" class="px-3 py-1 bg-green-600 rounded text-sm">+ Add Cubicle</button>
           <button onclick="addTerminal()" class="px-3 py-1 bg-blue-500 rounded text-sm">+ Add Terminal</button>
+        </div>
+        
+        <!-- Quick Commands for All Terminals - Mobile -->
+        <div class="mt-2 md:hidden">
+          <!-- Priority Grid Actions -->
+          <div class="mobile-button-grid three-column mb-2">
+            <button onclick="broadcastToAllTerminals('claude\\n')" class="priority-button bg-blue-600 rounded haptic-feedback">
+              🤖 All
+            </button>
+            <button onclick="exitClaudeAll()" class="priority-button bg-red-600 rounded haptic-feedback">
+              🛑 Exit All
+            </button>
+            <button onclick="syncWithParent()" class="priority-button bg-yellow-600 rounded haptic-feedback">
+              🔄 Sync
+            </button>
+          </div>
+          
+          <!-- Secondary Actions -->
+          <div class="swipe-container">
+            <button onclick="broadcastToAllTerminals('\\x1b[Z')" class="swipe-item secondary-button bg-purple-600 rounded">⇧ Tab All</button>
+            <button onclick="broadcastToAllTerminals('clear\\n')" class="swipe-item secondary-button bg-gray-600 rounded">Clear All</button>
+            <button onclick="addCubicle()" class="swipe-item secondary-button bg-green-600 rounded">+ Cubicle</button>
+            <button onclick="addTerminal()" class="swipe-item secondary-button bg-blue-500 rounded">+ Terminal</button>
+            <button id="grid-auto-accept-btn-mobile" onclick="toggleGridAutoAccept()" class="swipe-item secondary-button bg-gray-600 rounded">
+              Accept: <span id="grid-auto-accept-status-mobile">OFF</span>
+            </button>
+          </div>
         </div>
       </div>
       <div id="cubicle-terminals" class="grid gap-4 p-4">

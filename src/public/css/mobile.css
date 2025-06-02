@@ -1,0 +1,203 @@
+/* Mobile-specific styles for better touch interaction */
+
+/* Ensure minimum touch target size of 44x44px */
+@media (max-width: 768px) {
+  /* Make all buttons have minimum touch target size */
+  button {
+    min-height: 44px;
+    min-width: 44px;
+    touch-action: manipulation; /* Prevent double-tap zoom */
+  }
+  
+  /* Increase spacing between buttons */
+  .mobile-button-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    padding: 8px;
+  }
+  
+  .mobile-button-grid.three-column {
+    grid-template-columns: 1fr 1fr 1fr;
+  }
+  
+  /* Priority buttons - larger and more prominent */
+  .priority-button {
+    font-size: 16px;
+    padding: 12px 16px;
+    font-weight: 600;
+  }
+  
+  /* Secondary buttons */
+  .secondary-button {
+    font-size: 14px;
+    padding: 10px 12px;
+  }
+  
+  /* Expandable button groups */
+  .button-group-collapsed {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.3s ease-out;
+  }
+  
+  .button-group-expanded {
+    max-height: 500px;
+    transition: max-height 0.3s ease-in;
+  }
+  
+  /* Mobile-specific quick actions bar */
+  .mobile-quick-actions {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: rgba(31, 41, 55, 0.95); /* bg-gray-800 with opacity */
+    backdrop-filter: blur(10px);
+    border-top: 1px solid #374151; /* border-gray-700 */
+    z-index: 40;
+    padding: 8px;
+  }
+  
+  /* Swipeable button container */
+  .swipe-container {
+    display: flex;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+  
+  .swipe-container::-webkit-scrollbar {
+    display: none;
+  }
+  
+  .swipe-item {
+    flex: 0 0 auto;
+    scroll-snap-align: start;
+    margin-right: 8px;
+  }
+  
+  /* Visual feedback for button press */
+  button:active {
+    transform: scale(0.95);
+    opacity: 0.8;
+  }
+  
+  /* Larger close buttons for modals */
+  .modal-close-button {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    width: 44px;
+    height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+  }
+  
+  /* Improved project action buttons */
+  .project-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-top: 8px;
+  }
+  
+  .project-actions button {
+    width: 100%;
+    justify-content: center;
+  }
+  
+  /* Terminal command buttons */
+  .terminal-commands-mobile {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+    padding: 8px;
+    background: #1f2937; /* bg-gray-800 */
+    border-radius: 8px;
+    margin-bottom: 8px;
+  }
+  
+  .terminal-commands-mobile button {
+    padding: 12px;
+    font-size: 14px;
+    border-radius: 6px;
+  }
+  
+  /* Full-width primary actions */
+  .full-width-action {
+    width: 100%;
+    padding: 16px;
+    font-size: 16px;
+    font-weight: 600;
+  }
+  
+  /* Floating action button (FAB) */
+  .fab {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+    z-index: 50;
+  }
+  
+  .fab-menu {
+    position: fixed;
+    bottom: 80px;
+    right: 20px;
+    display: flex;
+    flex-direction: column-reverse;
+    gap: 12px;
+    z-index: 49;
+  }
+  
+  .fab-menu button {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  }
+}
+
+/* Accessibility improvements */
+button:focus-visible {
+  outline: 2px solid #3b82f6; /* blue-500 */
+  outline-offset: 2px;
+}
+
+/* Haptic feedback indicator */
+.haptic-feedback {
+  position: relative;
+  overflow: hidden;
+}
+
+.haptic-feedback::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.3);
+  transform: translate(-50%, -50%);
+  transition: width 0.3s, height 0.3s;
+}
+
+.haptic-feedback:active::after {
+  width: 100%;
+  height: 100%;
+}
