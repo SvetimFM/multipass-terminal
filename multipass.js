@@ -48,17 +48,77 @@ async function createAIOffice(projectId, cubicleCount = 3) {
   // Create ai-office directory
   await fs.mkdir(aiOfficePath, { recursive: true });
   
+  // Check if project has a GitHub URL
+  const githubUrl = project.githubUrl || null;
+  
   // Create cubicles
   const cubicles = [];
   for (let i = 1; i <= cubicleCount; i++) {
     const cubiclePath = path.join(aiOfficePath, `cubicle-${i}`);
     await fs.mkdir(cubiclePath, { recursive: true });
     
-    // Create a simple starter file for each cubicle
-    await fs.writeFile(
-      path.join(cubiclePath, 'README.md'),
-      `# Cubicle ${i}\n\nAI workspace for ${project.name}`
-    );
+    // Clone GitHub repository if available
+    if (githubUrl) {
+      try {
+        console.log(`Cloning repository ${githubUrl} into cubicle-${i}...`);
+        const util = require('util');
+        const execPromise = util.promisify(exec);
+        
+        // Clone the repository into the cubicle
+        const { stdout, stderr } = await execPromise(`git clone "${githubUrl}" "${cubiclePath}/repository"`, {
+          cwd: aiOfficePath,
+          maxBuffer: 1024 * 1024 * 10 // 10MB buffer for large repos
+        });
+        
+        if (stdout) console.log(`Clone output: ${stdout}`);
+        if (stderr) console.log(`Clone stderr: ${stderr}`);
+        
+        // Create instructions for working within the repository copy
+        await fs.writeFile(
+          path.join(cubiclePath, 'INSTRUCTIONS.md'),
+          `# Cubicle ${i} - AI Workspace
+
+## Important Instructions
+
+This cubicle contains a copy of the project repository from: ${githubUrl}
+
+### Working Directory
+- All changes should be made within the \`repository\` subdirectory
+- The repository is located at: \`${cubiclePath}/repository\`
+
+### Guidelines
+1. Change to the repository directory before making any modifications:
+   \`\`\`bash
+   cd repository
+   \`\`\`
+
+2. All file edits, additions, and deletions should happen inside the repository copy
+
+3. This is an isolated workspace - changes here won't affect the main project until explicitly merged
+
+4. Use git commands within the repository directory to track your changes
+
+5. When ready, changes can be reviewed and potentially merged back to the main project
+
+### Project: ${project.name}
+### GitHub: ${githubUrl}
+`
+        );
+      } catch (error) {
+        console.error(`Failed to clone repository for cubicle-${i}:`, error);
+        // Fall back to creating a simple README if cloning fails
+        await fs.writeFile(
+          path.join(cubiclePath, 'README.md'),
+          `# Cubicle ${i}\n\nAI workspace for ${project.name}\n\nNote: Failed to clone repository from ${githubUrl}`
+        );
+      }
+    } else {
+      // No GitHub URL, create standard README
+      await fs.writeFile(
+        path.join(cubiclePath, 'README.md'),
+        `# Cubicle ${i}\n\nAI workspace for ${project.name}`
+      );
+    }
     
     cubicles.push({
       name: `cubicle-${i}`,
@@ -83,6 +143,27 @@ async function removeAIOffice(projectId) {
   if (!project || !project.aiOffice) return;
   
   const aiOfficePath = path.join(project.path, 'ai-office');
+  
+  // Kill all tmux sessions for this AI Office
+  if (project.aiOffice.cubicles) {
+    for (const cubicle of project.aiOffice.cubicles) {
+      const sessionName = `ai-office-${projectId}-${cubicle.name}`;
+      try {
+        await new Promise((resolve) => {
+          exec(`tmux kill-session -t "${sessionName}"`, (error) => {
+            if (error) {
+              console.log(`No tmux session found for ${sessionName}, continuing...`);
+            }
+            resolve();
+          });
+        });
+        // Remove session metadata
+        sessions.delete(sessionName);
+      } catch (e) {
+        console.error('Error killing tmux session:', e);
+      }
+    }
+  }
   
   // Remove directory
   try {
@@ -118,10 +199,21 @@ app.get('/', (req, res) => {
       overscroll-behavior: none;
       -webkit-tap-highlight-color: transparent;
     }
+    #main-app {
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+    #terminal-view {
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+    }
     .terminal-container {
-      height: calc(100vh - 200px);
+      flex: 1;
       background: #1a1b26;
       padding: 10px;
+      overflow: hidden;
     }
     #terminal {
       height: 100%;
@@ -142,7 +234,7 @@ app.get('/', (req, res) => {
   <!-- Main App -->
   <div id="main-app">
     <!-- Header -->
-    <div class="bg-gray-800 p-3 border-b border-gray-700">
+    <div id="main-header" class="bg-gray-800 p-3 border-b border-gray-700">
       <div class="flex justify-between items-center">
         <h1 class="text-lg font-semibold">Multipass - Terminal for AI</h1>
         <div class="flex gap-2">
@@ -208,7 +300,7 @@ app.get('/', (req, res) => {
 
     <!-- Terminal View -->
     <div id="terminal-view" class="hidden">
-      <div class="bg-gray-800 p-3 border-b border-gray-700">
+      <div class="bg-gray-800 p-3 border-b border-gray-700 flex-shrink-0">
         <div class="flex justify-between items-center">
           <span class="text-sm">Session: <span id="current-session" class="font-semibold"></span></span>
           <button onclick="closeTerminal()" class="bg-red-600 px-3 py-1 rounded text-sm">
@@ -222,8 +314,9 @@ app.get('/', (req, res) => {
       </div>
       
       <!-- Quick Commands -->
-      <div class="bg-gray-700 p-2 flex gap-2 overflow-x-auto">
+      <div class="bg-gray-700 p-2 flex gap-2 overflow-x-auto flex-shrink-0">
         <button onclick="sendToTerminal('claude\\n')" class="px-3 py-1 bg-blue-600 rounded text-sm font-semibold">claude</button>
+        <button onclick="sendToTerminal('\\x03\\x03')" class="px-3 py-1 bg-red-600 rounded text-sm font-semibold" title="Exit Claude (Ctrl+C twice)">Exit Claude</button>
         <button id="auto-accept-btn" onclick="toggleAutoAccept()" class="px-3 py-1 bg-gray-600 rounded text-sm">
           Auto-Accept: <span id="auto-accept-status">OFF</span>
         </button>
@@ -326,6 +419,7 @@ app.get('/', (req, res) => {
               <div class="flex-1">
                 <div class="font-semibold">\${project.name}</div>
                 <div class="text-xs text-gray-400 font-mono">\${project.path}</div>
+                \${project.githubUrl ? \`<div class="text-xs text-blue-400 mt-1">GitHub: \${project.githubUrl}</div>\` : ''}
                 \${hasAIOffice ? \`<div class="text-xs text-purple-400 mt-1">AI Office: \${project.aiOffice.cubicleCount} cubicles</div>\` : ''}
               </div>
               <div class="flex gap-2 flex-wrap">
@@ -436,9 +530,12 @@ app.get('/', (req, res) => {
     }
     
     function closeAIOfficeGrid() {
-      // Clean up all terminals
+      // Clean up all terminals and WebSockets without killing tmux sessions
       cubicleTerminals.forEach(({ term }) => term.dispose());
-      cubicleWebSockets.forEach(ws => ws.close());
+      cubicleWebSockets.forEach(ws => {
+        // Close WebSocket connection without killing the tmux session
+        ws.close();
+      });
       cubicleTerminals.clear();
       cubicleWebSockets.clear();
       
@@ -466,14 +563,16 @@ app.get('/', (req, res) => {
         });
         
         if (response.ok) {
-          // Reload the grid view
-          openAIOfficeGrid(currentAIOfficeProject.id);
+          // First reload projects to get updated data
           await loadProjects();
+          // Then reload the grid view to show the new cubicle
+          openAIOfficeGrid(currentAIOfficeProject.id);
         } else {
           alert('Failed to add cubicle');
         }
       } catch (error) {
         console.error('Error adding cubicle:', error);
+        alert('Error adding cubicle: ' + error.message);
       }
     }
     
@@ -645,13 +744,17 @@ app.get('/', (req, res) => {
     }
     
     // Terminal management
+    let resizeListener = null;
+    
     function attachTerminal(sessionName) {
       document.getElementById('current-session').textContent = sessionName;
       document.getElementById('terminal-view').classList.remove('hidden');
       document.getElementById('sessions-view').classList.add('hidden');
       document.getElementById('projects-view').classList.add('hidden');
+      document.getElementById('main-header').classList.add('hidden');
       
       if (currentTerminal) currentTerminal.dispose();
+      if (resizeListener) window.removeEventListener('resize', resizeListener);
       
       currentTerminal = new Terminal({
         cursorBlink: true,
@@ -667,7 +770,9 @@ app.get('/', (req, res) => {
       currentTerminal.loadAddon(fitAddon);
       
       currentTerminal.open(document.getElementById('terminal'));
-      fitAddon.fit();
+      
+      // Fit terminal after a short delay to ensure proper sizing
+      setTimeout(() => fitAddon.fit(), 50);
       
       // Connect WebSocket
       const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
@@ -683,7 +788,9 @@ app.get('/', (req, res) => {
         }
       });
       
-      window.addEventListener('resize', () => fitAddon.fit());
+      // Store resize listener to remove it later
+      resizeListener = () => fitAddon.fit();
+      window.addEventListener('resize', resizeListener);
     }
     
     function closeTerminal() {
@@ -694,7 +801,10 @@ app.get('/', (req, res) => {
       
       if (currentWs) currentWs.close();
       if (currentTerminal) currentTerminal.dispose();
+      if (resizeListener) window.removeEventListener('resize', resizeListener);
+      
       document.getElementById('terminal-view').classList.add('hidden');
+      document.getElementById('main-header').classList.remove('hidden');
       showSessions();
     }
     
@@ -777,11 +887,13 @@ app.get('/', (req, res) => {
       const name = prompt('Project name:', currentPath.split('/').pop());
       if (!name) return;
       
+      const githubUrl = prompt('GitHub repository URL (optional - press Enter to skip):');
+      
       try {
         const response = await fetch('/api/projects', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ name, path: currentPath })
+          body: JSON.stringify({ name, path: currentPath, githubUrl: githubUrl || null })
         });
         
         if (response.ok) {
@@ -830,13 +942,18 @@ app.get('/api/projects', async (req, res) => {
 });
 
 app.post('/api/projects', async (req, res) => {
-  const { name, path: projectPath } = req.body;
+  const { name, path: projectPath, githubUrl } = req.body;
   const id = 'proj-' + Date.now();
   
-  projects.set(id, { id, name, path: projectPath });
+  const project = { id, name, path: projectPath };
+  if (githubUrl) {
+    project.githubUrl = githubUrl;
+  }
+  
+  projects.set(id, project);
   await saveProjects();
   
-  res.json({ id, name, path: projectPath });
+  res.json(project);
 });
 
 app.delete('/api/projects/:id', async (req, res) => {
@@ -888,10 +1005,70 @@ app.post('/api/projects/:id/ai-office/cubicle', async (req, res) => {
     
     // Create cubicle directory
     await fs.mkdir(cubiclePath, { recursive: true });
-    await fs.writeFile(
-      path.join(cubiclePath, 'README.md'),
-      `# Cubicle ${cubicleNum}\n\nAI workspace for ${project.name}`
-    );
+    
+    // Clone GitHub repository if available
+    const githubUrl = project.githubUrl || null;
+    if (githubUrl) {
+      try {
+        console.log(`Cloning repository ${githubUrl} into cubicle-${cubicleNum}...`);
+        const util = require('util');
+        const execPromise = util.promisify(exec);
+        
+        // Clone the repository into the cubicle
+        const { stdout, stderr } = await execPromise(`git clone "${githubUrl}" "${cubiclePath}/repository"`, {
+          cwd: path.join(project.path, 'ai-office'),
+          maxBuffer: 1024 * 1024 * 10 // 10MB buffer for large repos
+        });
+        
+        if (stdout) console.log(`Clone output: ${stdout}`);
+        if (stderr) console.log(`Clone stderr: ${stderr}`);
+        
+        // Create instructions for working within the repository copy
+        await fs.writeFile(
+          path.join(cubiclePath, 'INSTRUCTIONS.md'),
+          `# Cubicle ${cubicleNum} - AI Workspace
+
+## Important Instructions
+
+This cubicle contains a copy of the project repository from: ${githubUrl}
+
+### Working Directory
+- All changes should be made within the \`repository\` subdirectory
+- The repository is located at: \`${cubiclePath}/repository\`
+
+### Guidelines
+1. Change to the repository directory before making any modifications:
+   \`\`\`bash
+   cd repository
+   \`\`\`
+
+2. All file edits, additions, and deletions should happen inside the repository copy
+
+3. This is an isolated workspace - changes here won't affect the main project until explicitly merged
+
+4. Use git commands within the repository directory to track your changes
+
+5. When ready, changes can be reviewed and potentially merged back to the main project
+
+### Project: ${project.name}
+### GitHub: ${githubUrl}
+`
+        );
+      } catch (error) {
+        console.error(`Failed to clone repository for cubicle-${cubicleNum}:`, error);
+        // Fall back to creating a simple README if cloning fails
+        await fs.writeFile(
+          path.join(cubiclePath, 'README.md'),
+          `# Cubicle ${cubicleNum}\n\nAI workspace for ${project.name}\n\nNote: Failed to clone repository from ${githubUrl}`
+        );
+      }
+    } else {
+      // No GitHub URL, create standard README
+      await fs.writeFile(
+        path.join(cubiclePath, 'README.md'),
+        `# Cubicle ${cubicleNum}\n\nAI workspace for ${project.name}`
+      );
+    }
     
     // Update project
     project.aiOffice.cubicles.push({
@@ -927,6 +1104,24 @@ app.delete('/api/projects/:id/ai-office/cubicle/:cubicleIdx', async (req, res) =
     }
     
     const cubicle = project.aiOffice.cubicles[cubicleIdx];
+    
+    // Kill tmux session associated with this cubicle
+    const sessionName = `ai-office-${req.params.id}-${cubicle.name}`;
+    try {
+      await new Promise((resolve, reject) => {
+        exec(`tmux kill-session -t "${sessionName}"`, (error) => {
+          if (error) {
+            console.log(`No tmux session found for ${sessionName}, continuing...`);
+          }
+          resolve();
+        });
+      });
+      
+      // Remove session metadata
+      sessions.delete(sessionName);
+    } catch (e) {
+      console.error('Error killing tmux session:', e);
+    }
     
     // Remove directory
     try {
