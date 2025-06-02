@@ -30,6 +30,7 @@
     "helmet": "^7.1.0",
     "jsonwebtoken": "^9.0.2",
     "lucide-react": "^0.511.0",
+    "node-pty": "^1.0.0",
     "redis": "^4.6.12",
     "stripe": "^14.10.0",
     "uuid": "^9.0.1",

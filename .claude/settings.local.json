@@ -24,7 +24,13 @@
       "Bash(git add:*)",
       "Bash(git commit:*)",
       "Bash(git checkout:*)",
-      "Bash(npm run test:*)"
+      "Bash(npm run test:*)",
+      "Bash(npm run dev:*)",
+      "Bash(ss:*)",
+      "Bash(./test-tmux-direct.sh:*)",
+      "Bash(pkill:*)",
+      "Bash(true)",
+      "Bash(CLAUDE_AUTH=admin node simple-claude-manager.js)"
     ],
     "deny": []
   }
