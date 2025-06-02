@@ -10,6 +10,9 @@ let resizeListener = null;
 // Store current AI Office project
 let currentAIOfficeProject = null;
 
+// Auto-accept mode for AI Office grid
+let gridAutoAcceptMode = false;
+
 // Constants
 const AUTO_ACCEPT_INTERVAL = 2000;
 const MOBILE_BREAKPOINT = 768;
@@ -152,6 +155,11 @@ async function openAIOfficeGrid(projectId) {
 }
 
 function closeAIOfficeGrid() {
+  // Disable auto-accept if enabled
+  if (gridAutoAcceptMode) {
+    toggleGridAutoAccept();
+  }
+  
   // Clean up all terminals and WebSockets without killing tmux sessions
   cubicleTerminals.forEach(({ term }) => term.dispose());
   cubicleWebSockets.forEach(ws => {
@@ -662,6 +670,26 @@ function showSessions() {
   document.getElementById('sessions-view').classList.remove('hidden');
   document.getElementById('terminal-view').classList.add('hidden');
   loadSessions();
+}
+
+// Toggle auto-accept mode for AI Office grid
+function toggleGridAutoAccept() {
+  gridAutoAcceptMode = !gridAutoAcceptMode;
+  const btn = document.getElementById('grid-auto-accept-btn');
+  const status = document.getElementById('grid-auto-accept-status');
+  
+  if (gridAutoAcceptMode) {
+    status.textContent = 'ON';
+    btn.classList.remove('bg-gray-600');
+    btn.classList.add('bg-green-600');
+    
+    // Send Shift+Tab once to all terminals
+    broadcastToAllTerminals('\x1b[Z');
+  } else {
+    status.textContent = 'OFF';
+    btn.classList.remove('bg-green-600');
+    btn.classList.add('bg-gray-600');
+  }
 }
 
 // Initialize
