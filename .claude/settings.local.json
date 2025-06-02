@@ -33,7 +33,13 @@
       "Bash(CLAUDE_AUTH=admin node simple-claude-manager.js)",
       "Bash(tmux list-sessions:*)",
       "Bash(npm run lint)",
-      "Bash(kill:*)"
+      "Bash(kill:*)",
+      "Bash(git push:*)",
+      "Bash(gh pr create:*)",
+      "Bash(rg:*)",
+      "Bash(for file in src/routes/*.js)",
+      "Bash(do echo \"=== $file ===\")",
+      "Bash(done)"
     ],
     "deny": []
   }

@@ -59,7 +59,7 @@
             <label class="block text-sm mb-1">Session Name (optional)</label>
             <input type="text" id="session-name" 
                    class="w-full bg-gray-800 p-2 rounded"
-                   placeholder="claude-session">
+                   placeholder="ai-session">
           </div>
           
           <button onclick="createSession()" 
@@ -95,8 +95,8 @@
       
       <!-- Quick Commands -->
       <div class="bg-gray-700 p-2 flex gap-2 overflow-x-auto flex-shrink-0">
-        <button onclick="sendToTerminal('claude\\n')" class="px-3 py-1 bg-blue-600 rounded text-sm font-semibold">claude</button>
-        <button onclick="exitClaude()" class="px-3 py-1 bg-red-600 rounded text-sm font-semibold" title="Exit Claude (Ctrl+C twice)">Exit Claude</button>
+        <button onclick="sendToTerminal('ai\\n')" class="px-3 py-1 bg-blue-600 rounded text-sm font-semibold">ai</button>
+        <button onclick="exitLLM()" class="px-3 py-1 bg-red-600 rounded text-sm font-semibold" title="Exit AI Assistant">Exit AI</button>
         <button id="auto-accept-btn" onclick="toggleAutoAccept()" class="px-3 py-1 bg-gray-600 rounded text-sm">
           Auto-Accept: <span id="auto-accept-status">OFF</span>
         </button>
@@ -155,8 +155,8 @@
         </div>
         <!-- Quick Commands for All Terminals -->
         <div class="mt-2 flex gap-2 overflow-x-auto">
-          <button onclick="broadcastToAllTerminals('claude\\n')" class="px-3 py-1 bg-blue-600 rounded text-sm font-semibold">claude (all)</button>
-          <button onclick="exitClaudeAll()" class="px-3 py-1 bg-red-600 rounded text-sm font-semibold" title="Exit Claude in all terminals">Exit Claude (all)</button>
+          <button onclick="broadcastToAllTerminals('ai\\n')" class="px-3 py-1 bg-blue-600 rounded text-sm font-semibold">ai (all)</button>
+          <button onclick="exitLLMAll()" class="px-3 py-1 bg-red-600 rounded text-sm font-semibold" title="Exit AI in all terminals">Exit AI (all)</button>
           <button onclick="broadcastToAllTerminals('\\x1b[Z')" class="px-3 py-1 bg-purple-600 rounded text-sm" title="Send Shift+Tab to all">⇧ Tab (all)</button>
           <button onclick="broadcastToAllTerminals('ls -la\\n')" class="px-3 py-1 bg-gray-600 rounded text-sm">ls -la (all)</button>
           <button onclick="broadcastToAllTerminals('pwd\\n')" class="px-3 py-1 bg-gray-600 rounded text-sm">pwd (all)</button>

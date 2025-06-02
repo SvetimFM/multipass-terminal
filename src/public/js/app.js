@@ -10,11 +10,26 @@ let resizeListener = null;
 // Store current AI Office project
 let currentAIOfficeProject = null;
 
+// LLM Configuration (will be loaded from server)
+let llmConfig = {
+  currentLLM: {
+    name: 'AI Assistant',
+    command: 'ai',
+    sessionPrefix: 'ai-',
+    exitSequence: '\x03',
+    exitDelay: 0
+  },
+  ui: {
+    appTitle: 'Multipass - Terminal for AI',
+    sessionPlaceholder: 'ai-session',
+    defaultCubicleCount: 3,
+    maxCubicleCount: 10
+  }
+};
+
 // Constants
 const AUTO_ACCEPT_INTERVAL = 2000;
 const MOBILE_BREAKPOINT = 768;
-const DEFAULT_CUBICLE_COUNT = 3;
-const MAX_CUBICLE_COUNT = 10;
 
 // Load projects
 async function loadProjects() {
@@ -66,12 +81,12 @@ async function loadProjects() {
 
 // AI Office management
 async function setupAIOffice(projectId) {
-  const count = prompt(`How many cubicles? (default: ${DEFAULT_CUBICLE_COUNT}, max: ${MAX_CUBICLE_COUNT})`, DEFAULT_CUBICLE_COUNT.toString());
+  const count = prompt(`How many cubicles? (default: ${llmConfig.ui.defaultCubicleCount}, max: ${llmConfig.ui.maxCubicleCount})`, llmConfig.ui.defaultCubicleCount.toString());
   if (!count) return;
   
   const cubicleCount = parseInt(count);
-  if (isNaN(cubicleCount) || cubicleCount < 1 || cubicleCount > MAX_CUBICLE_COUNT) {
-    alert(`Please enter a number between 1 and ${MAX_CUBICLE_COUNT}`);
+  if (isNaN(cubicleCount) || cubicleCount < 1 || cubicleCount > llmConfig.ui.maxCubicleCount) {
+    alert(`Please enter a number between 1 and ${llmConfig.ui.maxCubicleCount}`);
     return;
   }
   
@@ -174,11 +189,17 @@ function broadcastToAllTerminals(command) {
   });
 }
 
-// Exit Claude in all terminals
-function exitClaudeAll() {
-  // Send Ctrl+C twice quickly to all terminals
-  broadcastToAllTerminals('\x03');
-  setTimeout(() => broadcastToAllTerminals('\x03'), 50);
+// Exit LLM in all terminals
+function exitLLMAll() {
+  // Send exit sequence to all terminals
+  const sequence = llmConfig.currentLLM.exitSequence.replace(/\\x([0-9A-Fa-f]{2})/g, 
+    (match, hex) => String.fromCharCode(parseInt(hex, 16)));
+  
+  broadcastToAllTerminals(sequence);
+  
+  if (llmConfig.currentLLM.exitDelay > 0 && sequence.length < llmConfig.currentLLM.exitSequence.length) {
+    setTimeout(() => broadcastToAllTerminals(sequence), llmConfig.currentLLM.exitDelay);
+  }
 }
 
 // Sync all cubicles with parent project
@@ -452,7 +473,7 @@ async function createSession() {
     }
     
     const name = document.getElementById('session-name').value.trim() || 
-                 'claude-' + Date.now().toString().slice(-6);
+                 llmConfig.currentLLM.sessionPrefix + Date.now().toString().slice(-6);
     
     const response = await fetch('/api/sessions', {
       method: 'POST',
@@ -550,10 +571,16 @@ function sendToTerminal(command) {
   }
 }
 
-function exitClaude() {
-  // Send Ctrl+C twice quickly to exit Claude
-  sendToTerminal('\x03');
-  setTimeout(() => sendToTerminal('\x03'), 50);
+function exitLLM() {
+  // Send exit sequence to terminal based on LLM configuration
+  const sequence = llmConfig.currentLLM.exitSequence.replace(/\\x([0-9A-Fa-f]{2})/g, 
+    (match, hex) => String.fromCharCode(parseInt(hex, 16)));
+  
+  sendToTerminal(sequence);
+  
+  if (llmConfig.currentLLM.exitDelay > 0 && sequence.length < llmConfig.currentLLM.exitSequence.length) {
+    setTimeout(() => sendToTerminal(sequence), llmConfig.currentLLM.exitDelay);
+  }
 }
 
 function toggleAutoAccept() {
@@ -664,5 +691,63 @@ function showSessions() {
   loadSessions();
 }
 
+// Load LLM configuration from server
+async function loadLLMConfig() {
+  try {
+    const response = await fetch('/api/config');
+    if (response.ok) {
+      const config = await response.json();
+      llmConfig = config;
+      
+      // Update UI with configuration
+      document.title = llmConfig.ui.appTitle;
+      const appTitle = document.querySelector('#main-header h1');
+      if (appTitle) appTitle.textContent = llmConfig.ui.appTitle;
+      
+      const sessionInput = document.getElementById('session-name');
+      if (sessionInput) sessionInput.placeholder = llmConfig.ui.sessionPlaceholder;
+      
+      // Update LLM-specific buttons
+      updateLLMButtons();
+    }
+  } catch (error) {
+    console.error('Error loading LLM configuration:', error);
+  }
+}
+
+// Update buttons with LLM-specific text
+function updateLLMButtons() {
+  // Update single terminal buttons
+  const llmButton = document.querySelector('button[onclick*="sendToTerminal(\'claude"]');
+  if (llmButton) {
+    llmButton.textContent = llmConfig.currentLLM.command;
+    llmButton.setAttribute('onclick', `sendToTerminal('${llmConfig.currentLLM.command}\\n')`);
+  }
+  
+  const exitButton = document.querySelector('button[onclick="exitClaude()"]');
+  if (exitButton) {
+    exitButton.textContent = `Exit ${llmConfig.currentLLM.name}`;
+    exitButton.setAttribute('onclick', 'exitLLM()');
+  }
+  
+  // Update all terminals buttons
+  const llmAllButton = document.querySelector('button[onclick*="broadcastToAllTerminals(\'claude"]');
+  if (llmAllButton) {
+    llmAllButton.textContent = `${llmConfig.currentLLM.command} (all)`;
+    llmAllButton.setAttribute('onclick', `broadcastToAllTerminals('${llmConfig.currentLLM.command}\\n')`);
+  }
+  
+  const exitAllButton = document.querySelector('button[onclick="exitClaudeAll()"]');
+  if (exitAllButton) {
+    exitAllButton.textContent = `Exit ${llmConfig.currentLLM.name} (all)`;
+    exitAllButton.setAttribute('onclick', 'exitLLMAll()');
+  }
+}
+
 // Initialize
-loadProjects();
+async function initialize() {
+  await loadLLMConfig();
+  loadProjects();
+}
+
+initialize();
