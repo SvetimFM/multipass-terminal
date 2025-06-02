@@ -166,6 +166,31 @@ function exitClaudeAll() {
   setTimeout(() => broadcastToAllTerminals('\x03'), 50);
 }
 
+// Add a new terminal session to AI Office grid
+async function addTerminal() {
+  if (!currentAIOfficeProject) return;
+  
+  const container = document.getElementById('cubicle-terminals');
+  const terminalCount = container.children.length;
+  const terminalName = `terminal-${terminalCount + 1}`;
+  const sessionName = `ai-office-${currentAIOfficeProject.id}-${terminalName}`;
+  
+  // Create terminal div
+  const termDiv = document.createElement('div');
+  termDiv.className = 'bg-gray-800 rounded overflow-hidden flex flex-col';
+  termDiv.innerHTML = `
+    <div class="bg-gray-700 px-3 py-2 text-sm font-medium flex justify-between items-center">
+      <span>${terminalName} (Project Root)</span>
+      <button onclick="removeTerminalFromGrid('${sessionName}')" class="text-red-400 hover:text-red-300 text-xs">✕</button>
+    </div>
+    <div id="terminal-grid-${sessionName}" class="cubicle-terminal flex-1"></div>
+  `;
+  container.appendChild(termDiv);
+  
+  // Initialize terminal in project root directory
+  setTimeout(() => initProjectTerminal(currentAIOfficeProject, sessionName), 100);
+}
+
 // Add a new cubicle to the current AI Office
 async function addCubicle() {
   if (!currentAIOfficeProject) return;
@@ -208,6 +233,82 @@ async function removeCubicle(projectId, cubicleIdx) {
     }
   } catch (error) {
     console.error('Error removing cubicle:', error);
+  }
+}
+
+// Initialize terminal in project root directory
+function initProjectTerminal(project, sessionName) {
+  const term = new Terminal({
+    cursorBlink: true,
+    fontSize: 12,
+    fontFamily: 'Cascadia Code, Menlo, Monaco, Consolas, monospace',
+    theme: {
+      background: '#1a1b26',
+      foreground: '#a9b1d6'
+    }
+  });
+  
+  const fitAddon = new FitAddon.FitAddon();
+  term.loadAddon(fitAddon);
+  
+  term.open(document.getElementById(`terminal-grid-${sessionName}`));
+  fitAddon.fit();
+  
+  // Create session in project root directory
+  fetch('/api/sessions', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ 
+      name: sessionName, 
+      projectId: project.id,
+      isCubicle: false
+    })
+  }).then(() => {
+    const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+    const ws = new WebSocket(`${protocol}//${window.location.host}/terminal/${sessionName}`);
+    
+    ws.onopen = () => {
+      term.write('\r\n*** Connected to Project Root ***\r\n');
+    };
+    
+    ws.onmessage = (event) => {
+      term.write(event.data);
+    };
+    
+    term.onData((data) => {
+      if (ws.readyState === WebSocket.OPEN) {
+        ws.send(data);
+      }
+    });
+    
+    // Store terminal and websocket for cleanup
+    cubicleTerminals.set(sessionName, { term, fitAddon });
+    cubicleWebSockets.set(sessionName, ws);
+  });
+}
+
+// Remove terminal from grid
+function removeTerminalFromGrid(sessionName) {
+  // Kill the tmux session
+  fetch(`/api/sessions/${sessionName}`, { method: 'DELETE' });
+  
+  // Clean up terminal and websocket
+  const terminal = cubicleTerminals.get(sessionName);
+  if (terminal) {
+    terminal.term.dispose();
+    cubicleTerminals.delete(sessionName);
+  }
+  
+  const ws = cubicleWebSockets.get(sessionName);
+  if (ws) {
+    ws.close();
+    cubicleWebSockets.delete(sessionName);
+  }
+  
+  // Remove the terminal div
+  const termDiv = document.getElementById(`terminal-grid-${sessionName}`).parentElement;
+  if (termDiv) {
+    termDiv.remove();
   }
 }
 
