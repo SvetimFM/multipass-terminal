@@ -20,10 +20,13 @@ const sessions = new Map();
 const terminals = new Map();
 const projects = new Map();
 
+// Load configuration
+const { LLM_CONFIG, PROJECTS_FILE } = require('./src/utils/constants');
+
 // Load projects from file
 async function loadProjects() {
   try {
-    const data = await fs.readFile('.claude-projects.json', 'utf8');
+    const data = await fs.readFile(PROJECTS_FILE, 'utf8');
     const saved = JSON.parse(data);
     saved.forEach(p => projects.set(p.id, p));
   } catch (e) {
@@ -34,7 +37,7 @@ async function loadProjects() {
 
 async function saveProjects() {
   const data = Array.from(projects.values());
-  await fs.writeFile('.claude-projects.json', JSON.stringify(data, null, 2));
+  await fs.writeFile(PROJECTS_FILE, JSON.stringify(data, null, 2));
 }
 
 // Load sessions metadata from file
@@ -65,6 +68,22 @@ const browseRouter = require('./src/routes/browse');
 app.use('/api/projects', projectsRouter(projects, sessions, saveProjects));
 app.use('/api/sessions', sessionsRouter(sessions, projects, saveSessions));
 app.use('/api/browse', browseRouter);
+
+// Configuration endpoint
+app.get('/api/config', (req, res) => {
+  const currentLLM = LLM_CONFIG.llms[LLM_CONFIG.default];
+  res.json({
+    currentLLM: {
+      name: currentLLM.name,
+      command: currentLLM.command,
+      sessionPrefix: currentLLM.sessionPrefix,
+      exitSequence: currentLLM.exitSequence,
+      exitDelay: currentLLM.exitDelay
+    },
+    ui: LLM_CONFIG.ui,
+    availableLLMs: Object.keys(LLM_CONFIG.llms)
+  });
+});
 
 // Get home directory
 app.get('/api/home', (req, res) => {
