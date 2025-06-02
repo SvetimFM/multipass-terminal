@@ -32,7 +32,8 @@
       "Bash(true)",
       "Bash(CLAUDE_AUTH=admin node simple-claude-manager.js)",
       "Bash(tmux list-sessions:*)",
-      "Bash(npm run lint)"
+      "Bash(npm run lint)",
+      "Bash(kill:*)"
     ],
     "deny": []
   }

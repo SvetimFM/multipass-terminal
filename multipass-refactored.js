@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 
 // Multipass - Terminal for AI with per-project AI Offices
+require('dotenv').config();
 const express = require('express');
 const fs = require('fs').promises;
 const path = require('path');
@@ -8,8 +9,8 @@ const WebSocket = require('ws');
 const pty = require('node-pty');
 
 const app = express();
-const PORT = 9999;
-const TAILSCALE_IP = '100.110.230.98';
+const PORT = process.env.PORT || 9999;
+const HOST = process.env.HOST || '0.0.0.0';
 
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'src/public')));
@@ -77,6 +78,7 @@ wss.on('connection', (ws, req) => {
   
   term.on('exit', () => {
     console.log('Terminal exited for session:', sessionName);
+    terminals.delete(sessionName);
     ws.close();
   });
   
@@ -85,16 +87,19 @@ wss.on('connection', (ws, req) => {
   });
   
   ws.on('close', () => {
-    term.kill();
+    if (terminals.has(sessionName)) {
+      term.kill();
+      terminals.delete(sessionName);
+    }
   });
 });
 
 // Start server
-server.listen(PORT, TAILSCALE_IP, () => {
+server.listen(PORT, HOST, () => {
   console.log(`
 🚀 Multipass - Terminal for AI
    
-   Access: http://${TAILSCALE_IP}:${PORT}
+   Access: http://${HOST}:${PORT}
    
    Features:
    ✓ Project management with per-project AI Offices
@@ -105,4 +110,7 @@ server.listen(PORT, TAILSCALE_IP, () => {
    ✓ Mobile optimized
    ✓ NO AUTHENTICATION - Direct access!
   `);
+}).on('error', (err) => {
+  console.error('Failed to start server:', err);
+  process.exit(1);
 });

@@ -10,10 +10,19 @@ let resizeListener = null;
 // Store current AI Office project
 let currentAIOfficeProject = null;
 
+// Constants
+const AUTO_ACCEPT_INTERVAL = 2000;
+const MOBILE_BREAKPOINT = 768;
+const DEFAULT_CUBICLE_COUNT = 3;
+const MAX_CUBICLE_COUNT = 10;
+
 // Load projects
 async function loadProjects() {
   try {
     const response = await fetch('/api/projects');
+    if (!response.ok) {
+      throw new Error('Failed to load projects');
+    }
     const data = await response.json();
     
     const projectsList = document.getElementById('projects-list');
@@ -57,14 +66,20 @@ async function loadProjects() {
 
 // AI Office management
 async function setupAIOffice(projectId) {
-  const count = prompt('How many cubicles? (default: 3)', '3');
+  const count = prompt(`How many cubicles? (default: ${DEFAULT_CUBICLE_COUNT}, max: ${MAX_CUBICLE_COUNT})`, DEFAULT_CUBICLE_COUNT.toString());
   if (!count) return;
+  
+  const cubicleCount = parseInt(count);
+  if (isNaN(cubicleCount) || cubicleCount < 1 || cubicleCount > MAX_CUBICLE_COUNT) {
+    alert(`Please enter a number between 1 and ${MAX_CUBICLE_COUNT}`);
+    return;
+  }
   
   try {
     const response = await fetch(`/api/projects/${projectId}/ai-office`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ cubicleCount: parseInt(count) || 3 })
+      body: JSON.stringify({ cubicleCount })
     });
     
     if (response.ok) {
@@ -111,7 +126,7 @@ async function openAIOfficeGrid(projectId) {
   container.innerHTML = '';
   
   // Set grid layout - max 2 columns
-  const isMobile = window.innerWidth < 768;
+  const isMobile = window.innerWidth < MOBILE_BREAKPOINT;
   
   if (isMobile) {
     container.className = 'grid grid-cols-1 gap-4 p-4';
@@ -431,7 +446,12 @@ async function loadSessions() {
 async function createSession() {
   try {
     const projectId = document.getElementById('project-select').value;
-    const name = document.getElementById('session-name').value || 
+    if (!projectId) {
+      alert('Please select a project');
+      return;
+    }
+    
+    const name = document.getElementById('session-name').value.trim() || 
                  'claude-' + Date.now().toString().slice(-6);
     
     const response = await fetch('/api/sessions', {
@@ -441,7 +461,8 @@ async function createSession() {
     });
     
     if (!response.ok) {
-      alert('Error creating session');
+      const error = await response.json();
+      alert('Error creating session: ' + (error.error || 'Unknown error'));
       return;
     }
     
@@ -449,6 +470,7 @@ async function createSession() {
     loadSessions();
   } catch (error) {
     console.error('Error creating session:', error);
+    alert('Error creating session: ' + error.message);
   }
 }
 
@@ -555,7 +577,7 @@ function toggleAutoAccept() {
       if (autoAcceptMode && currentWs && currentWs.readyState === WebSocket.OPEN) {
         sendToTerminal('\x1b[Z');
       }
-    }, 2000);
+    }, AUTO_ACCEPT_INTERVAL);
   } else {
     status.textContent = 'OFF';
     btn.classList.remove('bg-green-600');

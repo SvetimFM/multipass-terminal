@@ -4,5 +4,8 @@ echo "Starting Multipass AI Terminal (Refactored)..."
 pkill -f "node.*multipass" 2>/dev/null
 sleep 1
 
-cd "/mnt/j/DevWorkspace/Active Projects/vibecodes/ship_anywhere_serverside"
+# Get script directory
+SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+cd "$SCRIPT_DIR"
+
 node multipass-refactored.js
