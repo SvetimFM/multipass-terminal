@@ -48,4 +48,10 @@ ai-office/
 
 # Local project files
 .claude-projects.json
+<<<<<<< HEAD
 .claude-sessions.json
+=======
+
+# VS Code history
+.history/
+>>>>>>> 9b63242 (Fix terminal command escaping and enhance AI Office sync)

@@ -105,12 +105,33 @@ module.exports = (projects, sessions, saveProjects) => {
         return res.status(404).json({ error: 'AI Office not found' });
       }
       
-      const cubicleNum = project.aiOffice.cubicleCount + 1;
-      const newCubicle = await addCubicle(project, cubicleNum);
+      // Use highestCubicleNum if available, otherwise find it from existing cubicles
+      let nextCubicleNum;
+      if (project.aiOffice.highestCubicleNum !== undefined) {
+        nextCubicleNum = project.aiOffice.highestCubicleNum + 1;
+      } else {
+        // Fallback for existing AI offices without highestCubicleNum
+        let maxCubicleNum = 0;
+        project.aiOffice.cubicles.forEach(cubicle => {
+          const match = cubicle.name.match(/cubicle-(\d+)/);
+          if (match) {
+            const num = parseInt(match[1]);
+            if (num > maxCubicleNum) {
+              maxCubicleNum = num;
+            }
+          }
+        });
+        nextCubicleNum = maxCubicleNum + 1;
+        // Initialize highestCubicleNum for backwards compatibility
+        project.aiOffice.highestCubicleNum = maxCubicleNum;
+      }
+      
+      const newCubicle = await addCubicle(project, nextCubicleNum);
       
       // Update project
       project.aiOffice.cubicles.push(newCubicle);
-      project.aiOffice.cubicleCount = cubicleNum;
+      project.aiOffice.cubicleCount = project.aiOffice.cubicles.length;
+      project.aiOffice.highestCubicleNum = nextCubicleNum;
       
       await saveProjects();
       res.json({ cubicle: newCubicle });

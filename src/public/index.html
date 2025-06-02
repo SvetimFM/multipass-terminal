@@ -94,6 +94,7 @@
         <div id="terminal"></div>
       </div>
       
+<<<<<<< HEAD
       <!-- Quick Commands - Desktop -->
       <div class="bg-gray-700 p-2 flex gap-2 overflow-x-auto flex-shrink-0 hidden md:flex">
         <button onclick="window.terminal.sendToTerminal('claude\\n')" class="px-3 py-1 bg-blue-600 rounded text-sm font-semibold">claude</button>
@@ -153,6 +154,22 @@
             </button>
           </div>
         </div>
+=======
+      <!-- Quick Commands -->
+      <div class="bg-gray-700 p-2 flex gap-2 overflow-x-auto flex-shrink-0">
+        <button onclick="sendToTerminal('claude\n')" class="px-3 py-1 bg-blue-600 rounded text-sm font-semibold">claude</button>
+        <button onclick="exitClaude()" class="px-3 py-1 bg-red-600 rounded text-sm font-semibold" title="Exit Claude (Ctrl+C twice)">Exit Claude</button>
+        <button id="auto-accept-btn" onclick="toggleAutoAccept()" class="px-3 py-1 bg-gray-600 rounded text-sm">
+          Auto-Accept: <span id="auto-accept-status">OFF</span>
+        </button>
+        <button onclick="sendToTerminal('\\x1b[Z')" class="px-3 py-1 bg-purple-600 rounded text-sm" title="Send Shift+Tab">⇧ Tab</button>
+        <button onclick="sendToTerminal('ls -la\n')" class="px-3 py-1 bg-gray-600 rounded text-sm">ls -la</button>
+        <button onclick="sendToTerminal('pwd\n')" class="px-3 py-1 bg-gray-600 rounded text-sm">pwd</button>
+        <button onclick="sendToTerminal('git status\n')" class="px-3 py-1 bg-gray-600 rounded text-sm">git status</button>
+        <button onclick="sendToTerminal('git log --oneline -10\n')" class="px-3 py-1 bg-gray-600 rounded text-sm">git log</button>
+        <button onclick="sendToTerminal('npm run\n')" class="px-3 py-1 bg-gray-600 rounded text-sm">npm run</button>
+        <button onclick="clearTerminal()" class="px-3 py-1 bg-gray-600 rounded text-sm">Clear</button>
+>>>>>>> 9b63242 (Fix terminal command escaping and enhance AI Office sync)
       </div>
     </div>
 
@@ -258,6 +275,7 @@
             Close
           </button>
         </div>
+<<<<<<< HEAD
         <!-- Quick Commands for All Terminals - Desktop -->
         <div class="mt-2 hidden md:flex gap-2 overflow-x-auto">
           <button onclick="window.terminal.broadcastToAllTerminals('claude\\n')" class="px-3 py-1 bg-blue-600 rounded text-sm font-semibold">claude (all)</button>
@@ -299,6 +317,20 @@
               Accept: <span id="grid-auto-accept-status-mobile">OFF</span>
             </button>
           </div>
+=======
+        <!-- Quick Commands for All Terminals -->
+        <div class="mt-2 flex gap-2 overflow-x-auto">
+          <button onclick="broadcastToAllTerminals('claude\n')" class="px-3 py-1 bg-blue-600 rounded text-sm font-semibold">claude (all)</button>
+          <button onclick="exitClaudeAll()" class="px-3 py-1 bg-red-600 rounded text-sm font-semibold" title="Exit Claude in all terminals">Exit Claude (all)</button>
+          <button onclick="broadcastToAllTerminals('\\x1b[Z')" class="px-3 py-1 bg-purple-600 rounded text-sm" title="Send Shift+Tab to all">⇧ Tab (all)</button>
+          <button onclick="broadcastToAllTerminals('ls -la\n')" class="px-3 py-1 bg-gray-600 rounded text-sm">ls -la (all)</button>
+          <button onclick="broadcastToAllTerminals('pwd\n')" class="px-3 py-1 bg-gray-600 rounded text-sm">pwd (all)</button>
+          <button onclick="broadcastToAllTerminals('git status\n')" class="px-3 py-1 bg-gray-600 rounded text-sm">git status (all)</button>
+          <button onclick="clearAllTerminals()" class="px-3 py-1 bg-gray-600 rounded text-sm">Clear All</button>
+          <button onclick="syncWithParent()" class="px-3 py-1 bg-yellow-600 rounded text-sm" title="Sync all cubicles with parent project">Sync with Parent</button>
+          <button onclick="addCubicle()" class="px-3 py-1 bg-green-600 rounded text-sm">+ Add Cubicle</button>
+          <button onclick="addTerminal()" class="px-3 py-1 bg-blue-500 rounded text-sm">+ Add Terminal</button>
+>>>>>>> 9b63242 (Fix terminal command escaping and enhance AI Office sync)
         </div>
       </div>
       <div id="cubicle-terminals" class="grid gap-4 p-4">
@@ -307,6 +339,18 @@
     </div>
   </div>
 
+<<<<<<< HEAD
   <script type="module" src="/js/app.js"></script>
+=======
+  <!-- Loading Overlay -->
+  <div id="loading-overlay" class="loading-overlay hidden">
+    <div>
+      <div class="loading-spinner"></div>
+      <div class="loading-text" id="loading-text">Loading...</div>
+    </div>
+  </div>
+
+  <script src="/js/app.js"></script>
+>>>>>>> 9b63242 (Fix terminal command escaping and enhance AI Office sync)
 </body>
 </html>

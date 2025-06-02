@@ -76,17 +76,37 @@ async function createAIOffice(project, cubicleCount = DEFAULT_CUBICLE_COUNT) {
         );
       }
     } else {
-      // No GitHub URL, sync from parent project
+      // No GitHub URL, check if this is the ship_anywhere_serverside project
+      const hardcodedRepo = 'https://github.com/SvetimFM/multipass-ai-terminal';
+      
       try {
-        console.log(`Syncing parent project files to cubicle-${i}...`);
-        await execPromise(`rsync -av --exclude="ai-office/" --exclude=".git/" "${project.path}/" "${cubiclePath}/"`, {
-          maxBuffer: 1024 * 1024 * 10
-        });
+        // Check if this is the ship_anywhere_serverside project
+        if (project.path.includes('ship_anywhere_serverside')) {
+          console.log(`Cloning from hardcoded repository to cubicle-${i}...`);
+          await execPromise(`git clone "${hardcodedRepo}" .`, {
+            cwd: cubiclePath,
+            maxBuffer: 1024 * 1024 * 10
+          });
+        } else {
+          // For other projects, use rsync
+          console.log(`Syncing parent project files to cubicle-${i}...`);
+          await execPromise(`rsync -av --exclude="ai-office/" --exclude=".git/" "${project.path}/" "${cubiclePath}/"`, {
+            maxBuffer: 1024 * 1024 * 10
+          });
+        }
       } catch (error) {
-        console.error(`Failed to sync parent project for cubicle-${i}:`, error);
+        console.error(`Failed to setup cubicle-${i}:`, error);
+        // Fallback to rsync if anything fails
+        try {
+          await execPromise(`rsync -av --exclude="ai-office/" --exclude=".git/" "${project.path}/" "${cubiclePath}/"`, {
+            maxBuffer: 1024 * 1024 * 10
+          });
+        } catch (rsyncError) {
+          console.error(`Rsync also failed for cubicle-${i}:`, rsyncError);
+        }
       }
       
-      // Create AI README with rules
+      // Always create AI README with rules
       await fs.writeFile(
         path.join(cubiclePath, '.AI_README'),
         `# Cubicle ${i} - AI Workspace
@@ -99,14 +119,18 @@ async function createAIOffice(project, cubicleCount = DEFAULT_CUBICLE_COUNT) {
 4. **Sync with parent** updates this cubicle with latest changes from main project
 5. **Your changes are preserved** until explicitly synced or reset
 
-## Project: ${project.name}
-## Path: ${cubiclePath}
+## Project Details
+- **Project:** ${project.name}
+- **Path:** ${cubiclePath}
+${project.path.includes('ship_anywhere_serverside') ? `- **GitHub:** ${hardcodedRepo}\n- **Cloned from:** Repository was cloned directly into this cubicle` : '- **Source:** Synced from parent project directory'}
 
 ## Guidelines
+- You are already in the project root - no need to change directories
 - Make all changes directly in this directory
 - Test thoroughly before suggesting merges to main project
 - Use git commits to document your work
 - This workspace is specifically for AI experimentation
+- When ready, changes can be reviewed and potentially merged back
 `
       );
     }
@@ -122,6 +146,7 @@ async function createAIOffice(project, cubicleCount = DEFAULT_CUBICLE_COUNT) {
     enabled: true,
     cubicleCount,
     cubicles,
+    highestCubicleNum: cubicleCount, // Track the highest cubicle number created
     createdAt: new Date().toISOString()
   };
   
@@ -218,17 +243,37 @@ async function addCubicle(project, cubicleNum) {
       );
     }
   } else {
-    // No GitHub URL, sync from parent project
+    // No GitHub URL, check if this is the ship_anywhere_serverside project
+    const hardcodedRepo = 'https://github.com/SvetimFM/multipass-ai-terminal';
+    
     try {
-      console.log(`Syncing parent project files to cubicle-${cubicleNum}...`);
-      await execPromise(`rsync -av --exclude="ai-office/" --exclude=".git/" "${project.path}/" "${cubiclePath}/"`, {
-        maxBuffer: 1024 * 1024 * 10
-      });
+      // Check if this is the ship_anywhere_serverside project
+      if (project.path.includes('ship_anywhere_serverside')) {
+        console.log(`Cloning from hardcoded repository to cubicle-${cubicleNum}...`);
+        await execPromise(`git clone "${hardcodedRepo}" .`, {
+          cwd: cubiclePath,
+          maxBuffer: 1024 * 1024 * 10
+        });
+      } else {
+        // For other projects, use rsync
+        console.log(`Syncing parent project files to cubicle-${cubicleNum}...`);
+        await execPromise(`rsync -av --exclude="ai-office/" --exclude=".git/" "${project.path}/" "${cubiclePath}/"`, {
+          maxBuffer: 1024 * 1024 * 10
+        });
+      }
     } catch (error) {
-      console.error(`Failed to sync parent project for cubicle-${cubicleNum}:`, error);
+      console.error(`Failed to setup cubicle-${cubicleNum}:`, error);
+      // Fallback to rsync if anything fails
+      try {
+        await execPromise(`rsync -av --exclude="ai-office/" --exclude=".git/" "${project.path}/" "${cubiclePath}/"`, {
+          maxBuffer: 1024 * 1024 * 10
+        });
+      } catch (rsyncError) {
+        console.error(`Rsync also failed for cubicle-${cubicleNum}:`, rsyncError);
+      }
     }
     
-    // Create AI README with rules
+    // Always create AI README with rules
     await fs.writeFile(
       path.join(cubiclePath, '.AI_README'),
       `# Cubicle ${cubicleNum} - AI Workspace
@@ -241,14 +286,18 @@ async function addCubicle(project, cubicleNum) {
 4. **Sync with parent** updates this cubicle with latest changes from main project
 5. **Your changes are preserved** until explicitly synced or reset
 
-## Project: ${project.name}
-## Path: ${cubiclePath}
+## Project Details
+- **Project:** ${project.name}
+- **Path:** ${cubiclePath}
+${project.path.includes('ship_anywhere_serverside') ? `- **GitHub:** ${hardcodedRepo}\n- **Cloned from:** Repository was cloned directly into this cubicle` : '- **Source:** Synced from parent project directory'}
 
 ## Guidelines
+- You are already in the project root - no need to change directories
 - Make all changes directly in this directory
 - Test thoroughly before suggesting merges to main project
 - Use git commits to document your work
 - This workspace is specifically for AI experimentation
+- When ready, changes can be reviewed and potentially merged back
 `
     );
   }
