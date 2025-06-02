@@ -1,27 +1,8 @@
 [
   {
     "id": "default",
-    "name": "Default",
-    "path": "/mnt/j/DevWorkspace/Active Projects/vibecodes/ship_anywhere_serverside",
-    "aiOffice": {
-      "enabled": true,
-      "cubicleCount": 3,
-      "cubicles": [
-        {
-          "name": "cubicle-1",
-          "path": "/mnt/j/DevWorkspace/Active Projects/vibecodes/ship_anywhere_serverside/ai-office/cubicle-1"
-        },
-        {
-          "name": "cubicle-2",
-          "path": "/mnt/j/DevWorkspace/Active Projects/vibecodes/ship_anywhere_serverside/ai-office/cubicle-2"
-        },
-        {
-          "name": "cubicle-3",
-          "path": "/mnt/j/DevWorkspace/Active Projects/vibecodes/ship_anywhere_serverside/ai-office/cubicle-3"
-        }
-      ],
-      "createdAt": "2025-06-02T04:53:20.846Z"
-    }
+    "name": "Terminal Self Edit",
+    "path": "/mnt/j/DevWorkspace/Active Projects/vibecodes/ship_anywhere_serverside"
   },
   {
     "id": "proj-1748828319676",
@@ -31,33 +12,6 @@
   {
     "id": "proj-1748831174665",
     "name": "IECMOC_Validator",
-    "path": "/mnt/j/DevWorkspace/Active Projects/IECMOC_Validator",
-    "aiOffice": {
-      "enabled": true,
-      "cubicleCount": 5,
-      "cubicles": [
-        {
-          "name": "cubicle-1",
-          "path": "/mnt/j/DevWorkspace/Active Projects/IECMOC_Validator/ai-office/cubicle-1"
-        },
-        {
-          "name": "cubicle-2",
-          "path": "/mnt/j/DevWorkspace/Active Projects/IECMOC_Validator/ai-office/cubicle-2"
-        },
-        {
-          "name": "cubicle-3",
-          "path": "/mnt/j/DevWorkspace/Active Projects/IECMOC_Validator/ai-office/cubicle-3"
-        },
-        {
-          "name": "cubicle-4",
-          "path": "/mnt/j/DevWorkspace/Active Projects/IECMOC_Validator/ai-office/cubicle-4"
-        },
-        {
-          "name": "cubicle-5",
-          "path": "/mnt/j/DevWorkspace/Active Projects/IECMOC_Validator/ai-office/cubicle-5"
-        }
-      ],
-      "createdAt": "2025-06-02T04:56:10.456Z"
-    }
+    "path": "/mnt/j/DevWorkspace/Active Projects/IECMOC_Validator"
   }
 ]

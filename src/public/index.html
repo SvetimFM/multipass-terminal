@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Multipass - Terminal for AI</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/xterm@5.3.0/lib/xterm.min.js"></script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/xterm@5.3.0/css/xterm.css" />
+  <script src="https://cdn.jsdelivr.net/npm/xterm-addon-fit@0.8.0/lib/xterm-addon-fit.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/xterm-addon-web-links@0.9.0/lib/xterm-addon-web-links.min.js"></script>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body class="bg-gray-900 text-white">
+  <!-- Main App -->
+  <div id="main-app">
+    <!-- Header -->
+    <div id="main-header" class="bg-gray-800 p-3 border-b border-gray-700">
+      <div class="flex justify-between items-center">
+        <h1 class="text-lg font-semibold">Multipass - Terminal for AI</h1>
+        <div class="flex gap-2">
+          <button onclick="showProjects()" class="bg-gray-700 px-3 py-1 rounded text-sm">
+            Projects
+          </button>
+          <button onclick="showSessions()" class="bg-blue-600 px-3 py-1 rounded text-sm">
+            Sessions
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Projects View -->
+    <div id="projects-view" class="p-4">
+      <div class="mb-4">
+        <button onclick="showFileBrowser()" 
+                class="w-full bg-green-600 py-3 rounded font-semibold mb-3">
+          + Add Project Folder
+        </button>
+        
+        <div id="projects-list" class="space-y-2">
+          <!-- Projects will be loaded here -->
+        </div>
+      </div>
+    </div>
+
+    <!-- Sessions View -->
+    <div id="sessions-view" class="hidden p-4">
+      <div class="mb-4">
+        <h2 class="text-xl font-semibold mb-4">Create New Session</h2>
+        
+        <div class="space-y-3">
+          <div>
+            <label class="block text-sm mb-1">Project</label>
+            <select id="project-select" class="w-full bg-gray-800 p-2 rounded">
+              <!-- Projects will be loaded here -->
+            </select>
+          </div>
+          
+          <div>
+            <label class="block text-sm mb-1">Session Name (optional)</label>
+            <input type="text" id="session-name" 
+                   class="w-full bg-gray-800 p-2 rounded"
+                   placeholder="claude-session">
+          </div>
+          
+          <button onclick="createSession()" 
+                  class="w-full bg-blue-600 py-2 rounded font-semibold">
+            Create Session
+          </button>
+        </div>
+      </div>
+      
+      <div>
+        <h3 class="text-lg font-semibold mb-3">Active Sessions</h3>
+        <div id="sessions-list" class="space-y-2">
+          <!-- Sessions will be loaded here -->
+        </div>
+      </div>
+    </div>
+
+
+    <!-- Terminal View -->
+    <div id="terminal-view" class="hidden">
+      <div class="bg-gray-800 p-3 border-b border-gray-700 flex-shrink-0">
+        <div class="flex justify-between items-center">
+          <span class="text-sm">Session: <span id="current-session" class="font-semibold"></span></span>
+          <button onclick="closeTerminal()" class="bg-red-600 px-3 py-1 rounded text-sm">
+            Close
+          </button>
+        </div>
+      </div>
+      
+      <div class="terminal-container">
+        <div id="terminal"></div>
+      </div>
+      
+      <!-- Quick Commands -->
+      <div class="bg-gray-700 p-2 flex gap-2 overflow-x-auto flex-shrink-0">
+        <button onclick="sendToTerminal('claude\\n')" class="px-3 py-1 bg-blue-600 rounded text-sm font-semibold">claude</button>
+        <button onclick="exitClaude()" class="px-3 py-1 bg-red-600 rounded text-sm font-semibold" title="Exit Claude (Ctrl+C twice)">Exit Claude</button>
+        <button id="auto-accept-btn" onclick="toggleAutoAccept()" class="px-3 py-1 bg-gray-600 rounded text-sm">
+          Auto-Accept: <span id="auto-accept-status">OFF</span>
+        </button>
+        <button onclick="sendToTerminal('\\x1b[Z')" class="px-3 py-1 bg-purple-600 rounded text-sm" title="Send Shift+Tab">⇧ Tab</button>
+        <button onclick="sendToTerminal('ls -la\\n')" class="px-3 py-1 bg-gray-600 rounded text-sm">ls -la</button>
+        <button onclick="sendToTerminal('pwd\\n')" class="px-3 py-1 bg-gray-600 rounded text-sm">pwd</button>
+        <button onclick="sendToTerminal('git status\\n')" class="px-3 py-1 bg-gray-600 rounded text-sm">git status</button>
+        <button onclick="sendToTerminal('git log --oneline -10\\n')" class="px-3 py-1 bg-gray-600 rounded text-sm">git log</button>
+        <button onclick="sendToTerminal('npm run\\n')" class="px-3 py-1 bg-gray-600 rounded text-sm">npm run</button>
+        <button onclick="sendToTerminal('clear\\n')" class="px-3 py-1 bg-gray-600 rounded text-sm">clear</button>
+      </div>
+    </div>
+
+    <!-- File Browser Modal -->
+    <div id="file-browser-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50">
+      <div class="bg-gray-800 w-full max-w-2xl mx-auto mt-10 rounded-lg shadow-xl max-h-[80vh] flex flex-col">
+        <div class="p-4 border-b border-gray-700 flex justify-between items-center">
+          <h3 class="text-lg font-semibold">Select Project Folder</h3>
+          <button onclick="closeFileBrowser()" class="text-gray-400 hover:text-white">✕</button>
+        </div>
+        
+        <div class="p-4 border-b border-gray-700">
+          <div class="flex items-center gap-2">
+            <span class="text-sm text-gray-400">Path:</span>
+            <span id="current-path" class="text-sm font-mono"></span>
+          </div>
+        </div>
+        
+        <div id="file-list" class="flex-1 overflow-y-auto">
+          <!-- Files will be loaded here -->
+        </div>
+        
+        <div class="p-4 border-t border-gray-700 flex gap-2">
+          <button onclick="selectCurrentFolder()" 
+                  class="flex-1 bg-green-600 py-2 rounded font-semibold">
+            Select This Folder
+          </button>
+          <button onclick="closeFileBrowser()" 
+                  class="flex-1 bg-gray-700 py-2 rounded">
+            Cancel
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- AI Office Terminal Grid -->
+    <div id="ai-office-grid" class="hidden fixed inset-0 bg-gray-900 z-50 overflow-auto">
+      <div class="bg-gray-800 p-3 border-b border-gray-700 sticky top-0 z-10">
+        <div class="flex justify-between items-center">
+          <h2 class="text-lg font-semibold">
+            <span id="ai-office-project-name"></span> - AI Office (<span id="ai-office-cubicle-count"></span> cubicles)
+          </h2>
+          <button onclick="closeAIOfficeGrid()" class="bg-gray-700 px-3 py-1 rounded text-sm">
+            Close
+          </button>
+        </div>
+        <!-- Quick Commands for All Terminals -->
+        <div class="mt-2 flex gap-2 overflow-x-auto">
+          <button onclick="broadcastToAllTerminals('claude\\n')" class="px-3 py-1 bg-blue-600 rounded text-sm font-semibold">claude (all)</button>
+          <button onclick="exitClaudeAll()" class="px-3 py-1 bg-red-600 rounded text-sm font-semibold" title="Exit Claude in all terminals">Exit Claude (all)</button>
+          <button onclick="broadcastToAllTerminals('\\x1b[Z')" class="px-3 py-1 bg-purple-600 rounded text-sm" title="Send Shift+Tab to all">⇧ Tab (all)</button>
+          <button onclick="broadcastToAllTerminals('ls -la\\n')" class="px-3 py-1 bg-gray-600 rounded text-sm">ls -la (all)</button>
+          <button onclick="broadcastToAllTerminals('pwd\\n')" class="px-3 py-1 bg-gray-600 rounded text-sm">pwd (all)</button>
+          <button onclick="broadcastToAllTerminals('git status\\n')" class="px-3 py-1 bg-gray-600 rounded text-sm">git status (all)</button>
+          <button onclick="broadcastToAllTerminals('clear\\n')" class="px-3 py-1 bg-gray-600 rounded text-sm">clear (all)</button>
+          <button onclick="syncWithParent()" class="px-3 py-1 bg-yellow-600 rounded text-sm" title="Sync all cubicles with parent project">Sync with Parent</button>
+          <button onclick="addCubicle()" class="px-3 py-1 bg-green-600 rounded text-sm">+ Add Cubicle</button>
+          <button onclick="addTerminal()" class="px-3 py-1 bg-blue-500 rounded text-sm">+ Add Terminal</button>
+        </div>
+      </div>
+      <div id="cubicle-terminals" class="grid gap-4 p-4">
+        <!-- Cubicle terminals will be loaded here -->
+      </div>
+    </div>
+  </div>
+
+  <script src="/js/app.js"></script>
+</body>
+</html>

@@ -12,7 +12,8 @@
     "test:simple": "jest tests/simple-server.test.js",
     "test:integration": "jest tests/client-server.test.js",
     "test:all": "./tests/run-tests.sh",
-    "multipass": "node multipass.js"
+    "multipass": "node multipass.js",
+    "multipass:refactored": "node multipass-refactored.js"
   },
   "keywords": [
     "remote-execution",
