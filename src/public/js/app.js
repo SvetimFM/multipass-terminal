@@ -159,6 +159,13 @@ function broadcastToAllTerminals(command) {
   });
 }
 
+// Exit Claude in all terminals
+function exitClaudeAll() {
+  // Send Ctrl+C twice quickly to all terminals
+  broadcastToAllTerminals('\x03');
+  setTimeout(() => broadcastToAllTerminals('\x03'), 50);
+}
+
 // Add a new cubicle to the current AI Office
 async function addCubicle() {
   if (!currentAIOfficeProject) return;

@@ -64,9 +64,9 @@ async function createAIOffice(projectId, cubicleCount = 3) {
         const util = require('util');
         const execPromise = util.promisify(exec);
         
-        // Clone the repository into the cubicle
-        const { stdout, stderr } = await execPromise(`git clone "${githubUrl}" "${cubiclePath}/repository"`, {
-          cwd: aiOfficePath,
+        // Clone the repository into the cubicle root directory
+        const { stdout, stderr } = await execPromise(`git clone "${githubUrl}" .`, {
+          cwd: cubiclePath,
           maxBuffer: 1024 * 1024 * 10 // 10MB buffer for large repos
         });
         
@@ -83,20 +83,17 @@ async function createAIOffice(projectId, cubicleCount = 3) {
 This cubicle contains a copy of the project repository from: ${githubUrl}
 
 ### Working Directory
-- All changes should be made within the \`repository\` subdirectory
-- The repository is located at: \`${cubiclePath}/repository\`
+- The repository has been cloned directly into this cubicle's root directory
+- All project files are available at: \`${cubiclePath}\`
 
 ### Guidelines
-1. Change to the repository directory before making any modifications:
-   \`\`\`bash
-   cd repository
-   \`\`\`
+1. You are already in the project root - no need to change directories
 
-2. All file edits, additions, and deletions should happen inside the repository copy
+2. All file edits, additions, and deletions happen directly in this workspace
 
 3. This is an isolated workspace - changes here won't affect the main project until explicitly merged
 
-4. Use git commands within the repository directory to track your changes
+4. Use git commands to track your changes
 
 5. When ready, changes can be reviewed and potentially merged back to the main project
 
@@ -204,19 +201,30 @@ app.get('/', (req, res) => {
       display: flex;
       flex-direction: column;
     }
-    #terminal-view {
+    #terminal-view:not(.hidden) {
       display: flex;
       flex-direction: column;
-      height: 100%;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      width: 100vw;
+      height: 100vh;
+      z-index: 1000;
+      background: #1a1b26;
     }
     .terminal-container {
       flex: 1;
       background: #1a1b26;
       padding: 10px;
       overflow: hidden;
+      width: 100%;
+      height: 100%;
     }
     #terminal {
       height: 100%;
+      width: 100%;
     }
     .file-item {
       padding: 8px 12px;
@@ -376,6 +384,7 @@ app.get('/', (req, res) => {
         <!-- Quick Commands for All Terminals -->
         <div class="mt-2 flex gap-2 overflow-x-auto">
           <button onclick="broadcastToAllTerminals('claude\\n')" class="px-3 py-1 bg-blue-600 rounded text-sm font-semibold">claude (all)</button>
+          <button onclick="exitClaudeAll()" class="px-3 py-1 bg-red-600 rounded text-sm font-semibold" title="Exit Claude in all terminals">Exit Claude (all)</button>
           <button onclick="broadcastToAllTerminals('\\x1b[Z')" class="px-3 py-1 bg-purple-600 rounded text-sm" title="Send Shift+Tab to all">⇧ Tab (all)</button>
           <button onclick="broadcastToAllTerminals('ls -la\\n')" class="px-3 py-1 bg-gray-600 rounded text-sm">ls -la (all)</button>
           <button onclick="broadcastToAllTerminals('pwd\\n')" class="px-3 py-1 bg-gray-600 rounded text-sm">pwd (all)</button>
@@ -550,6 +559,13 @@ app.get('/', (req, res) => {
           ws.send(command);
         }
       });
+    }
+    
+    // Exit Claude in all terminals
+    function exitClaudeAll() {
+      // Send Ctrl+C twice quickly to all terminals
+      broadcastToAllTerminals('\x03');
+      setTimeout(() => broadcastToAllTerminals('\x03'), 50);
     }
     
     // Add a new cubicle to the current AI Office
@@ -1020,9 +1036,9 @@ app.post('/api/projects/:id/ai-office/cubicle', async (req, res) => {
         const util = require('util');
         const execPromise = util.promisify(exec);
         
-        // Clone the repository into the cubicle
-        const { stdout, stderr } = await execPromise(`git clone "${githubUrl}" "${cubiclePath}/repository"`, {
-          cwd: path.join(project.path, 'ai-office'),
+        // Clone the repository into the cubicle root directory
+        const { stdout, stderr } = await execPromise(`git clone "${githubUrl}" .`, {
+          cwd: cubiclePath,
           maxBuffer: 1024 * 1024 * 10 // 10MB buffer for large repos
         });
         
@@ -1039,20 +1055,17 @@ app.post('/api/projects/:id/ai-office/cubicle', async (req, res) => {
 This cubicle contains a copy of the project repository from: ${githubUrl}
 
 ### Working Directory
-- All changes should be made within the \`repository\` subdirectory
-- The repository is located at: \`${cubiclePath}/repository\`
+- The repository has been cloned directly into this cubicle's root directory
+- All project files are available at: \`${cubiclePath}\`
 
 ### Guidelines
-1. Change to the repository directory before making any modifications:
-   \`\`\`bash
-   cd repository
-   \`\`\`
+1. You are already in the project root - no need to change directories
 
-2. All file edits, additions, and deletions should happen inside the repository copy
+2. All file edits, additions, and deletions happen directly in this workspace
 
 3. This is an isolated workspace - changes here won't affect the main project until explicitly merged
 
-4. Use git commands within the repository directory to track your changes
+4. Use git commands to track your changes
 
 5. When ready, changes can be reviewed and potentially merged back to the main project
 

@@ -10,10 +10,18 @@ body {
   flex-direction: column;
 }
 
-#terminal-view {
+#terminal-view:not(.hidden) {
   display: flex;
   flex-direction: column;
-  height: 100%;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 1000;
+  background: #1a1b26;
 }
 
 .terminal-container {
@@ -21,10 +29,13 @@ body {
   background: #1a1b26;
   padding: 10px;
   overflow: hidden;
+  width: 100%;
+  height: 100%;
 }
 
 #terminal {
   height: 100%;
+  width: 100%;
 }
 
 .file-item {

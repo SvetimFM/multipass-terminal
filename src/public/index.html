@@ -156,6 +156,7 @@
         <!-- Quick Commands for All Terminals -->
         <div class="mt-2 flex gap-2 overflow-x-auto">
           <button onclick="broadcastToAllTerminals('claude\\n')" class="px-3 py-1 bg-blue-600 rounded text-sm font-semibold">claude (all)</button>
+          <button onclick="exitClaudeAll()" class="px-3 py-1 bg-red-600 rounded text-sm font-semibold" title="Exit Claude in all terminals">Exit Claude (all)</button>
           <button onclick="broadcastToAllTerminals('\\x1b[Z')" class="px-3 py-1 bg-purple-600 rounded text-sm" title="Send Shift+Tab to all">⇧ Tab (all)</button>
           <button onclick="broadcastToAllTerminals('ls -la\\n')" class="px-3 py-1 bg-gray-600 rounded text-sm">ls -la (all)</button>
           <button onclick="broadcastToAllTerminals('pwd\\n')" class="px-3 py-1 bg-gray-600 rounded text-sm">pwd (all)</button>

@@ -28,9 +28,9 @@ async function createAIOffice(project, cubicleCount = 3) {
       try {
         console.log(`Cloning repository ${githubUrl} into cubicle-${i}...`);
         
-        // Clone the repository into the cubicle
-        const { stdout, stderr } = await execPromise(`git clone "${githubUrl}" "${cubiclePath}/repository"`, {
-          cwd: aiOfficePath,
+        // Clone the repository into the cubicle root directory
+        const { stdout, stderr } = await execPromise(`git clone "${githubUrl}" .`, {
+          cwd: cubiclePath,
           maxBuffer: 1024 * 1024 * 10 // 10MB buffer for large repos
         });
         
@@ -47,20 +47,17 @@ async function createAIOffice(project, cubicleCount = 3) {
 This cubicle contains a copy of the project repository from: ${githubUrl}
 
 ### Working Directory
-- All changes should be made within the \`repository\` subdirectory
-- The repository is located at: \`${cubiclePath}/repository\`
+- The repository has been cloned directly into this cubicle's root directory
+- All project files are available at: \`${cubiclePath}\`
 
 ### Guidelines
-1. Change to the repository directory before making any modifications:
-   \`\`\`bash
-   cd repository
-   \`\`\`
+1. You are already in the project root - no need to change directories
 
-2. All file edits, additions, and deletions should happen inside the repository copy
+2. All file edits, additions, and deletions happen directly in this workspace
 
 3. This is an isolated workspace - changes here won't affect the main project until explicitly merged
 
-4. Use git commands within the repository directory to track your changes
+4. Use git commands to track your changes
 
 5. When ready, changes can be reviewed and potentially merged back to the main project
 
@@ -150,9 +147,9 @@ async function addCubicle(project, cubicleNum) {
     try {
       console.log(`Cloning repository ${githubUrl} into cubicle-${cubicleNum}...`);
       
-      // Clone the repository into the cubicle
-      const { stdout, stderr } = await execPromise(`git clone "${githubUrl}" "${cubiclePath}/repository"`, {
-        cwd: path.join(project.path, 'ai-office'),
+      // Clone the repository into the cubicle root directory
+      const { stdout, stderr } = await execPromise(`git clone "${githubUrl}" .`, {
+        cwd: cubiclePath,
         maxBuffer: 1024 * 1024 * 10 // 10MB buffer for large repos
       });
       
@@ -169,20 +166,17 @@ async function addCubicle(project, cubicleNum) {
 This cubicle contains a copy of the project repository from: ${githubUrl}
 
 ### Working Directory
-- All changes should be made within the \`repository\` subdirectory
-- The repository is located at: \`${cubiclePath}/repository\`
+- The repository has been cloned directly into this cubicle's root directory
+- All project files are available at: \`${cubiclePath}\`
 
 ### Guidelines
-1. Change to the repository directory before making any modifications:
-   \`\`\`bash
-   cd repository
-   \`\`\`
+1. You are already in the project root - no need to change directories
 
-2. All file edits, additions, and deletions should happen inside the repository copy
+2. All file edits, additions, and deletions happen directly in this workspace
 
 3. This is an isolated workspace - changes here won't affect the main project until explicitly merged
 
-4. Use git commands within the repository directory to track your changes
+4. Use git commands to track your changes
 
 5. When ready, changes can be reviewed and potentially merged back to the main project
 
