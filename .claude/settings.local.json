@@ -30,7 +30,8 @@
       "Bash(./test-tmux-direct.sh:*)",
       "Bash(pkill:*)",
       "Bash(true)",
-      "Bash(CLAUDE_AUTH=admin node simple-claude-manager.js)"
+      "Bash(CLAUDE_AUTH=admin node simple-claude-manager.js)",
+      "Bash(tmux list-sessions:*)"
     ],
     "deny": []
   }
