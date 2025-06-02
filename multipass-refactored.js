@@ -40,8 +40,25 @@ async function saveProjects() {
   await fs.writeFile(PROJECTS_FILE, JSON.stringify(data, null, 2));
 }
 
+// Load sessions metadata from file
+async function loadSessions() {
+  try {
+    const data = await fs.readFile('.claude-sessions.json', 'utf8');
+    const saved = JSON.parse(data);
+    Object.entries(saved).forEach(([name, metadata]) => sessions.set(name, metadata));
+  } catch (e) {
+    // No saved sessions
+  }
+}
+
+async function saveSessions() {
+  const data = Object.fromEntries(sessions);
+  await fs.writeFile('.claude-sessions.json', JSON.stringify(data, null, 2));
+}
+
 // Initialize
 loadProjects();
+loadSessions();
 
 // Set up routes
 const projectsRouter = require('./src/routes/projects');
@@ -49,7 +66,7 @@ const sessionsRouter = require('./src/routes/sessions');
 const browseRouter = require('./src/routes/browse');
 
 app.use('/api/projects', projectsRouter(projects, sessions, saveProjects));
-app.use('/api/sessions', sessionsRouter(sessions, projects));
+app.use('/api/sessions', sessionsRouter(sessions, projects, saveSessions));
 app.use('/api/browse', browseRouter);
 
 // Configuration endpoint

@@ -48,3 +48,4 @@ ai-office/
 
 # Local project files
 .claude-projects.json
+.claude-sessions.json

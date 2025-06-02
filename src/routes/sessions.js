@@ -3,7 +3,7 @@ const router = express.Router();
 const { exec } = require('child_process');
 const { sanitizeName, validateProjectId } = require('../utils/validation');
 
-module.exports = (sessions, projects) => {
+module.exports = (sessions, projects, saveSessions) => {
   // Get all sessions
   router.get('/', (req, res) => {
     exec('tmux list-sessions -F "#{session_name}"', (error, stdout) => {
@@ -63,6 +63,9 @@ module.exports = (sessions, projects) => {
           createdAt: new Date().toISOString()
         });
         
+        // Save sessions to file
+        saveSessions();
+        
         res.json({ name: sanitizedName, projectId: validatedProjectId });
       });
     } catch (error) {
@@ -85,6 +88,7 @@ module.exports = (sessions, projects) => {
           return res.status(500).json({ error: error.message });
         } else {
           sessions.delete(sanitizedName);
+          saveSessions();
           res.json({ status: 'killed' });
         }
       });
