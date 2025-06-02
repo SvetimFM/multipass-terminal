@@ -874,10 +874,8 @@ app.get('/', (req, res) => {
     // File browser
     async function showFileBrowser() {
       document.getElementById('file-browser-modal').classList.remove('hidden');
-      // Start at home directory - get from API
-      const response = await fetch('/api/home');
-      const data = await response.json();
-      await loadDirectory(data.home || '/');
+      // Start at DevWorkspace directory
+      await loadDirectory('/mnt/j/DevWorkspace');
     }
     
     function closeFileBrowser() {
