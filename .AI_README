@@ -1,0 +1,23 @@
+# Cubicle 1 - AI Workspace
+
+## Important Rules for AI
+
+1. **You are in an isolated cubicle workspace** - Changes here won't affect the main project
+2. **All project files are in the current directory** - No need to navigate elsewhere
+3. **Use git to track your changes** - The cubicle has its own git history
+4. **Sync with parent** updates this cubicle with latest changes from main project
+5. **Your changes are preserved** until explicitly synced or reset
+
+## Project Details
+- **Project:** Terminal Self Edit
+- **Path:** /mnt/j/DevWorkspace/Active Projects/vibecodes/ship_anywhere_serverside/ai-office/cubicle-1
+- **GitHub:** https://github.com/SvetimFM/multipass-ai-terminal
+- **Cloned from:** Repository was cloned directly into this cubicle
+
+## Guidelines
+- You are already in the project root - no need to change directories
+- Make all changes directly in this directory
+- Test thoroughly before suggesting merges to main project
+- Use git commits to document your work
+- This workspace is specifically for AI experimentation
+- When ready, changes can be reviewed and potentially merged back

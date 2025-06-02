@@ -3,13 +3,15 @@ const path = require('path');
 const { exec } = require('child_process');
 const util = require('util');
 const execPromise = util.promisify(exec);
+const { AI_README_FILE, AI_OFFICE_SESSION_PREFIX, DEFAULT_CUBICLE_COUNT } = require('../utils/constants');
 
 // AI Office Management
-async function createAIOffice(project, cubicleCount = 3) {
-  console.log('Creating AI Office for project:', project.id);
+async function createAIOffice(project, cubicleCount = DEFAULT_CUBICLE_COUNT) {
+  if (!project || !project.path) {
+    throw new Error('Invalid project configuration');
+  }
   
   const aiOfficePath = path.join(project.path, 'ai-office');
-  console.log('AI Office path:', aiOfficePath);
   
   // Create ai-office directory
   await fs.mkdir(aiOfficePath, { recursive: true });
@@ -134,15 +136,10 @@ async function removeAIOffice(project, sessions) {
   // Kill all tmux sessions for this AI Office
   if (project.aiOffice.cubicles) {
     for (const cubicle of project.aiOffice.cubicles) {
-      const sessionName = `ai-office-${project.id}-${cubicle.name}`;
+      const sessionName = `${AI_OFFICE_SESSION_PREFIX}${project.id}-${cubicle.name}`;
       try {
-        await new Promise((resolve) => {
-          exec(`tmux kill-session -t "${sessionName}"`, (error) => {
-            if (error) {
-              console.log(`No tmux session found for ${sessionName}, continuing...`);
-            }
-            resolve();
-          });
+        await execPromise(`tmux kill-session -t "${sessionName}"`).catch(() => {
+          // Session might not exist, that's ok
         });
         // Remove session metadata
         sessions.delete(sessionName);
@@ -266,7 +263,7 @@ async function removeCubicle(project, cubicleIdx, sessions) {
   const cubicle = project.aiOffice.cubicles[cubicleIdx];
   
   // Kill tmux session associated with this cubicle
-  const sessionName = `ai-office-${project.id}-${cubicle.name}`;
+  const sessionName = `${AI_OFFICE_SESSION_PREFIX}${project.id}-${cubicle.name}`;
   try {
     await new Promise((resolve, reject) => {
       exec(`tmux kill-session -t "${sessionName}"`, (error) => {
