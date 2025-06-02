@@ -39,3 +39,12 @@ dump.rdb
 
 # Server logs
 server.log
+
+# AI Office
+ai-office/
+
+# Claude local settings
+.claude/
+
+# Local project files
+.claude-projects.json
