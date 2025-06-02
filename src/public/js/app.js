@@ -12,7 +12,6 @@ let currentAIOfficeProject = null;
 
 // Auto-accept mode for AI Office grid
 let gridAutoAcceptMode = false;
-let gridAutoAcceptInterval = null;
 
 // Constants
 const AUTO_ACCEPT_INTERVAL = 2000;
@@ -684,27 +683,12 @@ function toggleGridAutoAccept() {
     btn.classList.remove('bg-gray-600');
     btn.classList.add('bg-green-600');
     
-    // Send Shift+Tab immediately to all terminals
+    // Send Shift+Tab once to all terminals
     broadcastToAllTerminals('\x1b[Z');
-    
-    // Set up interval to send Shift+Tab every 2 seconds
-    if (gridAutoAcceptInterval) {
-      clearInterval(gridAutoAcceptInterval);
-    }
-    gridAutoAcceptInterval = setInterval(() => {
-      if (gridAutoAcceptMode) {
-        broadcastToAllTerminals('\x1b[Z');
-      }
-    }, AUTO_ACCEPT_INTERVAL);
   } else {
     status.textContent = 'OFF';
     btn.classList.remove('bg-green-600');
     btn.classList.add('bg-gray-600');
-    
-    if (gridAutoAcceptInterval) {
-      clearInterval(gridAutoAcceptInterval);
-      gridAutoAcceptInterval = null;
-    }
   }
 }
 
