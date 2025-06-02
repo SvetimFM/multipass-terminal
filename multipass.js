@@ -39,9 +39,11 @@ async function saveProjects() {
 // AI Office Management
 async function createAIOffice(projectId, cubicleCount = 3) {
   const project = projects.get(projectId);
+  console.log('Project lookup:', projectId, project);
   if (!project) throw new Error('Project not found');
   
   const aiOfficePath = path.join(project.path, 'ai-office');
+  console.log('AI Office path:', aiOfficePath);
   
   // Create ai-office directory
   await fs.mkdir(aiOfficePath, { recursive: true });
@@ -150,9 +152,6 @@ app.get('/', (req, res) => {
           <button onclick="showSessions()" class="bg-blue-600 px-3 py-1 rounded text-sm">
             Sessions
           </button>
-          <button onclick="showAIOffices()" class="bg-purple-600 px-3 py-1 rounded text-sm">
-            AI Offices
-          </button>
         </div>
       </div>
     </div>
@@ -206,13 +205,6 @@ app.get('/', (req, res) => {
       </div>
     </div>
 
-    <!-- AI Offices View -->
-    <div id="ai-offices-view" class="hidden p-4">
-      <h2 class="text-xl font-semibold mb-4">AI Offices</h2>
-      <div id="ai-offices-list" class="space-y-4">
-        <!-- AI Offices will be loaded here -->
-      </div>
-    </div>
 
     <!-- Terminal View -->
     <div id="terminal-view" class="hidden">
@@ -282,11 +274,21 @@ app.get('/', (req, res) => {
       <div class="bg-gray-800 p-3 border-b border-gray-700 sticky top-0 z-10">
         <div class="flex justify-between items-center">
           <h2 class="text-lg font-semibold">
-            <span id="ai-office-project-name"></span> - AI Office
+            <span id="ai-office-project-name"></span> - AI Office (<span id="ai-office-cubicle-count"></span> cubicles)
           </h2>
           <button onclick="closeAIOfficeGrid()" class="bg-gray-700 px-3 py-1 rounded text-sm">
             Close
           </button>
+        </div>
+        <!-- Quick Commands for All Terminals -->
+        <div class="mt-2 flex gap-2 overflow-x-auto">
+          <button onclick="broadcastToAllTerminals('claude\\n')" class="px-3 py-1 bg-blue-600 rounded text-sm font-semibold">claude (all)</button>
+          <button onclick="broadcastToAllTerminals('\\x1b[Z')" class="px-3 py-1 bg-purple-600 rounded text-sm" title="Send Shift+Tab to all">⇧ Tab (all)</button>
+          <button onclick="broadcastToAllTerminals('ls -la\\n')" class="px-3 py-1 bg-gray-600 rounded text-sm">ls -la (all)</button>
+          <button onclick="broadcastToAllTerminals('pwd\\n')" class="px-3 py-1 bg-gray-600 rounded text-sm">pwd (all)</button>
+          <button onclick="broadcastToAllTerminals('git status\\n')" class="px-3 py-1 bg-gray-600 rounded text-sm">git status (all)</button>
+          <button onclick="broadcastToAllTerminals('clear\\n')" class="px-3 py-1 bg-gray-600 rounded text-sm">clear (all)</button>
+          <button onclick="addCubicle()" class="px-3 py-1 bg-green-600 rounded text-sm">+ Add Cubicle</button>
         </div>
       </div>
       <div id="cubicle-terminals" class="grid gap-4 p-4">
@@ -326,13 +328,14 @@ app.get('/', (req, res) => {
                 <div class="text-xs text-gray-400 font-mono">\${project.path}</div>
                 \${hasAIOffice ? \`<div class="text-xs text-purple-400 mt-1">AI Office: \${project.aiOffice.cubicleCount} cubicles</div>\` : ''}
               </div>
-              <div class="flex gap-2">
+              <div class="flex gap-2 flex-wrap">
                 \${hasAIOffice ? 
-                  \`<button onclick="removeAIOffice('\${project.id}')" class="bg-red-600 px-2 py-1 rounded text-xs">Remove AI Office</button>\` :
+                  \`<button onclick="openAIOfficeGrid('\${project.id}')" class="bg-purple-600 px-2 py-1 rounded text-xs">View AI Office</button>
+                   <button onclick="removeAIOffice('\${project.id}')" class="bg-red-600 px-2 py-1 rounded text-xs">Remove</button>\` :
                   \`<button onclick="setupAIOffice('\${project.id}')" class="bg-purple-600 px-2 py-1 rounded text-xs">Setup AI Office</button>\`
                 }
                 \${project.id !== 'default' ? 
-                  \`<button onclick="deleteProject('\${project.id}')" class="bg-red-600 px-2 py-1 rounded text-xs">Delete</button>\` : 
+                  \`<button onclick="deleteProject('\${project.id}')" class="bg-red-600 px-2 py-1 rounded text-xs">Delete Project</button>\` : 
                   ''
                 }
               </div>
@@ -361,7 +364,6 @@ app.get('/', (req, res) => {
         
         if (response.ok) {
           await loadProjects();
-          await loadAIOffices();
         } else {
           alert('Failed to create AI Office');
         }
@@ -381,58 +383,15 @@ app.get('/', (req, res) => {
         
         if (response.ok) {
           await loadProjects();
-          await loadAIOffices();
         }
       } catch (error) {
         console.error('Error removing AI Office:', error);
       }
     }
     
-    // Load AI Offices view
-    async function loadAIOffices() {
-      try {
-        const response = await fetch('/api/projects');
-        const data = await response.json();
-        
-        const aiOfficesList = document.getElementById('ai-offices-list');
-        aiOfficesList.innerHTML = '';
-        
-        const projectsWithOffices = data.projects.filter(p => p.aiOffice && p.aiOffice.enabled);
-        
-        if (projectsWithOffices.length === 0) {
-          aiOfficesList.innerHTML = '<p class="text-gray-500">No AI Offices created yet. Go to Projects to set one up.</p>';
-          return;
-        }
-        
-        projectsWithOffices.forEach(project => {
-          aiOfficesList.innerHTML += \`
-            <div class="bg-gray-800 rounded p-4">
-              <div class="flex justify-between items-start mb-3">
-                <div>
-                  <h3 class="font-semibold text-lg">\${project.name}</h3>
-                  <p class="text-sm text-gray-400">\${project.aiOffice.cubicleCount} cubicles</p>
-                </div>
-                <button onclick="openAIOfficeGrid('\${project.id}')" 
-                        class="bg-purple-600 px-3 py-1 rounded text-sm">
-                  View All Terminals
-                </button>
-              </div>
-              <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2">
-                \${project.aiOffice.cubicles.map((cubicle, idx) => \`
-                  <button onclick="openCubicleTerminal('\${project.id}', \${idx})"
-                          class="bg-gray-700 p-3 rounded text-left hover:bg-gray-600 transition">
-                    <div class="font-medium">\${cubicle.name}</div>
-                    <div class="text-xs text-gray-400">Click to open terminal</div>
-                  </button>
-                \`).join('')}
-              </div>
-            </div>
-          \`;
-        });
-      } catch (error) {
-        console.error('Error loading AI Offices:', error);
-      }
-    }
+    
+    // Store current AI Office project
+    let currentAIOfficeProject = null;
     
     // Open AI Office grid view
     async function openAIOfficeGrid(projectId) {
@@ -442,33 +401,33 @@ app.get('/', (req, res) => {
       
       if (!project || !project.aiOffice) return;
       
+      currentAIOfficeProject = project;
       document.getElementById('ai-office-project-name').textContent = project.name;
+      document.getElementById('ai-office-cubicle-count').textContent = project.aiOffice.cubicleCount;
       document.getElementById('ai-office-grid').classList.remove('hidden');
       
       const container = document.getElementById('cubicle-terminals');
       container.innerHTML = '';
       
-      // Set grid layout
+      // Set grid layout - max 2 columns
       const isMobile = window.innerWidth < 768;
-      const isTablet = window.innerWidth >= 768 && window.innerWidth < 1024;
       
       if (isMobile) {
         container.className = 'grid grid-cols-1 gap-4 p-4';
-      } else if (isTablet) {
-        container.className = 'grid grid-cols-2 gap-4 p-4';
       } else {
-        container.className = 'grid grid-cols-3 gap-4 p-4';
+        container.className = 'grid grid-cols-2 gap-4 p-4';
       }
       
       // Create terminals for each cubicle
       project.aiOffice.cubicles.forEach((cubicle, idx) => {
         const termDiv = document.createElement('div');
-        termDiv.className = 'bg-gray-800 rounded overflow-hidden';
+        termDiv.className = 'bg-gray-800 rounded overflow-hidden flex flex-col';
         termDiv.innerHTML = \`
-          <div class="bg-gray-700 px-3 py-2 text-sm font-medium">
-            \${cubicle.name}
+          <div class="bg-gray-700 px-3 py-2 text-sm font-medium flex justify-between items-center">
+            <span>\${cubicle.name}</span>
+            <button onclick="removeCubicle('\${project.id}', \${idx})" class="text-red-400 hover:text-red-300 text-xs">✕</button>
           </div>
-          <div id="cubicle-grid-terminal-\${projectId}-\${idx}" class="cubicle-terminal"></div>
+          <div id="cubicle-grid-terminal-\${projectId}-\${idx}" class="cubicle-terminal flex-1"></div>
         \`;
         container.appendChild(termDiv);
         
@@ -483,7 +442,60 @@ app.get('/', (req, res) => {
       cubicleTerminals.clear();
       cubicleWebSockets.clear();
       
+      currentAIOfficeProject = null;
       document.getElementById('ai-office-grid').classList.add('hidden');
+    }
+    
+    // Broadcast command to all terminals in the AI Office
+    function broadcastToAllTerminals(command) {
+      cubicleWebSockets.forEach(ws => {
+        if (ws.readyState === WebSocket.OPEN) {
+          ws.send(command);
+        }
+      });
+    }
+    
+    // Add a new cubicle to the current AI Office
+    async function addCubicle() {
+      if (!currentAIOfficeProject) return;
+      
+      try {
+        const response = await fetch(\`/api/projects/\${currentAIOfficeProject.id}/ai-office/cubicle\`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' }
+        });
+        
+        if (response.ok) {
+          // Reload the grid view
+          openAIOfficeGrid(currentAIOfficeProject.id);
+          await loadProjects();
+        } else {
+          alert('Failed to add cubicle');
+        }
+      } catch (error) {
+        console.error('Error adding cubicle:', error);
+      }
+    }
+    
+    // Remove a cubicle from the AI Office
+    async function removeCubicle(projectId, cubicleIdx) {
+      if (!confirm('Remove this cubicle?')) return;
+      
+      try {
+        const response = await fetch(\`/api/projects/\${projectId}/ai-office/cubicle/\${cubicleIdx}\`, {
+          method: 'DELETE'
+        });
+        
+        if (response.ok) {
+          // Reload the grid view
+          openAIOfficeGrid(projectId);
+          await loadProjects();
+        } else {
+          alert('Failed to remove cubicle');
+        }
+      } catch (error) {
+        console.error('Error removing cubicle:', error);
+      }
     }
     
     // Open single cubicle terminal
@@ -638,7 +650,6 @@ app.get('/', (req, res) => {
       document.getElementById('terminal-view').classList.remove('hidden');
       document.getElementById('sessions-view').classList.add('hidden');
       document.getElementById('projects-view').classList.add('hidden');
-      document.getElementById('ai-offices-view').classList.add('hidden');
       
       if (currentTerminal) currentTerminal.dispose();
       
@@ -793,24 +804,15 @@ app.get('/', (req, res) => {
       document.getElementById('projects-view').classList.remove('hidden');
       document.getElementById('sessions-view').classList.add('hidden');
       document.getElementById('terminal-view').classList.add('hidden');
-      document.getElementById('ai-offices-view').classList.add('hidden');
     }
     
     function showSessions() {
       document.getElementById('projects-view').classList.add('hidden');
       document.getElementById('sessions-view').classList.remove('hidden');
       document.getElementById('terminal-view').classList.add('hidden');
-      document.getElementById('ai-offices-view').classList.add('hidden');
       loadSessions();
     }
     
-    function showAIOffices() {
-      document.getElementById('projects-view').classList.add('hidden');
-      document.getElementById('sessions-view').classList.add('hidden');
-      document.getElementById('terminal-view').classList.add('hidden');
-      document.getElementById('ai-offices-view').classList.remove('hidden');
-      loadAIOffices();
-    }
     
     // Initialize
     loadProjects();
@@ -851,10 +853,15 @@ app.delete('/api/projects/:id', async (req, res) => {
 // AI Office management
 app.post('/api/projects/:id/ai-office', async (req, res) => {
   try {
+    console.log('Creating AI Office for project:', req.params.id);
     const { cubicleCount = 3 } = req.body;
+    console.log('Cubicle count:', cubicleCount);
+    
     const aiOffice = await createAIOffice(req.params.id, cubicleCount);
+    console.log('AI Office created successfully:', aiOffice);
     res.json(aiOffice);
   } catch (error) {
+    console.error('Error creating AI Office:', error);
     res.status(500).json({ error: error.message });
   }
 });
@@ -864,6 +871,78 @@ app.delete('/api/projects/:id/ai-office', async (req, res) => {
     await removeAIOffice(req.params.id);
     res.json({ deleted: true });
   } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Add cubicle to existing AI Office
+app.post('/api/projects/:id/ai-office/cubicle', async (req, res) => {
+  try {
+    const project = projects.get(req.params.id);
+    if (!project || !project.aiOffice) {
+      return res.status(404).json({ error: 'AI Office not found' });
+    }
+    
+    const cubicleNum = project.aiOffice.cubicleCount + 1;
+    const cubiclePath = path.join(project.path, 'ai-office', `cubicle-${cubicleNum}`);
+    
+    // Create cubicle directory
+    await fs.mkdir(cubiclePath, { recursive: true });
+    await fs.writeFile(
+      path.join(cubiclePath, 'README.md'),
+      `# Cubicle ${cubicleNum}\n\nAI workspace for ${project.name}`
+    );
+    
+    // Update project
+    project.aiOffice.cubicles.push({
+      name: `cubicle-${cubicleNum}`,
+      path: cubiclePath
+    });
+    project.aiOffice.cubicleCount = cubicleNum;
+    
+    await saveProjects();
+    res.json({ cubicle: project.aiOffice.cubicles[project.aiOffice.cubicles.length - 1] });
+  } catch (error) {
+    console.error('Error adding cubicle:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Remove cubicle from AI Office
+app.delete('/api/projects/:id/ai-office/cubicle/:cubicleIdx', async (req, res) => {
+  try {
+    const project = projects.get(req.params.id);
+    if (!project || !project.aiOffice) {
+      return res.status(404).json({ error: 'AI Office not found' });
+    }
+    
+    const cubicleIdx = parseInt(req.params.cubicleIdx);
+    if (cubicleIdx < 0 || cubicleIdx >= project.aiOffice.cubicles.length) {
+      return res.status(400).json({ error: 'Invalid cubicle index' });
+    }
+    
+    // Don't allow removing the last cubicle
+    if (project.aiOffice.cubicles.length === 1) {
+      return res.status(400).json({ error: 'Cannot remove the last cubicle. Remove the entire AI Office instead.' });
+    }
+    
+    const cubicle = project.aiOffice.cubicles[cubicleIdx];
+    
+    // Remove directory
+    try {
+      await fs.rm(cubicle.path, { recursive: true, force: true });
+    } catch (e) {
+      console.error('Error removing cubicle directory:', e);
+    }
+    
+    // Update project
+    project.aiOffice.cubicles.splice(cubicleIdx, 1);
+    project.aiOffice.cubicleCount = project.aiOffice.cubicles.length;
+    
+    await saveProjects();
+    res.json({ deleted: true });
+  } catch (error) {
+    console.error('Error removing cubicle:', error);
     res.status(500).json({ error: error.message });
   }
 });
