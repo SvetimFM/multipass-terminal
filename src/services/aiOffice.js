@@ -42,27 +42,27 @@ async function createAIOffice(project, cubicleCount = 3) {
           path.join(cubiclePath, '.AI_README'),
           `# Cubicle ${i} - AI Workspace
 
-## Important Instructions
+## Important Rules for AI
 
-This cubicle contains a copy of the project repository from: ${githubUrl}
+1. **You are in an isolated cubicle workspace** - Changes here won't affect the main project
+2. **All project files are in the current directory** - No need to navigate elsewhere  
+3. **Use git to track your changes** - The cubicle has its own git history
+4. **Sync with parent** updates this cubicle with latest changes from main project
+5. **Your changes are preserved** until explicitly synced or reset
 
-### Working Directory
-- The repository has been cloned directly into this cubicle's root directory
-- All project files are available at: \`${cubiclePath}\`
+## Project Details
+- **Project:** ${project.name}
+- **Path:** ${cubiclePath}
+- **GitHub:** ${githubUrl}
+- **Cloned from:** Repository was cloned directly into this cubicle
 
-### Guidelines
-1. You are already in the project root - no need to change directories
-
-2. All file edits, additions, and deletions happen directly in this workspace
-
-3. This is an isolated workspace - changes here won't affect the main project until explicitly merged
-
-4. Use git commands to track your changes
-
-5. When ready, changes can be reviewed and potentially merged back to the main project
-
-### Project: ${project.name}
-### GitHub: ${githubUrl}
+## Guidelines
+- You are already in the project root - no need to change directories
+- Make all changes directly in this directory
+- Test thoroughly before suggesting merges to main project
+- Use git commits to document your work
+- This workspace is specifically for AI experimentation
+- When ready, changes can be reviewed and potentially merged back
 `
         );
       } catch (error) {
@@ -74,10 +74,38 @@ This cubicle contains a copy of the project repository from: ${githubUrl}
         );
       }
     } else {
-      // No GitHub URL, create standard README
+      // No GitHub URL, sync from parent project
+      try {
+        console.log(`Syncing parent project files to cubicle-${i}...`);
+        await execPromise(`rsync -av --exclude="ai-office/" --exclude=".git/" "${project.path}/" "${cubiclePath}/"`, {
+          maxBuffer: 1024 * 1024 * 10
+        });
+      } catch (error) {
+        console.error(`Failed to sync parent project for cubicle-${i}:`, error);
+      }
+      
+      // Create AI README with rules
       await fs.writeFile(
         path.join(cubiclePath, '.AI_README'),
-        `# Cubicle ${i}\n\nAI workspace for ${project.name}`
+        `# Cubicle ${i} - AI Workspace
+
+## Important Rules for AI
+
+1. **You are in an isolated cubicle workspace** - Changes here won't affect the main project
+2. **All project files are in the current directory** - No need to navigate elsewhere
+3. **Use git to track your changes** - The cubicle has its own git history
+4. **Sync with parent** updates this cubicle with latest changes from main project
+5. **Your changes are preserved** until explicitly synced or reset
+
+## Project: ${project.name}
+## Path: ${cubiclePath}
+
+## Guidelines
+- Make all changes directly in this directory
+- Test thoroughly before suggesting merges to main project
+- Use git commits to document your work
+- This workspace is specifically for AI experimentation
+`
       );
     }
     
@@ -161,27 +189,27 @@ async function addCubicle(project, cubicleNum) {
         path.join(cubiclePath, '.AI_README'),
         `# Cubicle ${cubicleNum} - AI Workspace
 
-## Important Instructions
+## Important Rules for AI
 
-This cubicle contains a copy of the project repository from: ${githubUrl}
+1. **You are in an isolated cubicle workspace** - Changes here won't affect the main project
+2. **All project files are in the current directory** - No need to navigate elsewhere  
+3. **Use git to track your changes** - The cubicle has its own git history
+4. **Sync with parent** updates this cubicle with latest changes from main project
+5. **Your changes are preserved** until explicitly synced or reset
 
-### Working Directory
-- The repository has been cloned directly into this cubicle's root directory
-- All project files are available at: \`${cubiclePath}\`
+## Project Details
+- **Project:** ${project.name}
+- **Path:** ${cubiclePath}
+- **GitHub:** ${githubUrl}
+- **Cloned from:** Repository was cloned directly into this cubicle
 
-### Guidelines
-1. You are already in the project root - no need to change directories
-
-2. All file edits, additions, and deletions happen directly in this workspace
-
-3. This is an isolated workspace - changes here won't affect the main project until explicitly merged
-
-4. Use git commands to track your changes
-
-5. When ready, changes can be reviewed and potentially merged back to the main project
-
-### Project: ${project.name}
-### GitHub: ${githubUrl}
+## Guidelines
+- You are already in the project root - no need to change directories
+- Make all changes directly in this directory
+- Test thoroughly before suggesting merges to main project
+- Use git commits to document your work
+- This workspace is specifically for AI experimentation
+- When ready, changes can be reviewed and potentially merged back
 `
       );
     } catch (error) {
@@ -193,10 +221,38 @@ This cubicle contains a copy of the project repository from: ${githubUrl}
       );
     }
   } else {
-    // No GitHub URL, create standard README
+    // No GitHub URL, sync from parent project
+    try {
+      console.log(`Syncing parent project files to cubicle-${cubicleNum}...`);
+      await execPromise(`rsync -av --exclude="ai-office/" --exclude=".git/" "${project.path}/" "${cubiclePath}/"`, {
+        maxBuffer: 1024 * 1024 * 10
+      });
+    } catch (error) {
+      console.error(`Failed to sync parent project for cubicle-${cubicleNum}:`, error);
+    }
+    
+    // Create AI README with rules
     await fs.writeFile(
       path.join(cubiclePath, '.AI_README'),
-      `# Cubicle ${cubicleNum}\n\nAI workspace for ${project.name}`
+      `# Cubicle ${cubicleNum} - AI Workspace
+
+## Important Rules for AI
+
+1. **You are in an isolated cubicle workspace** - Changes here won't affect the main project
+2. **All project files are in the current directory** - No need to navigate elsewhere
+3. **Use git to track your changes** - The cubicle has its own git history
+4. **Sync with parent** updates this cubicle with latest changes from main project
+5. **Your changes are preserved** until explicitly synced or reset
+
+## Project: ${project.name}
+## Path: ${cubiclePath}
+
+## Guidelines
+- Make all changes directly in this directory
+- Test thoroughly before suggesting merges to main project
+- Use git commits to document your work
+- This workspace is specifically for AI experimentation
+`
     );
   }
   

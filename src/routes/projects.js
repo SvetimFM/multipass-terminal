@@ -1,5 +1,7 @@
 const express = require('express');
 const router = express.Router();
+const path = require('path');
+const fs = require('fs').promises;
 const { createAIOffice, removeAIOffice, addCubicle, removeCubicle } = require('../services/aiOffice');
 
 module.exports = (projects, sessions, saveProjects) => {
@@ -113,10 +115,48 @@ module.exports = (projects, sessions, saveProjects) => {
       // Sync each cubicle
       for (const cubicle of project.aiOffice.cubicles) {
         try {
+          // First, preserve the .AI_README if it exists
+          const aiReadmePath = path.join(cubicle.path, '.AI_README');
+          let aiReadmeContent = null;
+          try {
+            aiReadmeContent = await fs.readFile(aiReadmePath, 'utf8');
+          } catch (e) {
+            // File doesn't exist yet
+          }
+          
           // Copy files from parent project to cubicle, excluding ai-office directory
-          await execPromise(`rsync -av --delete --exclude="ai-office/" --exclude=".git/" "${project.path}/" "${cubicle.path}/"`, {
+          await execPromise(`rsync -av --delete --exclude="ai-office/" --exclude=".git/" --exclude=".AI_README" "${project.path}/" "${cubicle.path}/"`, {
             maxBuffer: 1024 * 1024 * 10
           });
+          
+          // Restore or create .AI_README
+          if (aiReadmeContent) {
+            await fs.writeFile(aiReadmePath, aiReadmeContent);
+          } else {
+            // Create new .AI_README with rules
+            const cubicleNum = cubicle.name.split('-')[1];
+            await fs.writeFile(aiReadmePath, `# Cubicle ${cubicleNum} - AI Workspace
+
+## Important Rules for AI
+
+1. **You are in an isolated cubicle workspace** - Changes here won't affect the main project
+2. **All project files are in the current directory** - No need to navigate elsewhere
+3. **Use git to track your changes** - The cubicle has its own git history
+4. **Sync with parent** updates this cubicle with latest changes from main project
+5. **Your changes are preserved** until explicitly synced or reset
+
+## Project: ${project.name}
+## Path: ${cubicle.path}
+${project.githubUrl ? `## GitHub: ${project.githubUrl}` : ''}
+
+## Guidelines
+- Make all changes directly in this directory
+- Test thoroughly before suggesting merges to main project
+- Use git commits to document your work
+- This workspace is specifically for AI experimentation
+`);
+          }
+          
           synced++;
         } catch (error) {
           console.error(`Error syncing cubicle ${cubicle.name}:`, error);
