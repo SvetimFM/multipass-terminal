@@ -316,7 +316,7 @@ app.get('/', (req, res) => {
       <!-- Quick Commands -->
       <div class="bg-gray-700 p-2 flex gap-2 overflow-x-auto flex-shrink-0">
         <button onclick="sendToTerminal('claude\\n')" class="px-3 py-1 bg-blue-600 rounded text-sm font-semibold">claude</button>
-        <button onclick="sendToTerminal('\\x03\\x03')" class="px-3 py-1 bg-red-600 rounded text-sm font-semibold" title="Exit Claude (Ctrl+C twice)">Exit Claude</button>
+        <button onclick="exitClaude()" class="px-3 py-1 bg-red-600 rounded text-sm font-semibold" title="Exit Claude (Ctrl+C twice)">Exit Claude</button>
         <button id="auto-accept-btn" onclick="toggleAutoAccept()" class="px-3 py-1 bg-gray-600 rounded text-sm">
           Auto-Accept: <span id="auto-accept-status">OFF</span>
         </button>
@@ -813,6 +813,12 @@ app.get('/', (req, res) => {
       if (currentWs && currentWs.readyState === WebSocket.OPEN) {
         currentWs.send(command);
       }
+    }
+    
+    function exitClaude() {
+      // Send Ctrl+C twice quickly to exit Claude
+      sendToTerminal('\x03');
+      setTimeout(() => sendToTerminal('\x03'), 50);
     }
     
     function toggleAutoAccept() {
