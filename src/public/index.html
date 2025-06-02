@@ -163,6 +163,7 @@
           <button onclick="broadcastToAllTerminals('git status\\n')" class="px-3 py-1 bg-gray-600 rounded text-sm">git status (all)</button>
           <button onclick="broadcastToAllTerminals('clear\\n')" class="px-3 py-1 bg-gray-600 rounded text-sm">clear (all)</button>
           <button onclick="syncWithParent()" class="px-3 py-1 bg-yellow-600 rounded text-sm" title="Sync all cubicles with parent project">Sync with Parent</button>
+          <button id="grid-auto-accept-btn" onclick="toggleGridAutoAccept()" class="px-3 py-1 bg-gray-600 rounded text-sm font-semibold">Auto-Accept: <span id="grid-auto-accept-status">OFF</span></button>
           <button onclick="addCubicle()" class="px-3 py-1 bg-green-600 rounded text-sm">+ Add Cubicle</button>
           <button onclick="addTerminal()" class="px-3 py-1 bg-blue-500 rounded text-sm">+ Add Terminal</button>
         </div>
