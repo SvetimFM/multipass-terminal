@@ -166,6 +166,33 @@ function exitClaudeAll() {
   setTimeout(() => broadcastToAllTerminals('\x03'), 50);
 }
 
+// Sync all cubicles with parent project
+async function syncWithParent() {
+  if (!currentAIOfficeProject) return;
+  
+  if (!confirm('This will sync all cubicles with the parent project. Any uncommitted changes will be lost. Continue?')) {
+    return;
+  }
+  
+  try {
+    const response = await fetch(`/api/projects/${currentAIOfficeProject.id}/ai-office/sync`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' }
+    });
+    
+    if (response.ok) {
+      const result = await response.json();
+      alert(`Sync completed! ${result.synced} cubicles updated.`);
+    } else {
+      const error = await response.json();
+      alert('Failed to sync: ' + error.error);
+    }
+  } catch (error) {
+    console.error('Error syncing with parent:', error);
+    alert('Error syncing: ' + error.message);
+  }
+}
+
 // Add a new terminal session to AI Office grid
 async function addTerminal() {
   if (!currentAIOfficeProject) return;

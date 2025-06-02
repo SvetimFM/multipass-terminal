@@ -97,6 +97,39 @@ module.exports = (projects, sessions, saveProjects) => {
     }
   });
 
+  // Sync AI Office cubicles with parent project
+  router.post('/:id/ai-office/sync', async (req, res) => {
+    try {
+      const project = projects.get(req.params.id);
+      if (!project || !project.aiOffice) {
+        return res.status(404).json({ error: 'AI Office not found' });
+      }
+      
+      let synced = 0;
+      const { exec } = require('child_process');
+      const util = require('util');
+      const execPromise = util.promisify(exec);
+      
+      // Sync each cubicle
+      for (const cubicle of project.aiOffice.cubicles) {
+        try {
+          // Copy files from parent project to cubicle, excluding ai-office directory
+          await execPromise(`rsync -av --delete --exclude="ai-office/" --exclude=".git/" "${project.path}/" "${cubicle.path}/"`, {
+            maxBuffer: 1024 * 1024 * 10
+          });
+          synced++;
+        } catch (error) {
+          console.error(`Error syncing cubicle ${cubicle.name}:`, error);
+        }
+      }
+      
+      res.json({ synced, total: project.aiOffice.cubicles.length });
+    } catch (error) {
+      console.error('Error syncing AI Office:', error);
+      res.status(500).json({ error: error.message });
+    }
+  });
+
   // Remove cubicle from AI Office
   router.delete('/:id/ai-office/cubicle/:cubicleIdx', async (req, res) => {
     try {

@@ -39,7 +39,7 @@ async function createAIOffice(project, cubicleCount = 3) {
         
         // Create instructions for working within the repository copy
         await fs.writeFile(
-          path.join(cubiclePath, 'INSTRUCTIONS.md'),
+          path.join(cubiclePath, '.AI_README'),
           `# Cubicle ${i} - AI Workspace
 
 ## Important Instructions
@@ -69,14 +69,14 @@ This cubicle contains a copy of the project repository from: ${githubUrl}
         console.error(`Failed to clone repository for cubicle-${i}:`, error);
         // Fall back to creating a simple README if cloning fails
         await fs.writeFile(
-          path.join(cubiclePath, 'README.md'),
+          path.join(cubiclePath, '.AI_README'),
           `# Cubicle ${i}\n\nAI workspace for ${project.name}\n\nNote: Failed to clone repository from ${githubUrl}`
         );
       }
     } else {
       // No GitHub URL, create standard README
       await fs.writeFile(
-        path.join(cubiclePath, 'README.md'),
+        path.join(cubiclePath, '.AI_README'),
         `# Cubicle ${i}\n\nAI workspace for ${project.name}`
       );
     }
@@ -158,7 +158,7 @@ async function addCubicle(project, cubicleNum) {
       
       // Create instructions for working within the repository copy
       await fs.writeFile(
-        path.join(cubiclePath, 'INSTRUCTIONS.md'),
+        path.join(cubiclePath, '.AI_README'),
         `# Cubicle ${cubicleNum} - AI Workspace
 
 ## Important Instructions
@@ -188,14 +188,14 @@ This cubicle contains a copy of the project repository from: ${githubUrl}
       console.error(`Failed to clone repository for cubicle-${cubicleNum}:`, error);
       // Fall back to creating a simple README if cloning fails
       await fs.writeFile(
-        path.join(cubiclePath, 'README.md'),
+        path.join(cubiclePath, '.AI_README'),
         `# Cubicle ${cubicleNum}\n\nAI workspace for ${project.name}\n\nNote: Failed to clone repository from ${githubUrl}`
       );
     }
   } else {
     // No GitHub URL, create standard README
     await fs.writeFile(
-      path.join(cubiclePath, 'README.md'),
+      path.join(cubiclePath, '.AI_README'),
       `# Cubicle ${cubicleNum}\n\nAI workspace for ${project.name}`
     );
   }
