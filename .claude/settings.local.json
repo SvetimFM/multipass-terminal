@@ -1,6 +1,8 @@
 {
   "permissions": {
     "allow": [
+      "Bash(grep:*)",
+      "Bash(rm:*)"
       "Bash(git fetch:*)",
       "Bash(git checkout:*)",
       "Bash(git pull:*)",

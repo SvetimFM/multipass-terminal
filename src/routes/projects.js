@@ -484,6 +484,21 @@ ${project.githubUrl ? `## GitHub: ${project.githubUrl}` : ''}
   // Helper function to update AI readme with mode
   async function updateCubicleAIReadme(project, cubicle, modeConfig) {
     const aiReadmePath = path.join(cubicle.path, '.AI_README');
+    
+    // If default mode is selected, remove the .AI_README file
+    if (cubicle.aiMode === 'default') {
+      try {
+        await fs.unlink(aiReadmePath);
+      } catch (err) {
+        // File might not exist, ignore error
+        if (err.code !== 'ENOENT') {
+          console.error('Error removing .AI_README:', err);
+        }
+      }
+      return;
+    }
+    
+    // For non-default modes, create/update .AI_README
     const cubicleNum = cubicle.name.split('-')[1];
     
     let content = `# Cubicle ${cubicleNum} - AI Workspace
@@ -510,7 +525,7 @@ ${project.githubUrl ? `- **GitHub:** ${project.githubUrl}` : ''}
 - When ready, changes can be reviewed and potentially merged back
 `;
 
-    // Add mode-specific instructions if not default
+    // Add mode-specific instructions
     if (modeConfig.instructions) {
       content += `\n${modeConfig.instructions}\n`;
     }

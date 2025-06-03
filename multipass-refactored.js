@@ -99,60 +99,6 @@ app.get('/api/ai-modes', (req, res) => {
   res.json(aiModes);
 });
 
-// Profile Actions endpoint
-app.get('/api/profile-actions', (req, res) => {
-  const profileActions = require('./config/profile-actions');
-  res.json(profileActions);
-});
-
-// Execute profile action endpoint
-app.post('/api/profile-actions/execute', express.json(), async (req, res) => {
-  const { profile, projectId, cubicleIdx } = req.body;
-  const profileActions = require('./config/profile-actions');
-  const { exec } = require('child_process');
-  const { promisify } = require('util');
-  const execAsync = promisify(exec);
-  
-  if (!profileActions.actions[profile]) {
-    return res.status(400).json({ error: 'Invalid profile' });
-  }
-  
-  const action = profileActions.actions[profile];
-  
-  try {
-    // Get project path for execution context
-    let execPath = process.cwd();
-    if (projectId && projects.has(projectId)) {
-      const project = projects.get(projectId);
-      if (cubicleIdx !== undefined && project.aiOffice && project.aiOffice.cubicles[cubicleIdx]) {
-        execPath = project.aiOffice.cubicles[cubicleIdx].path;
-      } else {
-        execPath = project.path;
-      }
-    }
-    
-    // Execute the action command
-    const { stdout, stderr } = await execAsync(action.command, {
-      cwd: execPath,
-      maxBuffer: 1024 * 1024 // 1MB buffer
-    });
-    
-    res.json({
-      success: true,
-      profile,
-      action: action.name,
-      output: stdout + (stderr ? `\n\nWarnings:\n${stderr}` : ''),
-      timestamp: new Date().toISOString()
-    });
-  } catch (error) {
-    console.error('Profile action execution error:', error);
-    res.status(500).json({
-      success: false,
-      error: 'Failed to execute action',
-      details: error.message
-    });
-  }
-});
 
 // Get home directory
 app.get('/api/home', (req, res) => {
