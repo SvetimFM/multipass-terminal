@@ -23,6 +23,9 @@ const projects = new Map();
 // Load configuration
 const { LLM_CONFIG, PROJECTS_FILE } = require('./src/utils/constants');
 
+// Import error handling
+const { errorMiddleware } = require('./src/utils/errorHandler');
+
 // Load projects from file
 async function loadProjects() {
   try {
@@ -85,10 +88,16 @@ app.get('/api/config', (req, res) => {
   });
 });
 
-// AI Modes endpoint
+// AI Modes endpoint (deprecated - returns empty for compatibility)
 app.get('/api/ai-modes', (req, res) => {
-  const aiModes = require('./config/ai-modes');
-  res.json(aiModes);
+  res.json({
+    modes: {
+      default: {
+        name: 'Default',
+        command: process.env.AI_COMMAND || 'claude'
+      }
+    }
+  });
 });
 
 // Profile Actions endpoint
@@ -150,6 +159,9 @@ app.post('/api/profile-actions/execute', express.json(), async (req, res) => {
 app.get('/api/home', (req, res) => {
   res.json({ home: process.env.HOME || '/home/user' });
 });
+
+// Error handling middleware (must be last)
+app.use(errorMiddleware);
 
 // WebSocket for terminal
 const server = require('http').createServer(app);

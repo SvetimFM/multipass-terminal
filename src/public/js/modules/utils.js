@@ -17,27 +17,17 @@ export function showToast(message) {
   }, 2000);
 }
 
-// Copy text to clipboard with fallback
+// Import clipboard service and wrap with toast notifications
+import { clipboardService } from '../clipboard.js';
+
 export async function copyToClipboard(text, successMessage = 'Copied!') {
-  try {
-    await navigator.clipboard.writeText(text);
+  const success = await clipboardService.copyToClipboard(text);
+  if (success) {
     showToast(successMessage);
-  } catch (err) {
-    // Fallback for older browsers
-    const textarea = document.createElement('textarea');
-    textarea.value = text;
-    textarea.style.position = 'fixed';
-    textarea.style.opacity = '0';
-    document.body.appendChild(textarea);
-    textarea.select();
-    try {
-      document.execCommand('copy');
-      showToast(successMessage);
-    } catch (e) {
-      showToast('Copy failed');
-    }
-    document.body.removeChild(textarea);
+  } else {
+    showToast('Copy failed');
   }
+  return success;
 }
 
 // Check if mobile
