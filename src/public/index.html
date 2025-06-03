@@ -177,11 +177,11 @@
         </div>
         
         <div class="p-4 border-t border-gray-700 flex gap-2">
-          <button onclick="selectCurrentFolder()" 
+          <button onclick="window.fileBrowser.selectCurrentFolder()" 
                   class="flex-1 bg-green-600 py-2 rounded font-semibold">
             Select This Folder
           </button>
-          <button onclick="closeFileBrowser()" 
+          <button onclick="window.fileBrowser.closeFileBrowser()" 
                   class="flex-1 bg-gray-700 py-2 rounded">
             Cancel
           </button>
@@ -209,7 +209,7 @@
                 <button onclick="window.cubicleManagement.pullFromMainAll()" class="px-4 py-2 bg-green-600 rounded text-sm" title="Pull latest from main branch">
                   ⬇️ Pull from Main (All)
                 </button>
-                <button onclick="syncWithParent()" class="px-4 py-2 bg-yellow-600 rounded text-sm" title="Sync all cubicles with parent project">
+                <button onclick="window.aiOffice.syncWithParent()" class="px-4 py-2 bg-yellow-600 rounded text-sm" title="Sync all cubicles with parent project">
                   🔁 Sync with Parent Project
                 </button>
                 <button onclick="window.cubicleManagement.resetAllCubicles()" class="px-4 py-2 bg-red-600 rounded text-sm" title="Reset all cubicles to clean state">
@@ -268,10 +268,10 @@
           <button onclick="window.terminal.broadcastToAllTerminals('git status\\n')" class="px-3 py-1 bg-gray-600 rounded text-sm">git status (all)</button>
           <button onclick="window.terminal.broadcastToAllTerminals('clear\\n')" class="px-3 py-1 bg-gray-600 rounded text-sm">clear (all)</button>
           <button onclick="window.cubicleManagement.openCubicleManagement()" class="px-3 py-1 bg-indigo-600 rounded text-sm" title="Manage cubicles">⚙️ Manage</button>
-          <button onclick="syncWithParent()" class="px-3 py-1 bg-yellow-600 rounded text-sm" title="Sync all cubicles with parent project">Sync with Parent</button>
+          <button onclick="window.aiOffice.syncWithParent()" class="px-3 py-1 bg-yellow-600 rounded text-sm" title="Sync all cubicles with parent project">Sync with Parent</button>
           <button id="grid-auto-accept-btn" onclick="window.terminal.toggleGridAutoAccept()" class="px-3 py-1 bg-gray-600 rounded text-sm font-semibold" title="Send Shift+Tab once to all terminals">Accept Once: <span id="grid-auto-accept-status">OFF</span></button>
           <button onclick="window.aiOffice.addCubicle(window.state.currentAIOfficeProject.id)" class="px-3 py-1 bg-green-600 rounded text-sm">+ Add Cubicle</button>
-          <button onclick="addTerminal()" class="px-3 py-1 bg-blue-500 rounded text-sm">+ Add Terminal</button>
+          <button onclick="window.aiOffice.addTerminal()" class="px-3 py-1 bg-blue-500 rounded text-sm">+ Add Terminal</button>
         </div>
         
         <!-- Quick Commands for All Terminals - Mobile -->
@@ -284,7 +284,7 @@
             <button onclick="window.terminal.exitClaudeAll()" class="priority-button bg-red-600 rounded haptic-feedback">
               🛑 Exit All
             </button>
-            <button onclick="syncWithParent()" class="priority-button bg-yellow-600 rounded haptic-feedback">
+            <button onclick="window.aiOffice.syncWithParent()" class="priority-button bg-yellow-600 rounded haptic-feedback">
               🔄 Sync
             </button>
           </div>
@@ -294,7 +294,7 @@
             <button onclick="window.terminal.broadcastToAllTerminals('\\x1b[Z')" class="swipe-item secondary-button bg-purple-600 rounded">⇧ Tab All</button>
             <button onclick="window.terminal.broadcastToAllTerminals('clear\\n')" class="swipe-item secondary-button bg-gray-600 rounded">Clear All</button>
             <button onclick="window.aiOffice.addCubicle(window.state.currentAIOfficeProject.id)" class="swipe-item secondary-button bg-green-600 rounded">+ Cubicle</button>
-            <button onclick="window.aiOffice.addCubicle(window.state.currentAIOfficeProject.id)" class="swipe-item secondary-button bg-blue-500 rounded">+ Terminal</button>
+            <button onclick="window.aiOffice.addTerminal()" class="swipe-item secondary-button bg-blue-500 rounded">+ Terminal</button>
             <button id="grid-auto-accept-btn-mobile" onclick="window.terminal.toggleGridAutoAccept()" class="swipe-item secondary-button bg-gray-600 rounded">
               Accept: <span id="grid-auto-accept-status-mobile">OFF</span>
             </button>

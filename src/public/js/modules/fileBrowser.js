@@ -11,9 +11,9 @@ export async function browseFolder(folder = '') {
     const data = await response.json();
     
     setState('currentPath', data.path);
-    document.getElementById('selected-folder').textContent = data.path;
+    document.getElementById('current-path').textContent = data.path;
     
-    const folderList = document.getElementById('folder-list');
+    const folderList = document.getElementById('file-list');
     folderList.innerHTML = '';
     
     // Add parent directory option if not at root
@@ -44,9 +44,34 @@ export async function browseFolder(folder = '') {
 
 export function openFileBrowser() {
   document.getElementById('file-browser-modal').classList.remove('hidden');
-  browseFolder(state.currentPath || '');
+  browseFolder(state.currentPath || '/mnt/j/DevWorkspace');
 }
 
 export function closeFileBrowser() {
   document.getElementById('file-browser-modal').classList.add('hidden');
+}
+
+export async function selectCurrentFolder() {
+  const name = prompt('Project name:', state.currentPath.split('/').pop());
+  if (!name) return;
+  
+  const githubUrl = prompt('GitHub repository URL (optional - press Enter to skip):');
+  
+  try {
+    const response = await fetch('/api/projects', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name, path: state.currentPath, githubUrl: githubUrl || null })
+    });
+    
+    if (response.ok) {
+      closeFileBrowser();
+      // Import projects module dynamically to avoid circular dependency
+      const { loadProjects } = await import('./projects.js');
+      await loadProjects();
+    }
+  } catch (error) {
+    console.error('Error creating project:', error);
+    showToast('Error creating project');
+  }
 }

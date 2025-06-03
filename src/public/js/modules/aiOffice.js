@@ -212,3 +212,127 @@ export async function removeCubicle(projectId, cubicleIdx) {
     alert('Error removing cubicle: ' + error.message);
   }
 }
+
+export async function syncWithParent() {
+  if (!state.currentAIOfficeProject) return;
+  
+  if (!confirm('This will sync all cubicles with the parent project. Any uncommitted changes will be lost. Continue?')) {
+    return;
+  }
+  
+  try {
+    const response = await fetch(`/api/projects/${state.currentAIOfficeProject.id}/ai-office/sync`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' }
+    });
+    
+    if (response.ok) {
+      const result = await response.json();
+      alert(`Sync completed! ${result.synced} cubicles updated.`);
+    } else {
+      const error = await response.json();
+      alert('Failed to sync: ' + error.error);
+    }
+  } catch (error) {
+    console.error('Error syncing with parent:', error);
+    alert('Error syncing: ' + error.message);
+  }
+}
+
+export async function addTerminal() {
+  if (!state.currentAIOfficeProject) return;
+  
+  const container = document.getElementById('cubicle-terminals');
+  const terminalCount = container.children.length;
+  const terminalName = `terminal-${terminalCount + 1}`;
+  const sessionName = `ai-office-${state.currentAIOfficeProject.id}-${terminalName}`;
+  
+  // Create terminal div
+  const termDiv = document.createElement('div');
+  termDiv.className = 'bg-gray-800 rounded overflow-hidden flex flex-col';
+  termDiv.innerHTML = `
+    <div class="bg-gray-700 px-3 py-2 text-sm font-medium flex justify-between items-center">
+      <span>${terminalName} (Project Root)</span>
+      <button onclick="window.aiOffice.removeTerminalFromGrid('${sessionName}')" class="text-red-400 hover:text-red-300 text-xs">✕</button>
+    </div>
+    <div id="terminal-grid-${sessionName}" class="cubicle-terminal flex-1"></div>
+  `;
+  container.appendChild(termDiv);
+  
+  // Initialize terminal in project root directory
+  setTimeout(() => initProjectTerminal(state.currentAIOfficeProject, sessionName), 100);
+}
+
+function initProjectTerminal(project, sessionName) {
+  const term = new Terminal({
+    cursorBlink: true,
+    fontSize: 12,
+    fontFamily: 'Menlo, Monaco, "Courier New", monospace',
+    theme: {
+      background: '#1a1a1a',
+      foreground: '#d4d4d4'
+    }
+  });
+  
+  const fitAddon = new FitAddon.FitAddon();
+  term.loadAddon(fitAddon);
+  
+  term.open(document.getElementById(`terminal-grid-${sessionName}`));
+  fitAddon.fit();
+  
+  // Create session in project root directory
+  fetch('/api/sessions', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ 
+      name: sessionName, 
+      projectId: project.id,
+      isCubicle: false
+    })
+  }).then(() => {
+    const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+    const ws = new WebSocket(`${protocol}//${window.location.host}/terminal/${sessionName}`);
+    
+    ws.onopen = () => {
+      term.write('\r\n*** Connected to Project Root ***\r\n');
+    };
+    
+    ws.onmessage = (event) => {
+      term.write(event.data);
+    };
+    
+    term.onData((data) => {
+      if (ws.readyState === WebSocket.OPEN) {
+        ws.send(data);
+      }
+    });
+    
+    // Store terminal and websocket for cleanup
+    state.cubicleTerminals.set(sessionName, { term, fitAddon });
+    state.cubicleWebSockets.set(sessionName, ws);
+  });
+}
+
+export function removeTerminalFromGrid(sessionName) {
+  // Kill the tmux session
+  fetch(`/api/sessions/${sessionName}`, { method: 'DELETE' });
+  
+  // Clean up terminal and websocket
+  const terminal = state.cubicleTerminals.get(sessionName);
+  if (terminal) {
+    terminal.term.dispose();
+    state.cubicleTerminals.delete(sessionName);
+  }
+  
+  const ws = state.cubicleWebSockets.get(sessionName);
+  if (ws) {
+    ws.close();
+    state.cubicleWebSockets.delete(sessionName);
+  }
+  
+  // Remove the terminal div
+  const termDiv = document.getElementById(`terminal-grid-${sessionName}`).parentElement;
+  if (termDiv) {
+    termDiv.remove();
+  }
+}
