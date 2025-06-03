@@ -177,6 +177,12 @@ export async function openAIOfficeGrid(projectId) {
                 </select>
               </div>
               <div class="flex items-center gap-2">
+                <button onclick="window.aiOffice.readAIReadme('${project.id}', ${idx})" 
+                        class="text-blue-400 hover:text-blue-300 text-xs px-2 py-1 bg-gray-800 rounded flex items-center gap-1" 
+                        title="Read .AI_README in terminal">
+                  <span>📖</span>
+                  <span class="hidden sm:inline">Read AI</span>
+                </button>
                 <button onclick="window.aiOffice.pasteToCubicleTerminal('${project.id}', ${idx})" 
                         class="text-green-400 hover:text-green-300 text-xs px-2 py-1 bg-gray-800 rounded" 
                         title="Paste to terminal">
@@ -426,6 +432,40 @@ export async function removeCubicle(projectId, cubicleIdx) {
   }
 }
 
+
+// Read .AI_README in cubicle terminal
+export async function readAIReadme(projectId, cubicleIdx) {
+  try {
+    // Get the cubicle session name
+    const project = state.currentAIOfficeProject;
+    if (!project || project.id !== projectId) {
+      showToast('Project not found');
+      return;
+    }
+    
+    const cubicle = project.aiOffice.cubicles[cubicleIdx];
+    if (!cubicle) {
+      showToast('Cubicle not found');
+      return;
+    }
+    
+    const sessionName = cubicle.sessionName;
+    const ws = state.cubicleWebSockets.get(sessionName);
+    
+    if (!ws || ws.readyState !== WebSocket.OPEN) {
+      showToast('Terminal not connected');
+      return;
+    }
+    
+    // Send the command to read .AI_README
+    const command = 'cat .AI_README\n';
+    ws.send(command);
+    showToast('📖 Reading .AI_README...');
+  } catch (error) {
+    console.error('Error reading .AI_README:', error);
+    showToast('Failed to read .AI_README', 'error');
+  }
+}
 
 // Paste to project terminal (non-cubicle)
 export async function pasteToProjectTerminal(sessionName) {
