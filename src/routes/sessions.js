@@ -2,10 +2,11 @@ const express = require('express');
 const router = express.Router();
 const { exec } = require('child_process');
 const { sanitizeName, validateProjectId } = require('../utils/validation');
+const { asyncHandler, sendError } = require('../utils/errorHandler');
 
 module.exports = (sessions, projects, saveSessions) => {
   // Get all sessions
-  router.get('/', (req, res) => {
+  router.get('/', asyncHandler(async (req, res) => {
     exec('tmux list-sessions -F "#{session_name}"', (error, stdout) => {
       if (error) {
         res.json({ sessions: [] });
@@ -27,7 +28,7 @@ module.exports = (sessions, projects, saveSessions) => {
   });
 
   // Create new session
-  router.post('/', (req, res) => {
+  router.post('/', asyncHandler(async (req, res) => {
     try {
       const { name, projectId, isCubicle, cubiclePath } = req.body;
       

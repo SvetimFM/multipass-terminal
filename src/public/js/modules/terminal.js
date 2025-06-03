@@ -1,6 +1,8 @@
 // Terminal management functions
 import { state, setState } from './state.js';
-import { showToast } from './utils.js';
+import { showToast, copyToClipboard } from './utils.js';
+import { clipboardService } from '../clipboard.js';
+import { TerminalFactory } from '../terminalFactory.js';
 
 export function sendToTerminal(command) {
   if (state.currentWs && state.currentWs.readyState === WebSocket.OPEN) {
@@ -102,22 +104,18 @@ export async function attachTerminal(sessionName) {
     const terminalContainer = document.getElementById('terminal');
     terminalContainer.innerHTML = '';
     
-    state.currentTerminal = new Terminal({
-      cursorBlink: true,
+    const { terminal, fitAddon } = TerminalFactory.createTerminalWithContainer(terminalContainer, {
       fontSize: 14,
       fontFamily: 'Menlo, Monaco, "Courier New", monospace',
       theme: {
         background: '#1a1a1a',
         foreground: '#d4d4d4'
       },
-      // Enable right-click for copy/paste
       rightClickSelectsWord: true
     });
     
-    const fitAddon = new FitAddon.FitAddon();
-    state.currentTerminal.loadAddon(fitAddon);
-    state.currentTerminal.open(terminalContainer);
-    fitAddon.fit();
+    state.currentTerminal = terminal;
+    state.fitAddon = fitAddon;
     
     // Add copy/paste keyboard shortcuts
     setupTerminalCopyPaste(state.currentTerminal);

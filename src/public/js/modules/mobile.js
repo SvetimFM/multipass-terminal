@@ -1,6 +1,7 @@
 // Mobile-specific UI functions
 import { state } from './state.js';
 import { showToast, copyToClipboard, MOBILE_BREAKPOINT } from './utils.js';
+import { clipboardService } from '../clipboard.js';
 
 // Terminal font size controls
 let currentFontSize = 14;
@@ -25,19 +26,7 @@ export async function copyTerminalSelection() {
   
   const selection = state.currentTerminal.getSelection();
   if (selection) {
-    try {
-      await navigator.clipboard.writeText(selection);
-      showToast('Copied to clipboard!');
-    } catch (err) {
-      // Fallback for older browsers
-      const textarea = document.createElement('textarea');
-      textarea.value = selection;
-      document.body.appendChild(textarea);
-      textarea.select();
-      document.execCommand('copy');
-      document.body.removeChild(textarea);
-      showToast('Copied to clipboard!');
-    }
+    await copyToClipboard(selection, 'Copied to clipboard!');
   } else {
     showToast('Nothing to copy');
   }
@@ -47,7 +36,7 @@ export async function pasteToTerminal() {
   if (!state.currentTerminal || !state.currentWs) return;
   
   try {
-    const text = await navigator.clipboard.readText();
+    const text = await clipboardService.pasteFromClipboard();
     if (text && state.currentWs.readyState === WebSocket.OPEN) {
       state.currentWs.send(text);
       showToast('Pasted!');

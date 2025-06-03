@@ -1,8 +1,4 @@
-import { Terminal } from 'xterm';
-import { FitAddon } from 'xterm-addon-fit';
-import { WebLinksAddon } from 'xterm-addon-web-links';
-import { AttachAddon } from 'xterm-addon-attach';
-
+// Terminal Factory for frontend
 const DEFAULT_TERMINAL_OPTIONS = {
     cursorBlink: true,
     fontSize: 12,
@@ -16,22 +12,22 @@ const DEFAULT_TERMINAL_OPTIONS = {
     windowsMode: false
 };
 
-class TerminalFactory {
+export class TerminalFactory {
     static createTerminal(options = {}) {
         const terminal = new Terminal({
             ...DEFAULT_TERMINAL_OPTIONS,
             ...options
         });
 
-        const fitAddon = new FitAddon();
+        const fitAddon = new FitAddon.FitAddon();
         terminal.loadAddon(fitAddon);
-        terminal.loadAddon(new WebLinksAddon());
+        terminal.loadAddon(new WebLinksAddon.WebLinksAddon());
 
         return {
             terminal,
             fitAddon,
             attachToWebSocket(ws) {
-                const attachAddon = new AttachAddon(ws);
+                const attachAddon = new AttachAddon.AttachAddon(ws);
                 terminal.loadAddon(attachAddon);
                 return attachAddon;
             },
@@ -63,6 +59,14 @@ class TerminalFactory {
             }
         };
     }
-}
 
-export { TerminalFactory, DEFAULT_TERMINAL_OPTIONS };
+    static createGridTerminal(container, options = {}) {
+        // Smaller font size for grid view
+        const gridOptions = {
+            ...options,
+            fontSize: 10
+        };
+        
+        return this.createTerminalWithContainer(container, gridOptions);
+    }
+}

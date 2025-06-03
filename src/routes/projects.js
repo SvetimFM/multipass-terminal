@@ -4,17 +4,17 @@ const path = require('path');
 const fs = require('fs').promises;
 const { createAIOffice, removeAIOffice, addCubicle, removeCubicle } = require('../services/aiOffice');
 const { sanitizeName, sanitizePath, validateProjectId, validateCubicleCount } = require('../utils/validation');
+const { asyncHandler, sendError } = require('../utils/errorHandler');
 
 module.exports = (projects, sessions, saveProjects) => {
   // Get all projects
-  router.get('/', async (req, res) => {
+  router.get('/', asyncHandler(async (req, res) => {
     res.json({ projects: Array.from(projects.values()) });
-  });
+  }));
 
   // Create new project
-  router.post('/', async (req, res) => {
-    try {
-      const { name, path: projectPath, githubUrl } = req.body;
+  router.post('/', asyncHandler(async (req, res) => {
+    const { name, path: projectPath, githubUrl } = req.body;
       
       const sanitizedName = sanitizeName(name);
       const sanitizedPath = sanitizePath(projectPath);
@@ -29,19 +29,15 @@ module.exports = (projects, sessions, saveProjects) => {
       await saveProjects();
       
       res.json(project);
-    } catch (error) {
-      res.status(400).json({ error: error.message });
-    }
-  });
+  }));
 
   // Delete project
-  router.delete('/:id', async (req, res) => {
-    try {
+  router.delete('/:id', asyncHandler(async (req, res) => {
       const projectId = validateProjectId(req.params.id);
       const project = projects.get(projectId);
       
       if (!project) {
-        return res.status(404).json({ error: 'Project not found' });
+        return sendError(res, 404, 'Project not found');
       }
       
       if (project.aiOffice) {
@@ -52,7 +48,7 @@ module.exports = (projects, sessions, saveProjects) => {
       await saveProjects();
       res.json({ deleted: true });
     } catch (error) {
-      res.status(400).json({ error: error.message });
+      sendError(res, 400, error.message);
     }
   });
 
@@ -65,7 +61,7 @@ module.exports = (projects, sessions, saveProjects) => {
       
       const project = projects.get(projectId);
       if (!project) {
-        return res.status(404).json({ error: 'Project not found' });
+        return sendError(res, 404, 'Project not found');
       }
       
       if (project.aiOffice) {
@@ -78,22 +74,21 @@ module.exports = (projects, sessions, saveProjects) => {
       res.json(aiOffice);
     } catch (error) {
       console.error('Error creating AI Office:', error);
-      res.status(500).json({ error: error.message });
+      sendError(res, 500, error.message);
     }
   });
 
-  router.delete('/:id/ai-office', async (req, res) => {
-    try {
+  router.delete('/:id/ai-office', asyncHandler(async (req, res) => {
       const project = projects.get(req.params.id);
       if (!project) {
-        return res.status(404).json({ error: 'Project not found' });
+        return sendError(res, 404, 'Project not found');
       }
       
       await removeAIOffice(project, sessions);
       await saveProjects();
       res.json({ deleted: true });
     } catch (error) {
-      res.status(500).json({ error: error.message });
+      sendError(res, 500, error.message);
     }
   });
 
@@ -102,7 +97,7 @@ module.exports = (projects, sessions, saveProjects) => {
     try {
       const project = projects.get(req.params.id);
       if (!project || !project.aiOffice) {
-        return res.status(404).json({ error: 'AI Office not found' });
+        return sendError(res, 404, 'AI Office not found');
       }
       
       // Use highestCubicleNum if available, otherwise find it from existing cubicles
@@ -137,7 +132,7 @@ module.exports = (projects, sessions, saveProjects) => {
       res.json({ cubicle: newCubicle });
     } catch (error) {
       console.error('Error adding cubicle:', error);
-      res.status(500).json({ error: error.message });
+      sendError(res, 500, error.message);
     }
   });
 
@@ -146,7 +141,7 @@ module.exports = (projects, sessions, saveProjects) => {
     try {
       const project = projects.get(req.params.id);
       if (!project || !project.aiOffice) {
-        return res.status(404).json({ error: 'AI Office not found' });
+        return sendError(res, 404, 'AI Office not found');
       }
       
       let synced = 0;
@@ -208,21 +203,20 @@ ${project.githubUrl ? `## GitHub: ${project.githubUrl}` : ''}
       res.json({ synced, total: project.aiOffice.cubicles.length });
     } catch (error) {
       console.error('Error syncing AI Office:', error);
-      res.status(500).json({ error: error.message });
+      sendError(res, 500, error.message);
     }
   });
 
   // Remove cubicle from AI Office
-  router.delete('/:id/ai-office/cubicle/:cubicleIdx', async (req, res) => {
-    try {
+  router.delete('/:id/ai-office/cubicle/:cubicleIdx', asyncHandler(async (req, res) => {
       const project = projects.get(req.params.id);
       if (!project || !project.aiOffice) {
-        return res.status(404).json({ error: 'AI Office not found' });
+        return sendError(res, 404, 'AI Office not found');
       }
       
       const cubicleIdx = parseInt(req.params.cubicleIdx);
       if (cubicleIdx < 0 || cubicleIdx >= project.aiOffice.cubicles.length) {
-        return res.status(400).json({ error: 'Invalid cubicle index' });
+        return sendError(res, 400, 'Invalid cubicle index');
       }
       
       // Don't allow removing the last cubicle
@@ -235,7 +229,7 @@ ${project.githubUrl ? `## GitHub: ${project.githubUrl}` : ''}
       res.json({ deleted: true });
     } catch (error) {
       console.error('Error removing cubicle:', error);
-      res.status(500).json({ error: error.message });
+      sendError(res, 500, error.message);
     }
   });
 
@@ -244,7 +238,7 @@ ${project.githubUrl ? `## GitHub: ${project.githubUrl}` : ''}
     try {
       const project = projects.get(req.params.id);
       if (!project || !project.aiOffice) {
-        return res.status(404).json({ error: 'AI Office not found' });
+        return sendError(res, 404, 'AI Office not found');
       }
       
       if (!project.githubUrl) {
@@ -284,7 +278,7 @@ ${project.githubUrl ? `## GitHub: ${project.githubUrl}` : ''}
       res.json({ refreshed, total: project.aiOffice.cubicles.length });
     } catch (error) {
       console.error('Error refreshing AI Office:', error);
-      res.status(500).json({ error: error.message });
+      sendError(res, 500, error.message);
     }
   });
 
@@ -293,7 +287,7 @@ ${project.githubUrl ? `## GitHub: ${project.githubUrl}` : ''}
     try {
       const project = projects.get(req.params.id);
       if (!project || !project.aiOffice) {
-        return res.status(404).json({ error: 'AI Office not found' });
+        return sendError(res, 404, 'AI Office not found');
       }
       
       let pulled = 0;
@@ -315,7 +309,7 @@ ${project.githubUrl ? `## GitHub: ${project.githubUrl}` : ''}
       res.json({ pulled, total: project.aiOffice.cubicles.length });
     } catch (error) {
       console.error('Error pulling updates:', error);
-      res.status(500).json({ error: error.message });
+      sendError(res, 500, error.message);
     }
   });
 
@@ -327,7 +321,7 @@ ${project.githubUrl ? `## GitHub: ${project.githubUrl}` : ''}
     try {
       const project = projects.get(req.params.id);
       if (!project || !project.aiOffice) {
-        return res.status(404).json({ error: 'AI Office not found' });
+        return sendError(res, 404, 'AI Office not found');
       }
       
       const { exec } = require('child_process');
@@ -363,7 +357,7 @@ ${project.githubUrl ? `## GitHub: ${project.githubUrl}` : ''}
       res.json({ reset: newAiOffice.cubicles.length, total: newAiOffice.cubicles.length });
     } catch (error) {
       console.error('Error resetting cubicles:', error);
-      res.status(500).json({ error: error.message });
+      sendError(res, 500, error.message);
     }
   });
 
@@ -372,7 +366,7 @@ ${project.githubUrl ? `## GitHub: ${project.githubUrl}` : ''}
     try {
       const project = projects.get(req.params.id);
       if (!project || !project.aiOffice) {
-        return res.status(404).json({ error: 'AI Office not found' });
+        return sendError(res, 404, 'AI Office not found');
       }
       
       if (!project.githubUrl) {
@@ -381,7 +375,7 @@ ${project.githubUrl ? `## GitHub: ${project.githubUrl}` : ''}
       
       const cubicleIdx = parseInt(req.params.cubicleIdx);
       if (cubicleIdx < 0 || cubicleIdx >= project.aiOffice.cubicles.length) {
-        return res.status(400).json({ error: 'Invalid cubicle index' });
+        return sendError(res, 400, 'Invalid cubicle index');
       }
       
       const cubicle = project.aiOffice.cubicles[cubicleIdx];
@@ -409,7 +403,7 @@ ${project.githubUrl ? `## GitHub: ${project.githubUrl}` : ''}
       res.json({ refreshed: true });
     } catch (error) {
       console.error('Error refreshing cubicle:', error);
-      res.status(500).json({ error: error.message });
+      sendError(res, 500, error.message);
     }
   });
 
@@ -418,12 +412,12 @@ ${project.githubUrl ? `## GitHub: ${project.githubUrl}` : ''}
     try {
       const project = projects.get(req.params.id);
       if (!project || !project.aiOffice) {
-        return res.status(404).json({ error: 'AI Office not found' });
+        return sendError(res, 404, 'AI Office not found');
       }
       
       const cubicleIdx = parseInt(req.params.cubicleIdx);
       if (cubicleIdx < 0 || cubicleIdx >= project.aiOffice.cubicles.length) {
-        return res.status(400).json({ error: 'Invalid cubicle index' });
+        return sendError(res, 400, 'Invalid cubicle index');
       }
       
       const cubicle = project.aiOffice.cubicles[cubicleIdx];
@@ -438,7 +432,7 @@ ${project.githubUrl ? `## GitHub: ${project.githubUrl}` : ''}
       res.json({ pulled: true });
     } catch (error) {
       console.error('Error pulling updates:', error);
-      res.status(500).json({ error: error.message });
+      sendError(res, 500, error.message);
     }
   });
 
@@ -447,7 +441,7 @@ ${project.githubUrl ? `## GitHub: ${project.githubUrl}` : ''}
     try {
       const project = projects.get(req.params.id);
       if (!project || !project.aiOffice) {
-        return res.status(404).json({ error: 'AI Office not found' });
+        return sendError(res, 404, 'AI Office not found');
       }
       
       const { mode, target, cubicleIdx } = req.body;
@@ -466,7 +460,7 @@ ${project.githubUrl ? `## GitHub: ${project.githubUrl}` : ''}
       } else if (target === 'cubicle' && cubicleIdx !== undefined) {
         // Apply mode to specific cubicle
         if (cubicleIdx < 0 || cubicleIdx >= project.aiOffice.cubicles.length) {
-          return res.status(400).json({ error: 'Invalid cubicle index' });
+          return sendError(res, 400, 'Invalid cubicle index');
         }
         
         const cubicle = project.aiOffice.cubicles[cubicleIdx];
@@ -480,7 +474,7 @@ ${project.githubUrl ? `## GitHub: ${project.githubUrl}` : ''}
       res.json({ success: true });
     } catch (error) {
       console.error('Error setting AI mode:', error);
-      res.status(500).json({ error: error.message });
+      sendError(res, 500, error.message);
     }
   });
   
@@ -529,12 +523,12 @@ ${project.githubUrl ? `- **GitHub:** ${project.githubUrl}` : ''}
     try {
       const project = projects.get(req.params.id);
       if (!project || !project.aiOffice) {
-        return res.status(404).json({ error: 'AI Office not found' });
+        return sendError(res, 404, 'AI Office not found');
       }
       
       const cubicleIdx = parseInt(req.params.cubicleIdx);
       if (cubicleIdx < 0 || cubicleIdx >= project.aiOffice.cubicles.length) {
-        return res.status(400).json({ error: 'Invalid cubicle index' });
+        return sendError(res, 400, 'Invalid cubicle index');
       }
       
       const cubicle = project.aiOffice.cubicles[cubicleIdx];
@@ -574,7 +568,7 @@ ${project.githubUrl ? `- **GitHub:** ${project.githubUrl}` : ''}
       res.json({ reset: true });
     } catch (error) {
       console.error('Error resetting cubicle:', error);
-      res.status(500).json({ error: error.message });
+      sendError(res, 500, error.message);
     }
   });
 

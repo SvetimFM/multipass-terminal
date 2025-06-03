@@ -1,4 +1,5 @@
-const clipboardService = {
+// Centralized clipboard service for browser environment
+export const clipboardService = {
     async copyToClipboard(text) {
         try {
             if (navigator.clipboard && window.isSecureContext) {
@@ -51,5 +52,3 @@ const clipboardService = {
         return false;
     }
 };
-
-export { clipboardService };

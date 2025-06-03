@@ -1,15 +1,13 @@
 // Application constants
-const llmConfig = require('../../config/llm.config');
-
 module.exports = {
-  // Default values - now from LLM config
-  DEFAULT_CUBICLE_COUNT: llmConfig.ui.defaultCubicleCount,
-  MAX_CUBICLE_COUNT: llmConfig.ui.maxCubicleCount,
+  // Default values
+  DEFAULT_CUBICLE_COUNT: 4,
+  MAX_CUBICLE_COUNT: 9,
   DEFAULT_TERMINAL_COLS: 80,
   DEFAULT_TERMINAL_ROWS: 30,
   
-  // File paths - now from LLM config
-  PROJECTS_FILE: llmConfig.storage.projectsFile,
+  // File paths
+  PROJECTS_FILE: './projects.json',
   AI_README_FILE: '.AI_README',
   
   // Session naming
@@ -64,6 +62,6 @@ module.exports = {
     SESSION_REMOVED: 'Session removed successfully'
   },
   
-  // LLM configuration
-  LLM_CONFIG: llmConfig
+  // AI command
+  AI_COMMAND: process.env.AI_COMMAND || 'claude'
 };

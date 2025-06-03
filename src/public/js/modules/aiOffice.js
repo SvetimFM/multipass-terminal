@@ -1,7 +1,9 @@
 // AI Office management functions
 import { state, setState } from './state.js';
-import { showToast } from './utils.js';
+import { showToast, copyToClipboard } from './utils.js';
 import { loadProjects } from './projects.js';
+import { clipboardService } from '../clipboard.js';
+import { TerminalFactory } from '../terminalFactory.js';
 
 // Setup copy/paste for cubicle terminals
 function setupCubicleCopyPaste(term, cubicleKey) {
@@ -41,7 +43,7 @@ function setupCubicleCopyPaste(term, cubicleKey) {
 }
 
 // Copy from cubicle terminal
-function copyCubicleSelection(term) {
+async function copyCubicleSelection(term) {
   if (!term || !term.hasSelection()) {
     showToast('No text selected');
     return;
@@ -49,24 +51,7 @@ function copyCubicleSelection(term) {
   
   const selection = term.getSelection();
   if (selection) {
-    navigator.clipboard.writeText(selection).then(() => {
-      showToast('Copied!');
-    }).catch(() => {
-      // Fallback
-      const textarea = document.createElement('textarea');
-      textarea.value = selection;
-      textarea.style.position = 'fixed';
-      textarea.style.opacity = '0';
-      document.body.appendChild(textarea);
-      textarea.select();
-      try {
-        document.execCommand('copy');
-        showToast('Copied!');
-      } catch (e) {
-        showToast('Copy failed');
-      }
-      document.body.removeChild(textarea);
-    });
+    await copyToClipboard(selection);
   }
 }
 
@@ -79,7 +64,7 @@ async function pasteToCubicle(term, cubicleKey) {
   }
   
   try {
-    const text = await navigator.clipboard.readText();
+    const text = await clipboardService.pasteFromClipboard();
     if (text) {
       try {
         ws.send(JSON.stringify({
@@ -297,8 +282,7 @@ export async function initCubicleTerminal(project, cubicle, idx, isGrid = false)
     return;
   }
   
-  const term = new Terminal({
-    cursorBlink: true,
+  const terminalOptions = {
     fontSize: isGrid ? 12 : 14,
     fontFamily: 'Menlo, Monaco, "Courier New", monospace',
     theme: {
@@ -306,11 +290,11 @@ export async function initCubicleTerminal(project, cubicle, idx, isGrid = false)
       foreground: '#d4d4d4'
     },
     rightClickSelectsWord: true
-  });
+  };
   
-  const fitAddon = new FitAddon.FitAddon();
-  term.loadAddon(fitAddon);
-  term.open(container);
+  const { terminal: term, fitAddon } = isGrid 
+    ? TerminalFactory.createGridTerminal(container, terminalOptions)
+    : TerminalFactory.createTerminalWithContainer(container, terminalOptions);
   
   // Store terminal and websocket reference for this cubicle
   state.cubicleTerminals.set(`${project.id}-${idx}`, { term, fitAddon });
