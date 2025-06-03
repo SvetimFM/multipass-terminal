@@ -52,7 +52,8 @@
       "Bash(git merge:*)",
       "Bash(git rebase:*)",
       "Bash(git stash:*)",
-      "Bash(wc:*)"
+      "Bash(wc:*)",
+      "Bash(npm test)"
     ],
     "deny": []
   }

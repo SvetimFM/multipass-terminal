@@ -91,9 +91,11 @@ export async function attachTerminal(sessionName) {
     state.currentWs.close();
   }
   
-  // Get initial terminal dimensions
-  const initialCols = Math.floor(window.innerWidth / 9); // Approximate char width
-  const initialRows = Math.floor((window.innerHeight - 100) / 17); // Approximate line height
+  // Get initial terminal dimensions based on container size
+  const terminalContainer = document.getElementById('terminal');
+  const containerRect = terminalContainer.getBoundingClientRect();
+  const initialCols = Math.floor(containerRect.width / 9); // Approximate char width
+  const initialRows = Math.floor(containerRect.height / 17); // Approximate line height
   
   // Connect to WebSocket with dimensions
   const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
@@ -159,6 +161,19 @@ export async function attachTerminal(sessionName) {
   state.currentWs.onopen = () => {
     console.log('WebSocket connected');
     state.currentTerminal.focus();
+    
+    // Send initial resize to ensure sync
+    if (state.fitAddon) {
+      state.fitAddon.fit();
+      const dimensions = state.fitAddon.proposeDimensions();
+      if (dimensions && state.currentWs.readyState === WebSocket.OPEN) {
+        state.currentWs.send(JSON.stringify({
+          type: 'resize',
+          cols: dimensions.cols,
+          rows: dimensions.rows
+        }));
+      }
+    }
   };
   
   state.currentWs.onmessage = (event) => {

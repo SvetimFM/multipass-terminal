@@ -570,21 +570,19 @@ export async function addTerminal() {
 }
 
 function initProjectTerminal(project, sessionName) {
-  const term = new Terminal({
-    cursorBlink: true,
+  const container = document.getElementById(`terminal-grid-${sessionName}`);
+  
+  const terminalOptions = {
     fontSize: 12,
     fontFamily: 'Menlo, Monaco, "Courier New", monospace',
     theme: {
       background: '#1a1a1a',
       foreground: '#d4d4d4'
-    }
-  });
+    },
+    rightClickSelectsWord: true
+  };
   
-  const fitAddon = new FitAddon.FitAddon();
-  term.loadAddon(fitAddon);
-  
-  term.open(document.getElementById(`terminal-grid-${sessionName}`));
-  fitAddon.fit();
+  const { terminal: term, fitAddon } = TerminalFactory.createGridTerminal(container, terminalOptions);
   
   // Create session in project root directory
   fetch('/api/sessions', {
@@ -596,11 +594,27 @@ function initProjectTerminal(project, sessionName) {
       isCubicle: false
     })
   }).then(() => {
+    // Calculate initial dimensions
+    const termRect = container.getBoundingClientRect();
+    const initialCols = Math.floor(termRect.width / 7);
+    const initialRows = Math.floor(termRect.height / 14);
+    
     const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-    const ws = new WebSocket(`${protocol}//${window.location.host}/terminal/${sessionName}`);
+    const ws = new WebSocket(`${protocol}//${window.location.host}/terminal/${sessionName}?cols=${initialCols}&rows=${initialRows}`);
     
     ws.onopen = () => {
       term.write('\r\n*** Connected to Project Root ***\r\n');
+      fitAddon.fit();
+      
+      // Send initial resize to ensure sync
+      const dimensions = fitAddon.proposeDimensions();
+      if (dimensions) {
+        ws.send(JSON.stringify({
+          type: 'resize',
+          cols: dimensions.cols,
+          rows: dimensions.rows
+        }));
+      }
     };
     
     ws.onmessage = (event) => {
@@ -609,13 +623,52 @@ function initProjectTerminal(project, sessionName) {
     
     term.onData((data) => {
       if (ws.readyState === WebSocket.OPEN) {
-        ws.send(data);
+        try {
+          ws.send(JSON.stringify({
+            type: 'input',
+            data: data
+          }));
+        } catch (e) {
+          // Fallback to raw send
+          ws.send(data);
+        }
       }
     });
     
     // Store terminal and websocket for cleanup
     state.cubicleTerminals.set(sessionName, { term, fitAddon });
     state.cubicleWebSockets.set(sessionName, ws);
+    
+    // Handle resize with debouncing
+    let resizeTimer = null;
+    const resizeObserver = new ResizeObserver(() => {
+      if (resizeTimer) {
+        clearTimeout(resizeTimer);
+      }
+      
+      resizeTimer = setTimeout(() => {
+        try {
+          if (fitAddon) {
+            fitAddon.fit();
+            
+            // Send resize message to server
+            if (ws.readyState === WebSocket.OPEN) {
+              const dimensions = fitAddon.proposeDimensions();
+              if (dimensions) {
+                ws.send(JSON.stringify({
+                  type: 'resize',
+                  cols: dimensions.cols,
+                  rows: dimensions.rows
+                }));
+              }
+            }
+          }
+        } catch (e) {
+          // Ignore resize errors
+        }
+      }, 150); // Debounce for 150ms
+    });
+    resizeObserver.observe(container);
   });
 }
 
