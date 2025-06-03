@@ -53,6 +53,7 @@
       "Bash(git rebase:*)",
       "Bash(git stash:*)",
       "Bash(wc:*)",
+      "Bash(npm test)"
       "Bash(curl:*)"
     ],
     "deny": []

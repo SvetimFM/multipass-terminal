@@ -9,7 +9,8 @@ const DEFAULT_TERMINAL_OPTIONS = {
         cursor: '#d4d4d4'
     },
     allowTransparency: true,
-    windowsMode: false
+    windowsMode: false,
+    scrollback: 10000  // Enable scrollback with 10k lines
 };
 
 export class TerminalFactory {
