@@ -9,6 +9,7 @@ import * as cubicleManagement from './modules/cubicleManagement.js';
 import * as fileBrowser from './modules/fileBrowser.js';
 import * as mobile from './modules/mobile.js';
 import { terminalSettings, initializeFontSizeControls } from './modules/terminalSettings.js';
+import { terminalResize } from './modules/terminalResize.js';
 
 // Expose modules to window for onclick handlers
 window.utils = utils;
@@ -21,6 +22,7 @@ window.fileBrowser = fileBrowser;
 window.mobile = mobile;
 window.state = state;
 window.terminalSettings = terminalSettings;
+window.terminalResize = terminalResize;
 
 // Initialize application
 document.addEventListener('DOMContentLoaded', async () => {

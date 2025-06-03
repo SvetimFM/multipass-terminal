@@ -5,6 +5,7 @@ import { loadProjects } from './projects.js';
 import { clipboardService } from '../clipboard.js';
 import { TerminalFactory } from '../terminalFactory.js';
 import { getTerminalSettings } from './terminalSettings.js';
+import { initializeCubicleResize } from './terminalResize.js';
 
 // Setup copy/paste for cubicle terminals
 function setupCubicleCopyPaste(term, cubicleKey) {
@@ -360,6 +361,11 @@ export async function initCubicleTerminal(project, cubicle, idx, isGrid = false)
   
   // Handle resize for grid view with debouncing
   if (isGrid) {
+    // Initialize vertical resize functionality
+    setTimeout(() => {
+      initializeCubicleResize(container, `${project.id}-${idx}`);
+    }, 100);
+    
     let resizeTimer = null;
     const resizeObserver = new ResizeObserver(() => {
       // Clear any pending resize
@@ -625,6 +631,11 @@ function initProjectTerminal(project, sessionName) {
     // Store terminal and websocket for cleanup
     state.cubicleTerminals.set(sessionName, { term, fitAddon });
     state.cubicleWebSockets.set(sessionName, ws);
+    
+    // Initialize vertical resize functionality for project terminal
+    setTimeout(() => {
+      initializeCubicleResize(container, sessionName);
+    }, 100);
     
     // Handle resize with debouncing
     let resizeTimer = null;
