@@ -49,6 +49,8 @@ ai-office/
 
 # Local project files
 .claude-projects.json
+.multipass-projects.json
+.claude-sessions.json
 
 # VS Code history
 .history/

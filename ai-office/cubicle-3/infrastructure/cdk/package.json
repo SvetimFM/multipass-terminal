@@ -1,0 +1,27 @@
+{
+  "name": "ai-office-infrastructure",
+  "version": "1.0.0",
+  "description": "CDK infrastructure for AI Office - The future of cloud development",
+  "scripts": {
+    "build": "tsc",
+    "watch": "tsc -w",
+    "cdk": "cdk",
+    "deploy:dev": "npm run build && cdk deploy --all --profile hyperadmin --context environment=dev",
+    "deploy:prod": "npm run build && cdk deploy --all --profile hyperadmin --context environment=prod --require-approval broadening",
+    "synth": "npm run build && cdk synth --profile hyperadmin",
+    "diff": "npm run build && cdk diff --all --profile hyperadmin",
+    "destroy": "cdk destroy --all --profile hyperadmin",
+    "bootstrap": "cdk bootstrap --profile hyperadmin"
+  },
+  "devDependencies": {
+    "@types/node": "20.11.5",
+    "aws-cdk": "2.118.0",
+    "ts-node": "^10.9.2",
+    "typescript": "~5.3.3"
+  },
+  "dependencies": {
+    "aws-cdk-lib": "2.118.0",
+    "constructs": "^10.3.0",
+    "@aws-cdk/aws-lambda-python-alpha": "^2.118.0-alpha.0"
+  }
+}
