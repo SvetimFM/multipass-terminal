@@ -198,6 +198,11 @@ export async function openAIOfficeGrid(projectId) {
                         title="Paste to terminal">
                   📝
                 </button>
+                <button onclick="window.aiOffice.sendEscToCubicle('${project.id}', ${idx})" 
+                        class="text-orange-400 hover:text-orange-300 text-xs px-2 py-1 bg-gray-800 rounded md:hidden" 
+                        title="Send ESC key">
+                  ⎋
+                </button>
                 <button onclick="window.aiOffice.removeCubicle('${project.id}', ${idx})" 
                         class="text-red-400 hover:text-red-300 text-sm">
                   ✕
@@ -787,5 +792,39 @@ export async function changeCubicleMode(projectId, cubicleIdx, newMode) {
     alert('Error changing mode: ' + error.message);
     // Reset dropdown to previous value
     openAIOfficeGrid(projectId);
+  }
+}
+
+export async function sendEscToCubicle(projectId, cubicleIdx) {
+  const project = state.currentAIOfficeProject;
+  if (!project || project.id !== projectId) return;
+  
+  const cubicle = project.aiOffice.cubicles[cubicleIdx];
+  if (!cubicle) return;
+  
+  const cubicleKey = `${project.id}-${cubicle.name}`;
+  const ws = state.cubicleWebSockets.get(cubicleKey);
+  
+  if (!ws || ws.readyState !== WebSocket.OPEN) {
+    showToast('Terminal not connected');
+    return;
+  }
+  
+  // Get the terminal instance and focus it
+  const terminal = state.cubicleTerminals.get(cubicleKey);
+  if (terminal && terminal.focus) {
+    terminal.focus();
+  }
+  
+  try {
+    ws.send(JSON.stringify({
+      type: 'input',
+      data: '\x1b'
+    }));
+    showToast('ESC sent');
+  } catch (e) {
+    // Fallback to raw send
+    ws.send('\x1b');
+    showToast('ESC sent');
   }
 }

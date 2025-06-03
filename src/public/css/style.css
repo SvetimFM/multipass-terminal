@@ -81,11 +81,14 @@ body {
 
 .cubicle-terminal {
   height: 300px;
+  min-height: 150px;
+  max-height: 600px;
   background: #1a1b26;
   border-radius: 8px;
   padding: 8px;
   overflow-y: auto;
   overflow-x: hidden;
+  position: relative;
 }
 
 /* Custom scrollbar for cubicle terminals */
@@ -220,3 +223,16 @@ body {
 .resizing .xterm {
   pointer-events: none;
 }
+
+/* Cubicle grid layout - prevent resize affecting other terminals */
+#cubicle-terminals {
+  display: grid;
+  grid-auto-rows: auto;
+  align-items: start;
+}
+
+#cubicle-terminals > div {
+  min-height: 0;
+  contain: layout size;
+}
+
