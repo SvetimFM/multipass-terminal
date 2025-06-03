@@ -334,14 +334,8 @@ ${project.githubUrl ? `## GitHub: ${project.githubUrl}` : ''}
       const util = require('util');
       const execPromise = util.promisify(exec);
       
-      // Store current cubicle count and modes
+      // Store current cubicle count only (reset modes to default)
       const cubicleCount = project.aiOffice.cubicleCount;
-      const cubicleModesMap = {};
-      project.aiOffice.cubicles.forEach((cubicle, idx) => {
-        if (cubicle.aiMode) {
-          cubicleModesMap[idx] = cubicle.aiMode;
-        }
-      });
       
       // Kill all tmux sessions for this AI Office
       for (const cubicle of project.aiOffice.cubicles) {
@@ -362,18 +356,8 @@ ${project.githubUrl ? `## GitHub: ${project.githubUrl}` : ''}
         console.error('Error removing ai-office directory:', e);
       }
       
-      // Recreate AI Office from scratch
+      // Recreate AI Office from scratch with default mode
       const newAiOffice = await createAIOffice(project, cubicleCount);
-      
-      // Restore AI modes if they were set
-      const aiModes = require('../../config/ai-modes');
-      for (const [idx, mode] of Object.entries(cubicleModesMap)) {
-        const cubicleIdx = parseInt(idx);
-        if (cubicleIdx < newAiOffice.cubicles.length && aiModes.modes[mode]) {
-          newAiOffice.cubicles[cubicleIdx].aiMode = mode;
-          await updateCubicleAIReadme(project, newAiOffice.cubicles[cubicleIdx], aiModes.modes[mode]);
-        }
-      }
       
       await saveProjects();
       res.json({ reset: newAiOffice.cubicles.length, total: newAiOffice.cubicles.length });
@@ -559,8 +543,8 @@ ${project.githubUrl ? `- **GitHub:** ${project.githubUrl}` : ''}
       const util = require('util');
       const execPromise = util.promisify(exec);
       
-      // Store current mode if set
-      const currentMode = cubicle.aiMode || 'default';
+      // Reset to default mode
+      const currentMode = 'default';
       
       // Kill tmux session for this cubicle
       const sessionName = `ai-office-${project.id}-${cubicle.name}`;
@@ -584,14 +568,7 @@ ${project.githubUrl ? `- **GitHub:** ${project.githubUrl}` : ''}
       // Update the cubicle in the array
       project.aiOffice.cubicles[cubicleIdx] = newCubicle;
       
-      // Restore AI mode if it was set
-      if (currentMode !== 'default') {
-        const aiModes = require('../../config/ai-modes');
-        if (aiModes.modes[currentMode]) {
-          newCubicle.aiMode = currentMode;
-          await updateCubicleAIReadme(project, newCubicle, aiModes.modes[currentMode]);
-        }
-      }
+      // AI mode is now default (no need to restore)
       
       await saveProjects();
       res.json({ reset: true });
