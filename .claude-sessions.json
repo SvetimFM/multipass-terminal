@@ -37,13 +37,73 @@
     "project": "Terminal Self Edit",
     "isCubicle": true,
     "cubiclePath": "/mnt/j/DevWorkspace/Active Projects/vibecodes/ship_anywhere_serverside/ai-office/cubicle-1",
-    "createdAt": "2025-06-03T03:09:53.695Z"
+    "createdAt": "2025-06-03T03:14:00.216Z"
   },
   "ai-office-default-cubicle-2": {
     "projectId": "default",
     "project": "Terminal Self Edit",
     "isCubicle": true,
     "cubiclePath": "/mnt/j/DevWorkspace/Active Projects/vibecodes/ship_anywhere_serverside/ai-office/cubicle-2",
-    "createdAt": "2025-06-03T03:09:53.789Z"
+    "createdAt": "2025-06-03T03:14:00.285Z"
+  },
+  "ai-office-proj-1748847680784-terminal-5": {
+    "projectId": "proj-1748847680784",
+    "project": "resumaestro",
+    "isCubicle": false,
+    "createdAt": "2025-06-03T03:16:17.001Z"
+  },
+  "ai-office-proj-1748847680784-terminal-4": {
+    "projectId": "proj-1748847680784",
+    "project": "resumaestro",
+    "isCubicle": false,
+    "createdAt": "2025-06-03T03:16:33.177Z"
+  },
+  "ai-office-default-terminal-3": {
+    "projectId": "default",
+    "project": "Terminal Self Edit",
+    "isCubicle": false,
+    "createdAt": "2025-06-03T03:17:43.644Z"
+  },
+  "ai-office-proj-1748848775303-cubicle-1": {
+    "projectId": "proj-1748848775303",
+    "project": "O3Measure",
+    "isCubicle": true,
+    "cubiclePath": "/mnt/j/DevWorkspace/Active Projects/o3_measure/node_iteration/O3Measure/ai-office/cubicle-1",
+    "createdAt": "2025-06-03T03:21:04.956Z"
+  },
+  "ai-office-proj-1748848775303-cubicle-2": {
+    "projectId": "proj-1748848775303",
+    "project": "O3Measure",
+    "isCubicle": true,
+    "cubiclePath": "/mnt/j/DevWorkspace/Active Projects/o3_measure/node_iteration/O3Measure/ai-office/cubicle-2",
+    "createdAt": "2025-06-03T03:21:05.073Z"
+  },
+  "ai-office-proj-1748848775303-cubicle-3": {
+    "projectId": "proj-1748848775303",
+    "project": "O3Measure",
+    "isCubicle": true,
+    "cubiclePath": "/mnt/j/DevWorkspace/Active Projects/o3_measure/node_iteration/O3Measure/ai-office/cubicle-3",
+    "createdAt": "2025-06-03T03:21:05.162Z"
+  },
+  "ai-office-proj-1748847680784-cubicle-1": {
+    "projectId": "proj-1748847680784",
+    "project": "resumaestro",
+    "isCubicle": true,
+    "cubiclePath": "/mnt/j/DevWorkspace/Active Projects/resumaestro/src/resumaestro/ai-office/cubicle-1",
+    "createdAt": "2025-06-03T04:17:54.439Z"
+  },
+  "ai-office-proj-1748847680784-cubicle-2": {
+    "projectId": "proj-1748847680784",
+    "project": "resumaestro",
+    "isCubicle": true,
+    "cubiclePath": "/mnt/j/DevWorkspace/Active Projects/resumaestro/src/resumaestro/ai-office/cubicle-2",
+    "createdAt": "2025-06-03T04:17:55.428Z"
+  },
+  "ai-office-proj-1748847680784-cubicle-3": {
+    "projectId": "proj-1748847680784",
+    "project": "resumaestro",
+    "isCubicle": true,
+    "cubiclePath": "/mnt/j/DevWorkspace/Active Projects/resumaestro/src/resumaestro/ai-office/cubicle-3",
+    "createdAt": "2025-06-03T04:17:55.487Z"
   }
 }

@@ -4,7 +4,15 @@ import { showToast } from './utils.js';
 
 export function sendToTerminal(command) {
   if (state.currentWs && state.currentWs.readyState === WebSocket.OPEN) {
-    state.currentWs.send(command);
+    try {
+      state.currentWs.send(JSON.stringify({
+        type: 'input',
+        data: command
+      }));
+    } catch (e) {
+      // Fallback to raw send
+      state.currentWs.send(command);
+    }
   }
 }
 
@@ -81,9 +89,13 @@ export async function attachTerminal(sessionName) {
     state.currentWs.close();
   }
   
-  // Connect to WebSocket
+  // Get initial terminal dimensions
+  const initialCols = Math.floor(window.innerWidth / 9); // Approximate char width
+  const initialRows = Math.floor((window.innerHeight - 100) / 17); // Approximate line height
+  
+  // Connect to WebSocket with dimensions
   const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-  state.currentWs = new WebSocket(`${protocol}//${window.location.host}/terminal/${sessionName}`);
+  state.currentWs = new WebSocket(`${protocol}//${window.location.host}/terminal/${sessionName}?cols=${initialCols}&rows=${initialRows}`);
   
   // Create terminal if not exists
   if (!state.currentTerminal) {
@@ -110,11 +122,35 @@ export async function attachTerminal(sessionName) {
     // Add copy/paste keyboard shortcuts
     setupTerminalCopyPaste(state.currentTerminal);
     
-    // Handle resize
+    // Handle resize with debouncing
     if (state.resizeListener) {
       window.removeEventListener('resize', state.resizeListener);
     }
-    state.resizeListener = () => fitAddon.fit();
+    
+    let resizeTimer = null;
+    state.resizeListener = () => {
+      // Clear any pending resize
+      if (resizeTimer) {
+        clearTimeout(resizeTimer);
+      }
+      
+      // Debounce resize events
+      resizeTimer = setTimeout(() => {
+        fitAddon.fit();
+        
+        // Send resize message to server
+        if (state.currentWs && state.currentWs.readyState === WebSocket.OPEN) {
+          const dimensions = fitAddon.proposeDimensions();
+          if (dimensions) {
+            state.currentWs.send(JSON.stringify({
+              type: 'resize',
+              cols: dimensions.cols,
+              rows: dimensions.rows
+            }));
+          }
+        }
+      }, 150); // Debounce for 150ms
+    };
     window.addEventListener('resize', state.resizeListener);
   }
   
@@ -141,10 +177,19 @@ export async function attachTerminal(sessionName) {
     showToast('Connection closed');
   };
   
-  // Send terminal input to WebSocket
+  // Send terminal input to WebSocket with proper message format
   state.currentTerminal.onData((data) => {
     if (state.currentWs.readyState === WebSocket.OPEN) {
-      state.currentWs.send(data);
+      // Try to use new protocol, fallback to raw for compatibility
+      try {
+        state.currentWs.send(JSON.stringify({
+          type: 'input',
+          data: data
+        }));
+      } catch (e) {
+        // Fallback to raw send
+        state.currentWs.send(data);
+      }
     }
   });
 }
@@ -254,7 +299,15 @@ export async function pasteToTerminal(term = state.currentTerminal) {
   try {
     const text = await navigator.clipboard.readText();
     if (text && state.currentWs && state.currentWs.readyState === WebSocket.OPEN) {
-      state.currentWs.send(text);
+      try {
+        state.currentWs.send(JSON.stringify({
+          type: 'input',
+          data: text
+        }));
+      } catch (e) {
+        // Fallback to raw send
+        state.currentWs.send(text);
+      }
       showToast('Pasted!');
     }
   } catch (err) {
@@ -267,7 +320,15 @@ export async function pasteToTerminal(term = state.currentTerminal) {
 export function broadcastToAllTerminals(command) {
   state.cubicleWebSockets.forEach((ws) => {
     if (ws && ws.readyState === WebSocket.OPEN) {
-      ws.send(command);
+      try {
+        ws.send(JSON.stringify({
+          type: 'input',
+          data: command
+        }));
+      } catch (e) {
+        // Fallback to raw send
+        ws.send(command);
+      }
     }
   });
 }

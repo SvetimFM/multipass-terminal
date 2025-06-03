@@ -14,11 +14,12 @@
         },
         {
           "name": "cubicle-2",
-          "path": "/mnt/j/DevWorkspace/Active Projects/vibecodes/ship_anywhere_serverside/ai-office/cubicle-2"
+          "path": "/mnt/j/DevWorkspace/Active Projects/vibecodes/ship_anywhere_serverside/ai-office/cubicle-2",
+          "aiMode": "refactor"
         }
       ],
       "highestCubicleNum": 2,
-      "createdAt": "2025-06-03T03:09:53.093Z"
+      "createdAt": "2025-06-03T03:13:59.624Z"
     }
   },
   {
@@ -32,7 +33,8 @@
       "cubicles": [
         {
           "name": "cubicle-1",
-          "path": "/mnt/j/DevWorkspace/Active Projects/resumaestro/src/resumaestro/ai-office/cubicle-1"
+          "path": "/mnt/j/DevWorkspace/Active Projects/resumaestro/src/resumaestro/ai-office/cubicle-1",
+          "aiMode": "architect"
         },
         {
           "name": "cubicle-2",
@@ -43,7 +45,8 @@
           "path": "/mnt/j/DevWorkspace/Active Projects/resumaestro/src/resumaestro/ai-office/cubicle-3"
         }
       ],
-      "createdAt": "2025-06-02T07:03:34.119Z"
+      "highestCubicleNum": 3,
+      "createdAt": "2025-06-03T04:17:53.560Z"
     }
   },
   {
