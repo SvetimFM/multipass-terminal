@@ -33,6 +33,7 @@ module.exports = (projects, sessions, saveProjects) => {
 
   // Delete project
   router.delete('/:id', asyncHandler(async (req, res) => {
+    try {
       const projectId = validateProjectId(req.params.id);
       const project = projects.get(projectId);
       
@@ -50,7 +51,7 @@ module.exports = (projects, sessions, saveProjects) => {
     } catch (error) {
       sendError(res, 400, error.message);
     }
-  });
+  }));
 
   // AI Office management
   router.post('/:id/ai-office', async (req, res) => {
@@ -79,6 +80,7 @@ module.exports = (projects, sessions, saveProjects) => {
   });
 
   router.delete('/:id/ai-office', asyncHandler(async (req, res) => {
+    try {
       const project = projects.get(req.params.id);
       if (!project) {
         return sendError(res, 404, 'Project not found');
@@ -90,7 +92,7 @@ module.exports = (projects, sessions, saveProjects) => {
     } catch (error) {
       sendError(res, 500, error.message);
     }
-  });
+  }));
 
   // Add cubicle to existing AI Office
   router.post('/:id/ai-office/cubicle', async (req, res) => {
@@ -209,6 +211,7 @@ ${project.githubUrl ? `## GitHub: ${project.githubUrl}` : ''}
 
   // Remove cubicle from AI Office
   router.delete('/:id/ai-office/cubicle/:cubicleIdx', asyncHandler(async (req, res) => {
+    try {
       const project = projects.get(req.params.id);
       if (!project || !project.aiOffice) {
         return sendError(res, 404, 'AI Office not found');
@@ -231,7 +234,7 @@ ${project.githubUrl ? `## GitHub: ${project.githubUrl}` : ''}
       console.error('Error removing cubicle:', error);
       sendError(res, 500, error.message);
     }
-  });
+  }));
 
   // Refresh all cubicles from GitHub
   router.post('/:id/ai-office/refresh-all', async (req, res) => {

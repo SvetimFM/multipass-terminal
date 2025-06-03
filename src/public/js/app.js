@@ -8,6 +8,7 @@ import * as aiOffice from './modules/aiOffice.js';
 import * as cubicleManagement from './modules/cubicleManagement.js';
 import * as fileBrowser from './modules/fileBrowser.js';
 import * as mobile from './modules/mobile.js';
+import { terminalSettings, initializeFontSizeControls } from './modules/terminalSettings.js';
 
 // Expose modules to window for onclick handlers
 window.utils = utils;
@@ -19,10 +20,14 @@ window.cubicleManagement = cubicleManagement;
 window.fileBrowser = fileBrowser;
 window.mobile = mobile;
 window.state = state;
+window.terminalSettings = terminalSettings;
 
 // Initialize application
 document.addEventListener('DOMContentLoaded', async () => {
   console.log('Initializing Ship Anywhere app...');
+  
+  // Initialize terminal settings
+  initializeFontSizeControls();
   
   // Load initial data
   await projects.loadProjects();

@@ -7,6 +7,7 @@ export const state = {
   currentPath: null,
   cubicleTerminals: new Map(),
   cubicleWebSockets: new Map(),
+  fitAddon: null,
   
   // UI state
   autoAcceptMode: false,
@@ -14,6 +15,9 @@ export const state = {
   resizeListener: null,
   currentAIOfficeProject: null,
   autoAcceptInterval: null,
+  
+  // Settings
+  terminalSettings: null,
   
   // Constants
   AUTO_ACCEPT_INTERVAL: 2000,

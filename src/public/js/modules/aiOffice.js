@@ -4,6 +4,7 @@ import { showToast, copyToClipboard } from './utils.js';
 import { loadProjects } from './projects.js';
 import { clipboardService } from '../clipboard.js';
 import { TerminalFactory } from '../terminalFactory.js';
+import { getTerminalSettings } from './terminalSettings.js';
 
 // Setup copy/paste for cubicle terminals
 function setupCubicleCopyPaste(term, cubicleKey) {
@@ -291,13 +292,11 @@ export async function initCubicleTerminal(project, cubicle, idx, isGrid = false)
     return;
   }
   
+  const settings = getTerminalSettings();
   const terminalOptions = {
-    fontSize: isGrid ? 12 : 14,
-    fontFamily: 'Menlo, Monaco, "Courier New", monospace',
-    theme: {
-      background: '#1a1a1a',
-      foreground: '#d4d4d4'
-    },
+    fontSize: settings.fontSize,
+    fontFamily: settings.fontFamily,
+    theme: settings.theme,
     rightClickSelectsWord: true
   };
   
@@ -567,13 +566,11 @@ export async function addTerminal() {
 function initProjectTerminal(project, sessionName) {
   const container = document.getElementById(`terminal-grid-${sessionName}`);
   
+  const settings = getTerminalSettings();
   const terminalOptions = {
-    fontSize: 12,
-    fontFamily: 'Menlo, Monaco, "Courier New", monospace',
-    theme: {
-      background: '#1a1a1a',
-      foreground: '#d4d4d4'
-    },
+    fontSize: settings.fontSize,
+    fontFamily: settings.fontFamily,
+    theme: settings.theme,
     rightClickSelectsWord: true
   };
   
