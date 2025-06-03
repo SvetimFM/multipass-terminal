@@ -150,12 +150,10 @@ export async function openAIOfficeGrid(projectId) {
     container.className = 'grid grid-cols-2 gap-4 p-4';
   }
   
-  // Load AI modes and profile actions
-  Promise.all([
-    fetch('/api/ai-modes').then(res => res.json()),
-    fetch('/api/profile-actions').then(res => res.json())
-  ])
-    .then(([aiModes, profileActions]) => {
+  // Load AI modes
+  fetch('/api/ai-modes')
+    .then(res => res.json())
+    .then((aiModes) => {
       // Create mode options HTML
       const modeOptions = Object.entries(aiModes.modes).map(([key, mode]) => 
         `<option value="${key}">${mode.name}</option>`
@@ -178,13 +176,6 @@ export async function openAIOfficeGrid(projectId) {
                 </select>
               </div>
               <div class="flex items-center gap-2">
-                <button id="cubicle-action-${project.id}-${idx}"
-                        onclick="window.aiOffice.executeProfileAction('${project.id}', ${idx}, '${currentMode}')" 
-                        class="text-blue-400 hover:text-blue-300 text-xs px-2 py-1 bg-gray-800 rounded flex items-center gap-1" 
-                        title="${profileActions.actions[currentMode]?.description || 'Execute profile action'}">
-                  <span>⚡</span>
-                  <span class="hidden sm:inline action-name">${profileActions.actions[currentMode]?.name || 'Action'}</span>
-                </button>
                 <button onclick="window.aiOffice.pasteToCubicleTerminal('${project.id}', ${idx})" 
                         class="text-green-400 hover:text-green-300 text-xs px-2 py-1 bg-gray-800 rounded" 
                         title="Paste to terminal">
@@ -436,58 +427,6 @@ export async function removeCubicle(projectId, cubicleIdx) {
   }
 }
 
-// Execute profile-specific action
-export async function executeProfileAction(projectId, cubicleIdx, profile) {
-  try {
-    // Show loading state
-    showToast('⚡ Executing action...');
-    
-    const response = await fetch('/api/profile-actions/execute', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ profile, projectId, cubicleIdx })
-    });
-    
-    const result = await response.json();
-    
-    if (result.success) {
-      // Create a modal to show the output
-      const modal = document.createElement('div');
-      modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4';
-      modal.innerHTML = `
-        <div class="bg-gray-800 rounded-lg max-w-3xl w-full max-h-[80vh] overflow-hidden flex flex-col">
-          <div class="bg-gray-700 px-6 py-4 flex justify-between items-center">
-            <h3 class="text-lg font-semibold text-white">${result.action} - Results</h3>
-            <button onclick="this.closest('.fixed').remove()" class="text-gray-400 hover:text-white">✕</button>
-          </div>
-          <div class="p-6 overflow-y-auto flex-1">
-            <pre class="whitespace-pre-wrap text-sm text-gray-300 font-mono">${result.output}</pre>
-            <div class="mt-4 text-xs text-gray-500">Executed at: ${new Date(result.timestamp).toLocaleString()}</div>
-          </div>
-          <div class="bg-gray-700 px-6 py-3 flex justify-end">
-            <button onclick="this.closest('.fixed').remove()" 
-                    class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded">
-              Close
-            </button>
-          </div>
-        </div>
-      `;
-      document.body.appendChild(modal);
-      
-      // Close on outside click
-      modal.addEventListener('click', (e) => {
-        if (e.target === modal) {
-          modal.remove();
-        }
-      });
-    } else {
-      showToast(`❌ Action failed: ${result.error}`, 'error');
-    }
-  } catch (error) {
-    console.error('Error executing profile action:', error);
-    showToast('❌ Failed to execute action', 'error');
-  }
-}
 
 // Paste to project terminal (non-cubicle)
 export async function pasteToProjectTerminal(sessionName) {
@@ -750,23 +689,6 @@ export async function changeCubicleMode(projectId, cubicleIdx, newMode) {
         state.currentAIOfficeProject.aiOffice.cubicles[cubicleIdx].aiMode = newMode;
       }
       showToast(`Mode changed to ${modeName}`);
-      
-      // Update the action button for the cubicle
-      const actionButton = document.querySelector(`#cubicle-action-${projectId}-${cubicleIdx}`);
-      if (actionButton) {
-        const profileActionsResponse = await fetch('/api/profile-actions');
-        const profileActions = await profileActionsResponse.json();
-        const action = profileActions.actions[newMode];
-        
-        if (action) {
-          actionButton.setAttribute('title', action.description);
-          actionButton.setAttribute('onclick', `window.aiOffice.executeProfileAction('${projectId}', ${cubicleIdx}, '${newMode}')`);
-          const actionName = actionButton.querySelector('.action-name');
-          if (actionName) {
-            actionName.textContent = action.name;
-          }
-        }
-      }
       
       // Reload projects to ensure persistence
       await loadProjects();
