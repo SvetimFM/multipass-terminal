@@ -6,7 +6,7 @@ const { asyncHandler, sendError } = require('../utils/errorHandler');
 
 module.exports = (sessions, projects, saveSessions) => {
   // Get all sessions
-  router.get('/', asyncHandler(async (req, res) => {
+  router.get('/', (req, res) => {
     exec('tmux list-sessions -F "#{session_name}"', (error, stdout) => {
       if (error) {
         res.json({ sessions: [] });
@@ -72,7 +72,7 @@ module.exports = (sessions, projects, saveSessions) => {
     } catch (error) {
       res.status(400).json({ error: error.message });
     }
-  });
+  }));
 
   // Check if session exists
   router.get('/:name', (req, res) => {

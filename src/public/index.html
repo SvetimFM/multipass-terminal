@@ -18,7 +18,16 @@
     <div id="main-header" class="bg-gray-800 p-3 border-b border-gray-700">
       <div class="flex justify-between items-center">
         <h1 class="text-lg font-semibold">Multipass - Terminal for AI</h1>
-        <div class="flex gap-2">
+        <div class="flex gap-2 items-center">
+          <!-- Font Size Controls -->
+          <div class="flex items-center gap-2 bg-gray-700 px-3 py-1 rounded">
+            <span class="text-xs text-gray-400">Font:</span>
+            <button onclick="window.terminalSettings.updateFontSize(Math.max(window.terminalSettings.getTerminalSettings().fontSize - 1, window.terminalSettings.MIN_FONT_SIZE))" 
+                    class="text-gray-300 hover:text-white px-1" title="Decrease font size">−</button>
+            <span id="font-size-display" class="text-sm font-mono px-1">14px</span>
+            <button onclick="window.terminalSettings.updateFontSize(Math.min(window.terminalSettings.getTerminalSettings().fontSize + 1, window.terminalSettings.MAX_FONT_SIZE))" 
+                    class="text-gray-300 hover:text-white px-1" title="Increase font size">+</button>
+          </div>
           <button onclick="window.sessions.showProjects()" class="bg-gray-700 px-3 py-1 rounded text-sm">
             Projects
           </button>
@@ -254,9 +263,20 @@
           <h2 class="text-lg font-semibold">
             <span id="ai-office-project-name"></span> - AI Office (<span id="ai-office-cubicle-count"></span> cubicles)
           </h2>
-          <button onclick="window.aiOffice.closeAIOfficeGrid()" class="bg-gray-700 px-3 py-1 rounded text-sm">
-            Close
-          </button>
+          <div class="flex gap-2 items-center">
+            <!-- Font Size Controls for Grid -->
+            <div class="flex items-center gap-2 bg-gray-700 px-3 py-1 rounded">
+              <span class="text-xs text-gray-400">Font:</span>
+              <button onclick="window.terminalSettings.updateFontSize(Math.max(window.terminalSettings.getTerminalSettings().fontSize - 1, window.terminalSettings.MIN_FONT_SIZE))" 
+                      class="text-gray-300 hover:text-white px-1" title="Decrease font size">−</button>
+              <span id="grid-font-size-display" class="text-sm font-mono px-1">14px</span>
+              <button onclick="window.terminalSettings.updateFontSize(Math.min(window.terminalSettings.getTerminalSettings().fontSize + 1, window.terminalSettings.MAX_FONT_SIZE))" 
+                      class="text-gray-300 hover:text-white px-1" title="Increase font size">+</button>
+            </div>
+            <button onclick="window.aiOffice.closeAIOfficeGrid()" class="bg-gray-700 px-3 py-1 rounded text-sm">
+              Close
+            </button>
+          </div>
         </div>
         <!-- Quick Commands for All Terminals - Desktop -->
         <div class="mt-2 hidden md:flex gap-2 overflow-x-auto">

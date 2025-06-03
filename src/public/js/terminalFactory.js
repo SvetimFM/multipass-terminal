@@ -62,12 +62,7 @@ export class TerminalFactory {
     }
 
     static createGridTerminal(container, options = {}) {
-        // Smaller font size for grid view
-        const gridOptions = {
-            ...options,
-            fontSize: 10
-        };
-        
-        return this.createTerminalWithContainer(container, gridOptions);
+        // Grid terminals use the same font size as regular terminals
+        return this.createTerminalWithContainer(container, options);
     }
 }

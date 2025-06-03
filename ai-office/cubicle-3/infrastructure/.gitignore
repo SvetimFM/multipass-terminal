@@ -1,0 +1,161 @@
+# Dependencies
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
+.pnpm-debug.log*
+
+# IDE and editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+
+# Environment files
+.env
+.env.local
+.env.development
+.env.test
+.env.production
+.env*.local
+
+# AWS CDK
+cdk.out/
+cdk.context.json
+.cdk.staging/
+*.js
+!jest.config.js
+!handler.js
+*.d.ts
+!**/*.d.ts
+
+# TypeScript
+*.tsbuildinfo
+dist/
+build/
+coverage/
+
+# Lambda layers
+lambda/layers/*/nodejs/node_modules/
+lambda/layers/*/layer.zip
+
+# Docker
+docker/terminal/node_modules/
+docker/terminal/package-lock.json
+
+# Terraform (if used alongside CDK)
+.terraform/
+*.tfstate
+*.tfstate.*
+terraform.tfvars
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+ENV/
+.venv
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Testing
+coverage/
+.nyc_output/
+junit.xml
+test-results/
+
+# Temporary files
+*.tmp
+*.temp
+*.cache
+.cache/
+tmp/
+temp/
+
+# OS files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# AWS
+.aws-sam/
+samconfig.toml
+aws-exports.js
+
+# Secrets
+*.pem
+*.key
+*.crt
+*.pfx
+secrets/
+credentials/
+
+# Build artifacts
+*.zip
+*.tar.gz
+lambda-packages/
+
+# Documentation build
+docs/_build/
+docs/.doctrees/
+
+# Local development
+local/
+workspace/
+.localstack/
+
+# Backup files
+*.bak
+*.backup
+*~
+
+# Package files
+*.jar
+*.war
+*.nar
+*.ear
+*.zip
+*.tar.gz
+*.rar
+
+# CDK asset staging
+.cdk.staging/
+cdk.out/
+
+# Python Lambda packages
+lambda/handlers/**/*.zip
+lambda/layers/**/python/
+
+# Generated files
+generated/
+.generated/
+
+# Monitoring and metrics
+.metrics/
+grafana-storage/
+
+# Database dumps
+*.sql
+*.dump
+
+# Custom
+.playground/
+.scratch/
+experiments/

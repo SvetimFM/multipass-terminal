@@ -32,9 +32,12 @@ async function loadProjects() {
     const data = await fs.readFile(PROJECTS_FILE, 'utf8');
     const saved = JSON.parse(data);
     saved.forEach(p => projects.set(p.id, p));
+    console.log(`Loaded ${projects.size} projects from ${PROJECTS_FILE}`);
   } catch (e) {
+    console.error('Error loading projects:', e.message);
     // Default projects
     projects.set('default', { id: 'default', name: 'Default', path: process.cwd() });
+    console.log('Created default project');
   }
 }
 
@@ -59,18 +62,20 @@ async function saveSessions() {
   await fs.writeFile('.claude-sessions.json', JSON.stringify(data, null, 2));
 }
 
-// Initialize
-loadProjects();
-loadSessions();
+// Initialize and start server
+async function initialize() {
+  // Load data
+  await loadProjects();
+  await loadSessions();
 
-// Set up routes
-const projectsRouter = require('./src/routes/projects');
-const sessionsRouter = require('./src/routes/sessions');
-const browseRouter = require('./src/routes/browse');
+  // Set up routes
+  const projectsRouter = require('./src/routes/projects');
+  const sessionsRouter = require('./src/routes/sessions');
+  const browseRouter = require('./src/routes/browse');
 
-app.use('/api/projects', projectsRouter(projects, sessions, saveProjects));
-app.use('/api/sessions', sessionsRouter(sessions, projects, saveSessions));
-app.use('/api/browse', browseRouter);
+  app.use('/api/projects', projectsRouter(projects, sessions, saveProjects));
+  app.use('/api/sessions', sessionsRouter(sessions, projects, saveSessions));
+  app.use('/api/browse', browseRouter);
 
 // Configuration endpoint
 app.get('/api/config', (req, res) => {
@@ -100,8 +105,9 @@ app.get('/api/home', (req, res) => {
   res.json({ home: process.env.HOME || '/home/user' });
 });
 
-// Error handling middleware (must be last)
-app.use(errorMiddleware);
+  // Error handling middleware (must be last)
+  app.use(errorMiddleware);
+}
 
 // WebSocket for terminal
 const server = require('http').createServer(app);
@@ -202,7 +208,8 @@ wss.on('connection', (ws, req) => {
 });
 
 // Start server
-server.listen(PORT, HOST, () => {
+initialize().then(() => {
+  server.listen(PORT, HOST, () => {
   console.log(`
 🚀 Multipass - Terminal for AI
    
@@ -217,7 +224,11 @@ server.listen(PORT, HOST, () => {
    ✓ Mobile optimized
    ✓ NO AUTHENTICATION - Direct access!
   `);
-}).on('error', (err) => {
-  console.error('Failed to start server:', err);
+  }).on('error', (err) => {
+    console.error('Failed to start server:', err);
+    process.exit(1);
+  });
+}).catch(err => {
+  console.error('Failed to initialize:', err);
   process.exit(1);
 });
