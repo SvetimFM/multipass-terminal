@@ -88,16 +88,10 @@ app.get('/api/config', (req, res) => {
   });
 });
 
-// AI Modes endpoint (deprecated - returns empty for compatibility)
+// AI Modes endpoint
 app.get('/api/ai-modes', (req, res) => {
-  res.json({
-    modes: {
-      default: {
-        name: 'Default',
-        command: process.env.AI_COMMAND || 'claude'
-      }
-    }
-  });
+  const aiModes = require('./config/ai-modes');
+  res.json(aiModes);
 });
 
 // Profile Actions endpoint
