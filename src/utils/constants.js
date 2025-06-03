@@ -18,21 +18,51 @@ module.exports = {
   // Timeouts
   WEBSOCKET_HEARTBEAT_INTERVAL: 30000,
   AUTO_ACCEPT_INTERVAL: 2000,
+  COMMAND_DEBOUNCE_DELAY: 50,
+  RESIZE_DEBOUNCE_DELAY: 100,
   
   // Terminal settings
   TERMINAL_THEME: {
     background: '#1a1b26',
     foreground: '#a9b1d6'
   },
+  TERMINAL_FONT_SIZE: 12,
+  TERMINAL_FONT_FAMILY: 'Consolas, "Courier New", monospace',
+  TERMINAL_CURSOR_BLINK: true,
   
   // Grid layout
   MOBILE_BREAKPOINT: 768,
+  MAX_GRID_SIZE: 9,
+  DEFAULT_GRID_SIZE: 4,
   
   // Error messages
   ERROR_PROJECT_NOT_FOUND: 'Project not found',
   ERROR_AI_OFFICE_NOT_FOUND: 'AI Office not found',
   ERROR_INVALID_PATH: 'Invalid path: directory traversal not allowed',
   ERROR_SESSION_EXISTS: 'Session name already exists',
+  
+  // Git defaults
+  DEFAULT_GIT_REPO: 'https://github.com/SvetimFM/multipass-ai-terminal',
+  DEFAULT_GIT_BRANCH: 'main',
+  GIT_CLONE_DEPTH: 1,
+  
+  // WebSocket events
+  WS_EVENTS: {
+    TERMINAL_DATA: 'terminal-data',
+    TERMINAL_RESIZE: 'resize',
+    TERMINAL_CLOSE: 'close',
+    ERROR: 'error'
+  },
+  
+  // UI Messages
+  UI_MESSAGES: {
+    COPY_SUCCESS: 'Copied to clipboard!',
+    COPY_FAILURE: 'Failed to copy to clipboard',
+    PASTE_FAILURE: 'Failed to paste from clipboard',
+    CONNECTION_ERROR: 'WebSocket connection error',
+    SESSION_CREATED: 'Session created successfully',
+    SESSION_REMOVED: 'Session removed successfully'
+  },
   
   // LLM configuration
   LLM_CONFIG: llmConfig
