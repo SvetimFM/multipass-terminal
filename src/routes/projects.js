@@ -321,36 +321,62 @@ ${project.githubUrl ? `## GitHub: ${project.githubUrl}` : ''}
 
   // Reset all cubicles
   router.post('/:id/ai-office/reset-all', async (req, res) => {
+    // Set a longer timeout for this operation
+    req.setTimeout(300000); // 5 minutes
+    
     try {
       const project = projects.get(req.params.id);
       if (!project || !project.aiOffice) {
         return res.status(404).json({ error: 'AI Office not found' });
       }
       
-      let reset = 0;
       const { exec } = require('child_process');
       const util = require('util');
       const execPromise = util.promisify(exec);
       
+      // Store current cubicle count and modes
+      const cubicleCount = project.aiOffice.cubicleCount;
+      const cubicleModesMap = {};
+      project.aiOffice.cubicles.forEach((cubicle, idx) => {
+        if (cubicle.aiMode) {
+          cubicleModesMap[idx] = cubicle.aiMode;
+        }
+      });
+      
+      // Kill all tmux sessions for this AI Office
       for (const cubicle of project.aiOffice.cubicles) {
+        const sessionName = `ai-office-${project.id}-${cubicle.name}`;
         try {
-          // Reset to clean state by copying from parent
-          await execPromise(`rsync -av --delete --exclude="ai-office/" --exclude=".git/" "${project.path}/" "${cubicle.path}/"`, {
-            maxBuffer: 1024 * 1024 * 10
-          });
-          
-          // Initialize git if needed
-          await execPromise(`cd "${cubicle.path}" && git init`, {
-            maxBuffer: 1024 * 1024 * 10
-          });
-          
-          reset++;
-        } catch (error) {
-          console.error(`Error resetting cubicle ${cubicle.name}:`, error);
+          await execPromise(`tmux kill-session -t "${sessionName}" 2>/dev/null || true`);
+          sessions.delete(sessionName);
+        } catch (e) {
+          // Ignore errors
         }
       }
       
-      res.json({ reset, total: project.aiOffice.cubicles.length });
+      // Remove entire ai-office directory
+      const aiOfficePath = path.join(project.path, 'ai-office');
+      try {
+        await fs.rm(aiOfficePath, { recursive: true, force: true });
+      } catch (e) {
+        console.error('Error removing ai-office directory:', e);
+      }
+      
+      // Recreate AI Office from scratch
+      const newAiOffice = await createAIOffice(project, cubicleCount);
+      
+      // Restore AI modes if they were set
+      const aiModes = require('../../config/ai-modes');
+      for (const [idx, mode] of Object.entries(cubicleModesMap)) {
+        const cubicleIdx = parseInt(idx);
+        if (cubicleIdx < newAiOffice.cubicles.length && aiModes.modes[mode]) {
+          newAiOffice.cubicles[cubicleIdx].aiMode = mode;
+          await updateCubicleAIReadme(project, newAiOffice.cubicles[cubicleIdx], aiModes.modes[mode]);
+        }
+      }
+      
+      await saveProjects();
+      res.json({ reset: newAiOffice.cubicles.length, total: newAiOffice.cubicles.length });
     } catch (error) {
       console.error('Error resetting cubicles:', error);
       res.status(500).json({ error: error.message });
@@ -513,6 +539,9 @@ ${project.githubUrl ? `- **GitHub:** ${project.githubUrl}` : ''}
 
   // Reset individual cubicle
   router.post('/:id/ai-office/cubicle/:cubicleIdx/reset', async (req, res) => {
+    // Set a longer timeout for this operation
+    req.setTimeout(120000); // 2 minutes
+    
     try {
       const project = projects.get(req.params.id);
       if (!project || !project.aiOffice) {
@@ -525,32 +554,46 @@ ${project.githubUrl ? `- **GitHub:** ${project.githubUrl}` : ''}
       }
       
       const cubicle = project.aiOffice.cubicles[cubicleIdx];
+      const cubicleNum = parseInt(cubicle.name.split('-')[1]);
       const { exec } = require('child_process');
       const util = require('util');
       const execPromise = util.promisify(exec);
       
-      // Backup .AI_README
-      const aiReadmePath = path.join(cubicle.path, '.AI_README');
-      let aiReadmeContent = null;
+      // Store current mode if set
+      const currentMode = cubicle.aiMode || 'default';
+      
+      // Kill tmux session for this cubicle
+      const sessionName = `ai-office-${project.id}-${cubicle.name}`;
       try {
-        aiReadmeContent = await fs.readFile(aiReadmePath, 'utf8');
-      } catch (e) {}
-      
-      // Reset by copying from parent
-      await execPromise(`rsync -av --delete --exclude="ai-office/" --exclude=".git/" --exclude=".AI_README" "${project.path}/" "${cubicle.path}/"`, {
-        maxBuffer: 1024 * 1024 * 10
-      });
-      
-      // Initialize git
-      await execPromise(`cd "${cubicle.path}" && git init`, {
-        maxBuffer: 1024 * 1024 * 10
-      });
-      
-      // Restore .AI_README
-      if (aiReadmeContent) {
-        await fs.writeFile(aiReadmePath, aiReadmeContent);
+        await execPromise(`tmux kill-session -t "${sessionName}" 2>/dev/null || true`);
+        sessions.delete(sessionName);
+      } catch (e) {
+        // Ignore errors
       }
       
+      // Remove cubicle directory completely
+      try {
+        await fs.rm(cubicle.path, { recursive: true, force: true });
+      } catch (e) {
+        console.error('Error removing cubicle directory:', e);
+      }
+      
+      // Recreate the cubicle from scratch
+      const newCubicle = await addCubicle(project, cubicleNum);
+      
+      // Update the cubicle in the array
+      project.aiOffice.cubicles[cubicleIdx] = newCubicle;
+      
+      // Restore AI mode if it was set
+      if (currentMode !== 'default') {
+        const aiModes = require('../../config/ai-modes');
+        if (aiModes.modes[currentMode]) {
+          newCubicle.aiMode = currentMode;
+          await updateCubicleAIReadme(project, newCubicle, aiModes.modes[currentMode]);
+        }
+      }
+      
+      await saveProjects();
       res.json({ reset: true });
     } catch (error) {
       console.error('Error resetting cubicle:', error);

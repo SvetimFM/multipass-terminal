@@ -1,6 +1,6 @@
 // Cubicle Management Functions
 import { state } from './state.js';
-import { showToast } from './utils.js';
+import { showToast, showLoading, hideLoading } from './utils.js';
 import { loadProjects } from './projects.js';
 import { openAIOfficeGrid } from './aiOffice.js';
 
@@ -66,6 +66,9 @@ export async function refreshAllCubicles() {
     return;
   }
   
+  // Show loading overlay
+  showLoading('Refreshing all cubicles from GitHub...');
+  
   try {
     const response = await fetch(`/api/projects/${state.currentAIOfficeProject.id}/ai-office/refresh-all`, {
       method: 'POST'
@@ -73,13 +76,25 @@ export async function refreshAllCubicles() {
     
     if (response.ok) {
       const result = await response.json();
-      alert(`Refreshed ${result.refreshed} cubicles successfully`);
-      openAIOfficeGrid(state.currentAIOfficeProject.id);
+      
+      // Reload projects
+      await loadProjects();
+      
+      // Hide loading
+      hideLoading();
+      
+      // Show success
+      showToast(`Refreshed ${result.refreshed} cubicles successfully`);
+      
+      // Refresh the grid
+      setTimeout(() => openAIOfficeGrid(state.currentAIOfficeProject.id), 300);
     } else {
+      hideLoading();
       const error = await response.json();
       alert('Failed to refresh cubicles: ' + error.error);
     }
   } catch (error) {
+    hideLoading();
     console.error('Error refreshing cubicles:', error);
     alert('Error refreshing cubicles: ' + error.message);
   }
@@ -109,7 +124,7 @@ export async function pullFromMainAll() {
 }
 
 export async function resetAllCubicles() {
-  if (!confirm('This will reset ALL cubicles to a clean state, removing all changes. This cannot be undone. Continue?')) {
+  if (!confirm('This will reset ALL cubicles to a clean state, removing all changes and recreating from scratch. Continue?')) {
     return;
   }
   
@@ -117,22 +132,51 @@ export async function resetAllCubicles() {
     return;
   }
   
+  // Show loading overlay
+  showLoading('Resetting all cubicles... This may take a moment.');
+  
   try {
+    // Use AbortController for timeout
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 300000); // 5 minute timeout
+    
     const response = await fetch(`/api/projects/${state.currentAIOfficeProject.id}/ai-office/reset-all`, {
-      method: 'POST'
+      method: 'POST',
+      signal: controller.signal
     });
+    
+    clearTimeout(timeoutId);
     
     if (response.ok) {
       const result = await response.json();
-      alert(`Reset ${result.reset} cubicles successfully`);
-      openAIOfficeGrid(state.currentAIOfficeProject.id);
+      
+      // Reload projects to get fresh state
+      await loadProjects();
+      
+      // Hide loading before UI updates
+      hideLoading();
+      
+      // Close management modal
+      closeCubicleManagement();
+      
+      // Show success message
+      showToast(`Reset ${result.reset} cubicles successfully`);
+      
+      // Reopen AI Office grid after a short delay
+      setTimeout(() => openAIOfficeGrid(state.currentAIOfficeProject.id), 300);
     } else {
+      hideLoading();
       const error = await response.json();
       alert('Failed to reset cubicles: ' + error.error);
     }
   } catch (error) {
+    hideLoading();
     console.error('Error resetting cubicles:', error);
-    alert('Error resetting cubicles: ' + error.message);
+    if (error.name === 'AbortError') {
+      alert('Reset operation timed out. Please try again or reset cubicles individually.');
+    } else {
+      alert('Error resetting cubicles: ' + error.message);
+    }
   }
 }
 
@@ -147,18 +191,38 @@ export async function refreshCubicle(projectId, cubicleIdx) {
     return;
   }
   
+  // Show loading overlay
+  showLoading('Refreshing cubicle from GitHub...');
+  
   try {
     const response = await fetch(`/api/projects/${projectId}/ai-office/cubicle/${cubicleIdx}/refresh`, {
       method: 'POST'
     });
     
     if (response.ok) {
-      alert('Cubicle refreshed successfully');
+      // Reload projects
+      await loadProjects();
+      
+      // Hide loading
+      hideLoading();
+      
+      // Show success
+      showToast('Cubicle refreshed successfully');
+      
+      // Update management list
+      populateCubicleManagementList();
+      
+      // If AI Office grid is open, refresh it
+      if (state.currentAIOfficeProject && !document.getElementById('ai-office-grid').classList.contains('hidden')) {
+        setTimeout(() => openAIOfficeGrid(projectId), 300);
+      }
     } else {
+      hideLoading();
       const error = await response.json();
       alert('Failed to refresh cubicle: ' + error.error);
     }
   } catch (error) {
+    hideLoading();
     console.error('Error refreshing cubicle:', error);
     alert('Error refreshing cubicle: ' + error.message);
   }
@@ -187,25 +251,55 @@ export async function pullFromMainCubicle(projectId, cubicleIdx) {
 }
 
 export async function resetCubicle(projectId, cubicleIdx) {
-  if (!confirm('This will reset this cubicle to a clean state, removing all changes. Continue?')) {
+  if (!confirm('This will reset this cubicle to a clean state, removing all changes and recreating from scratch. Continue?')) {
     return;
   }
   
+  // Show loading overlay
+  showLoading('Resetting cubicle... This may take a moment.');
+  
   try {
+    // Use AbortController for timeout
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 120000); // 2 minute timeout
+    
     const response = await fetch(`/api/projects/${projectId}/ai-office/cubicle/${cubicleIdx}/reset`, {
-      method: 'POST'
+      method: 'POST',
+      signal: controller.signal
     });
     
+    clearTimeout(timeoutId);
+    
     if (response.ok) {
-      alert('Cubicle reset successfully');
+      // Reload projects to get fresh state
+      await loadProjects();
+      
+      // Hide loading
+      hideLoading();
+      
+      // Update the management list
       populateCubicleManagementList();
+      
+      // Show success message
+      showToast('Cubicle reset successfully');
+      
+      // If AI Office grid is open, refresh it
+      if (state.currentAIOfficeProject && !document.getElementById('ai-office-grid').classList.contains('hidden')) {
+        setTimeout(() => openAIOfficeGrid(projectId), 300);
+      }
     } else {
+      hideLoading();
       const error = await response.json();
       alert('Failed to reset cubicle: ' + error.error);
     }
   } catch (error) {
+    hideLoading();
     console.error('Error resetting cubicle:', error);
-    alert('Error resetting cubicle: ' + error.message);
+    if (error.name === 'AbortError') {
+      alert('Reset operation timed out. Please try again.');
+    } else {
+      alert('Error resetting cubicle: ' + error.message);
+    }
   }
 }
 
