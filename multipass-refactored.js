@@ -9,7 +9,7 @@ const WebSocket = require('ws');
 const pty = require('node-pty');
 
 const app = express();
-const PORT = process.env.PORT || 9998;
+const PORT = process.env.PORT || 9999;
 const HOST = process.env.HOST || '0.0.0.0';
 
 app.use(express.json());
