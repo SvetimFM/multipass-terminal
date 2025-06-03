@@ -105,17 +105,56 @@ wss.on('connection', (ws, req) => {
   
   console.log('WebSocket connection for session:', sessionName);
   
-  // Create a PTY that attaches to tmux session
+  // Parse initial dimensions from query params or use defaults
+  const url = new URL(req.url, `http://${req.headers.host}`);
+  const cols = parseInt(url.searchParams.get('cols')) || 80;
+  const rows = parseInt(url.searchParams.get('rows')) || 30;
+  
+  // Create a PTY that attaches to tmux session with proper dimensions
   const term = pty.spawn('tmux', ['attach-session', '-t', sessionName], {
     name: 'xterm-256color',
-    cols: 80,
-    rows: 30,
+    cols: cols,
+    rows: rows,
     cwd: process.env.HOME,
     env: process.env
   });
   
+  // Store terminal reference
+  terminals.set(sessionName, term);
+  
+  // Buffer for incomplete escape sequences
+  let buffer = '';
+  const BUFFER_TIMEOUT = 10; // ms
+  let bufferTimer = null;
+  
+  // Function to send buffered data
+  const flushBuffer = () => {
+    if (buffer && ws.readyState === WebSocket.OPEN) {
+      ws.send(buffer);
+      buffer = '';
+    }
+    bufferTimer = null;
+  };
+  
   term.on('data', (data) => {
-    ws.send(data);
+    // Add data to buffer
+    buffer += data;
+    
+    // Clear existing timer
+    if (bufferTimer) {
+      clearTimeout(bufferTimer);
+    }
+    
+    // Check if we have complete escape sequences
+    const escapeMatch = buffer.match(/\x1b\[[0-9;]*$/); // Incomplete escape sequence at end
+    
+    if (escapeMatch) {
+      // We have an incomplete escape sequence, wait for more data
+      bufferTimer = setTimeout(flushBuffer, BUFFER_TIMEOUT);
+    } else {
+      // No incomplete sequences, send immediately
+      flushBuffer();
+    }
   });
   
   term.on('exit', () => {
@@ -125,10 +164,29 @@ wss.on('connection', (ws, req) => {
   });
   
   ws.on('message', (msg) => {
-    term.write(msg.toString());
+    try {
+      const data = JSON.parse(msg);
+      
+      if (data.type === 'resize' && data.cols && data.rows) {
+        // Handle terminal resize
+        term.resize(data.cols, data.rows);
+        console.log(`Resized terminal ${sessionName} to ${data.cols}x${data.rows}`);
+      } else if (data.type === 'input') {
+        // Handle terminal input
+        term.write(data.data);
+      }
+    } catch (e) {
+      // Fallback for raw string messages (backward compatibility)
+      term.write(msg.toString());
+    }
   });
   
   ws.on('close', () => {
+    // Flush any remaining buffer
+    if (bufferTimer) {
+      clearTimeout(bufferTimer);
+    }
+    
     if (terminals.has(sessionName)) {
       term.kill();
       terminals.delete(sessionName);
