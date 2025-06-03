@@ -3,6 +3,7 @@ import { state, setState } from './state.js';
 import { showToast, copyToClipboard } from './utils.js';
 import { clipboardService } from '../clipboard.js';
 import { TerminalFactory } from '../terminalFactory.js';
+import { getTerminalSettings } from './terminalSettings.js';
 
 export function sendToTerminal(command) {
   if (state.currentWs && state.currentWs.readyState === WebSocket.OPEN) {
@@ -100,13 +101,11 @@ export async function attachTerminal(sessionName) {
     const terminalContainer = document.getElementById('terminal');
     terminalContainer.innerHTML = '';
     
+    const settings = getTerminalSettings();
     const { terminal, fitAddon } = TerminalFactory.createTerminalWithContainer(terminalContainer, {
-      fontSize: 14,
-      fontFamily: 'Menlo, Monaco, "Courier New", monospace',
-      theme: {
-        background: '#1a1a1a',
-        foreground: '#d4d4d4'
-      },
+      fontSize: settings.fontSize,
+      fontFamily: settings.fontFamily,
+      theme: settings.theme,
       rightClickSelectsWord: true
     });
     
