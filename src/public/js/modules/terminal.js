@@ -91,15 +91,9 @@ export async function attachTerminal(sessionName) {
     state.currentWs.close();
   }
   
-  // Get initial terminal dimensions based on container size
-  const terminalContainer = document.getElementById('terminal');
-  const containerRect = terminalContainer.getBoundingClientRect();
-  const initialCols = Math.floor(containerRect.width / 9); // Approximate char width
-  const initialRows = Math.floor(containerRect.height / 17); // Approximate line height
-  
-  // Connect to WebSocket with dimensions
+  // Connect to WebSocket
   const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-  state.currentWs = new WebSocket(`${protocol}//${window.location.host}/terminal/${sessionName}?cols=${initialCols}&rows=${initialRows}`);
+  state.currentWs = new WebSocket(`${protocol}//${window.location.host}/terminal/${sessionName}`);
   
   // Create terminal if not exists
   if (!state.currentTerminal) {

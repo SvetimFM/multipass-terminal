@@ -311,14 +311,9 @@ export async function initCubicleTerminal(project, cubicle, idx, isGrid = false)
   // Setup copy/paste support
   setupCubicleCopyPaste(term, `${project.id}-${idx}`);
   
-  // Calculate initial dimensions for cubicle terminal
-  const termRect = container.getBoundingClientRect();
-  const initialCols = Math.floor(termRect.width / 7); // Smaller font for grid
-  const initialRows = Math.floor(termRect.height / 14);
-  
-  // Connect WebSocket with the session name and dimensions
+  // Connect WebSocket with the session name
   const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-  const ws = new WebSocket(`${protocol}//${window.location.host}/terminal/${sessionName}?cols=${initialCols}&rows=${initialRows}`);
+  const ws = new WebSocket(`${protocol}//${window.location.host}/terminal/${sessionName}`);
   
   ws.onopen = () => {
     console.log(`Connected to cubicle ${cubicle.name}`);
@@ -594,13 +589,8 @@ function initProjectTerminal(project, sessionName) {
       isCubicle: false
     })
   }).then(() => {
-    // Calculate initial dimensions
-    const termRect = container.getBoundingClientRect();
-    const initialCols = Math.floor(termRect.width / 7);
-    const initialRows = Math.floor(termRect.height / 14);
-    
     const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-    const ws = new WebSocket(`${protocol}//${window.location.host}/terminal/${sessionName}?cols=${initialCols}&rows=${initialRows}`);
+    const ws = new WebSocket(`${protocol}//${window.location.host}/terminal/${sessionName}`);
     
     ws.onopen = () => {
       term.write('\r\n*** Connected to Project Root ***\r\n');
