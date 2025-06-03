@@ -34,12 +34,25 @@
       "Bash(tmux list-sessions:*)",
       "Bash(npm run lint)",
       "Bash(kill:*)",
-      "Bash(git push:*)",
       "Bash(gh pr create:*)",
+      "Bash(gh pr list:*)",
+      "Bash(gh pr view:*)",
+      "Bash(gh pr diff:*)",
+      "Bash(gh pr review:*)",
+      "Bash(gh pr comment:*)",
+      "Bash(git fetch:*)",
+      "Bash(git pull:*)",
+      "Bash(git cherry-pick:*)",
+      "Bash(git push:*)",
+      "Bash(npm start)",
       "Bash(rg:*)",
       "Bash(for file in src/routes/*.js)",
       "Bash(do echo \"=== $file ===\")",
-      "Bash(done)"
+      "Bash(done)",
+      "Bash(git merge:*)",
+      "Bash(git rebase:*)",
+      "Bash(git stash:*)",
+      "Bash(wc:*)"
     ],
     "deny": []
   }

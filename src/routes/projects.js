@@ -218,5 +218,245 @@ ${project.githubUrl ? `## GitHub: ${project.githubUrl}` : ''}
     }
   });
 
+  // Refresh all cubicles from GitHub
+  router.post('/:id/ai-office/refresh-all', async (req, res) => {
+    try {
+      const project = projects.get(req.params.id);
+      if (!project || !project.aiOffice) {
+        return res.status(404).json({ error: 'AI Office not found' });
+      }
+      
+      if (!project.githubUrl) {
+        return res.status(400).json({ error: 'No GitHub URL configured for this project' });
+      }
+      
+      let refreshed = 0;
+      const { exec } = require('child_process');
+      const util = require('util');
+      const execPromise = util.promisify(exec);
+      
+      for (const cubicle of project.aiOffice.cubicles) {
+        try {
+          // Backup .AI_README
+          const aiReadmePath = path.join(cubicle.path, '.AI_README');
+          let aiReadmeContent = null;
+          try {
+            aiReadmeContent = await fs.readFile(aiReadmePath, 'utf8');
+          } catch (e) {}
+          
+          // Fresh clone from GitHub
+          await execPromise(`cd "${cubicle.path}" && rm -rf .git && git clone "${project.githubUrl}" . --depth 1`, {
+            maxBuffer: 1024 * 1024 * 10
+          });
+          
+          // Restore .AI_README
+          if (aiReadmeContent) {
+            await fs.writeFile(aiReadmePath, aiReadmeContent);
+          }
+          
+          refreshed++;
+        } catch (error) {
+          console.error(`Error refreshing cubicle ${cubicle.name}:`, error);
+        }
+      }
+      
+      res.json({ refreshed, total: project.aiOffice.cubicles.length });
+    } catch (error) {
+      console.error('Error refreshing AI Office:', error);
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  // Pull from main in all cubicles
+  router.post('/:id/ai-office/pull-all', async (req, res) => {
+    try {
+      const project = projects.get(req.params.id);
+      if (!project || !project.aiOffice) {
+        return res.status(404).json({ error: 'AI Office not found' });
+      }
+      
+      let pulled = 0;
+      const { exec } = require('child_process');
+      const util = require('util');
+      const execPromise = util.promisify(exec);
+      
+      for (const cubicle of project.aiOffice.cubicles) {
+        try {
+          await execPromise(`cd "${cubicle.path}" && git pull origin main`, {
+            maxBuffer: 1024 * 1024 * 10
+          });
+          pulled++;
+        } catch (error) {
+          console.error(`Error pulling in cubicle ${cubicle.name}:`, error);
+        }
+      }
+      
+      res.json({ pulled, total: project.aiOffice.cubicles.length });
+    } catch (error) {
+      console.error('Error pulling updates:', error);
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  // Reset all cubicles
+  router.post('/:id/ai-office/reset-all', async (req, res) => {
+    try {
+      const project = projects.get(req.params.id);
+      if (!project || !project.aiOffice) {
+        return res.status(404).json({ error: 'AI Office not found' });
+      }
+      
+      let reset = 0;
+      const { exec } = require('child_process');
+      const util = require('util');
+      const execPromise = util.promisify(exec);
+      
+      for (const cubicle of project.aiOffice.cubicles) {
+        try {
+          // Reset to clean state by copying from parent
+          await execPromise(`rsync -av --delete --exclude="ai-office/" --exclude=".git/" "${project.path}/" "${cubicle.path}/"`, {
+            maxBuffer: 1024 * 1024 * 10
+          });
+          
+          // Initialize git if needed
+          await execPromise(`cd "${cubicle.path}" && git init`, {
+            maxBuffer: 1024 * 1024 * 10
+          });
+          
+          reset++;
+        } catch (error) {
+          console.error(`Error resetting cubicle ${cubicle.name}:`, error);
+        }
+      }
+      
+      res.json({ reset, total: project.aiOffice.cubicles.length });
+    } catch (error) {
+      console.error('Error resetting cubicles:', error);
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  // Refresh individual cubicle from GitHub
+  router.post('/:id/ai-office/cubicle/:cubicleIdx/refresh', async (req, res) => {
+    try {
+      const project = projects.get(req.params.id);
+      if (!project || !project.aiOffice) {
+        return res.status(404).json({ error: 'AI Office not found' });
+      }
+      
+      if (!project.githubUrl) {
+        return res.status(400).json({ error: 'No GitHub URL configured' });
+      }
+      
+      const cubicleIdx = parseInt(req.params.cubicleIdx);
+      if (cubicleIdx < 0 || cubicleIdx >= project.aiOffice.cubicles.length) {
+        return res.status(400).json({ error: 'Invalid cubicle index' });
+      }
+      
+      const cubicle = project.aiOffice.cubicles[cubicleIdx];
+      const { exec } = require('child_process');
+      const util = require('util');
+      const execPromise = util.promisify(exec);
+      
+      // Backup .AI_README
+      const aiReadmePath = path.join(cubicle.path, '.AI_README');
+      let aiReadmeContent = null;
+      try {
+        aiReadmeContent = await fs.readFile(aiReadmePath, 'utf8');
+      } catch (e) {}
+      
+      // Fresh clone
+      await execPromise(`cd "${cubicle.path}" && rm -rf * .* 2>/dev/null || true && git clone "${project.githubUrl}" . --depth 1`, {
+        maxBuffer: 1024 * 1024 * 10
+      });
+      
+      // Restore .AI_README
+      if (aiReadmeContent) {
+        await fs.writeFile(aiReadmePath, aiReadmeContent);
+      }
+      
+      res.json({ refreshed: true });
+    } catch (error) {
+      console.error('Error refreshing cubicle:', error);
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  // Pull from main in individual cubicle
+  router.post('/:id/ai-office/cubicle/:cubicleIdx/pull', async (req, res) => {
+    try {
+      const project = projects.get(req.params.id);
+      if (!project || !project.aiOffice) {
+        return res.status(404).json({ error: 'AI Office not found' });
+      }
+      
+      const cubicleIdx = parseInt(req.params.cubicleIdx);
+      if (cubicleIdx < 0 || cubicleIdx >= project.aiOffice.cubicles.length) {
+        return res.status(400).json({ error: 'Invalid cubicle index' });
+      }
+      
+      const cubicle = project.aiOffice.cubicles[cubicleIdx];
+      const { exec } = require('child_process');
+      const util = require('util');
+      const execPromise = util.promisify(exec);
+      
+      await execPromise(`cd "${cubicle.path}" && git pull origin main`, {
+        maxBuffer: 1024 * 1024 * 10
+      });
+      
+      res.json({ pulled: true });
+    } catch (error) {
+      console.error('Error pulling updates:', error);
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  // Reset individual cubicle
+  router.post('/:id/ai-office/cubicle/:cubicleIdx/reset', async (req, res) => {
+    try {
+      const project = projects.get(req.params.id);
+      if (!project || !project.aiOffice) {
+        return res.status(404).json({ error: 'AI Office not found' });
+      }
+      
+      const cubicleIdx = parseInt(req.params.cubicleIdx);
+      if (cubicleIdx < 0 || cubicleIdx >= project.aiOffice.cubicles.length) {
+        return res.status(400).json({ error: 'Invalid cubicle index' });
+      }
+      
+      const cubicle = project.aiOffice.cubicles[cubicleIdx];
+      const { exec } = require('child_process');
+      const util = require('util');
+      const execPromise = util.promisify(exec);
+      
+      // Backup .AI_README
+      const aiReadmePath = path.join(cubicle.path, '.AI_README');
+      let aiReadmeContent = null;
+      try {
+        aiReadmeContent = await fs.readFile(aiReadmePath, 'utf8');
+      } catch (e) {}
+      
+      // Reset by copying from parent
+      await execPromise(`rsync -av --delete --exclude="ai-office/" --exclude=".git/" --exclude=".AI_README" "${project.path}/" "${cubicle.path}/"`, {
+        maxBuffer: 1024 * 1024 * 10
+      });
+      
+      // Initialize git
+      await execPromise(`cd "${cubicle.path}" && git init`, {
+        maxBuffer: 1024 * 1024 * 10
+      });
+      
+      // Restore .AI_README
+      if (aiReadmeContent) {
+        await fs.writeFile(aiReadmePath, aiReadmeContent);
+      }
+      
+      res.json({ reset: true });
+    } catch (error) {
+      console.error('Error resetting cubicle:', error);
+      res.status(500).json({ error: error.message });
+    }
+  });
+
   return router;
 };
