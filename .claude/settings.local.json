@@ -1,16 +1,11 @@
 {
   "permissions": {
     "allow": [
-      "Bash(grep:*)",
-      "Bash(rm:*)"
-      "Bash(git fetch:*)",
-      "Bash(git checkout:*)",
+      "Bash(mkdir:*)",
+      "Bash(npx cdk init:*)",
+      "Bash(touch:*)",
       "Bash(git pull:*)",
-      "Bash(npm start)",
-      "Bash(node:*)",
-      "Bash(grep:*)",
-      "Bash(timeout 5 npm start:*)",
-      "Bash(timeout 10 npm start:*)",
+      "Bash(git checkout:*)",
       "Bash(git add:*)"
     ],
     "deny": []

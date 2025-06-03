@@ -237,7 +237,9 @@ function setupTerminalCopyPaste(term) {
       return false;
     }
     // Ctrl+V for paste
-    if (event.ctrlKey && event.key === 'v') {
+    if (event.ctrlKey && event.key === 'v' && !event.repeat) {
+      event.preventDefault();
+      event.stopPropagation();
       pasteToTerminal(term);
       return false;
     }
@@ -247,7 +249,9 @@ function setupTerminalCopyPaste(term) {
       return false;
     }
     // Ctrl+Shift+V for paste (common terminal shortcut)
-    if (event.ctrlKey && event.shiftKey && event.key === 'V') {
+    if (event.ctrlKey && event.shiftKey && event.key === 'V' && !event.repeat) {
+      event.preventDefault();
+      event.stopPropagation();
       pasteToTerminal(term);
       return false;
     }
@@ -300,6 +304,11 @@ export async function pasteToTerminal(term = state.currentTerminal) {
   if (!term) {
     showToast('No terminal active');
     return;
+  }
+  
+  // Focus the terminal before pasting to prevent double paste issues
+  if (term.focus) {
+    term.focus();
   }
   
   try {

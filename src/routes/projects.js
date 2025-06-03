@@ -533,6 +533,38 @@ ${project.githubUrl ? `- **GitHub:** ${project.githubUrl}` : ''}
     await fs.writeFile(aiReadmePath, content);
   }
 
+  // Read .AI_README file content
+  router.get('/:id/aioffice/cubicles/:cubicleIdx/read-ai-readme', async (req, res) => {
+    try {
+      const project = projects.get(req.params.id);
+      if (!project || !project.aiOffice) {
+        return sendError(res, 404, 'AI Office not found');
+      }
+      
+      const cubicleIdx = parseInt(req.params.cubicleIdx);
+      if (cubicleIdx < 0 || cubicleIdx >= project.aiOffice.cubicles.length) {
+        return sendError(res, 400, 'Invalid cubicle index');
+      }
+      
+      const cubicle = project.aiOffice.cubicles[cubicleIdx];
+      const aiReadmePath = path.join(cubicle.path, '.AI_README');
+      
+      try {
+        const content = await fs.readFile(aiReadmePath, 'utf8');
+        res.json({ content });
+      } catch (err) {
+        if (err.code === 'ENOENT') {
+          res.json({ content: '' });
+        } else {
+          throw err;
+        }
+      }
+    } catch (error) {
+      console.error('Error reading .AI_README:', error);
+      sendError(res, 500, error.message);
+    }
+  });
+
   // Reset individual cubicle
   router.post('/:id/ai-office/cubicle/:cubicleIdx/reset', async (req, res) => {
     // Set a longer timeout for this operation
