@@ -432,6 +432,85 @@ ${project.githubUrl ? `## GitHub: ${project.githubUrl}` : ''}
     }
   });
 
+  // Set AI mode for cubicles
+  router.post('/:id/ai-office/set-mode', async (req, res) => {
+    try {
+      const project = projects.get(req.params.id);
+      if (!project || !project.aiOffice) {
+        return res.status(404).json({ error: 'AI Office not found' });
+      }
+      
+      const { mode, target, cubicleIdx } = req.body;
+      const aiModes = require('../../config/ai-modes');
+      
+      if (!aiModes.modes[mode]) {
+        return res.status(400).json({ error: 'Invalid AI mode' });
+      }
+      
+      if (target === 'all') {
+        // Apply mode to all cubicles
+        for (const cubicle of project.aiOffice.cubicles) {
+          cubicle.aiMode = mode;
+          await updateCubicleAIReadme(project, cubicle, aiModes.modes[mode]);
+        }
+      } else if (target === 'cubicle' && cubicleIdx !== undefined) {
+        // Apply mode to specific cubicle
+        if (cubicleIdx < 0 || cubicleIdx >= project.aiOffice.cubicles.length) {
+          return res.status(400).json({ error: 'Invalid cubicle index' });
+        }
+        
+        const cubicle = project.aiOffice.cubicles[cubicleIdx];
+        cubicle.aiMode = mode;
+        await updateCubicleAIReadme(project, cubicle, aiModes.modes[mode]);
+      } else {
+        return res.status(400).json({ error: 'Invalid target' });
+      }
+      
+      await saveProjects();
+      res.json({ success: true });
+    } catch (error) {
+      console.error('Error setting AI mode:', error);
+      res.status(500).json({ error: error.message });
+    }
+  });
+  
+  // Helper function to update AI readme with mode
+  async function updateCubicleAIReadme(project, cubicle, modeConfig) {
+    const aiReadmePath = path.join(cubicle.path, '.AI_README');
+    const cubicleNum = cubicle.name.split('-')[1];
+    
+    let content = `# Cubicle ${cubicleNum} - AI Workspace
+
+## Important Rules for AI
+
+1. **You are in an isolated cubicle workspace** - Changes here won't affect the main project
+2. **All project files are in the current directory** - No need to navigate elsewhere
+3. **Use git to track your changes** - The cubicle has its own git history
+4. **Your changes are preserved** until explicitly synced or reset
+
+## Project Details
+- **Project:** ${project.name}
+- **Path:** ${cubicle.path}
+${project.githubUrl ? `- **GitHub:** ${project.githubUrl}` : ''}
+- **AI Mode:** ${modeConfig.name}
+
+## Guidelines
+- You are already in the project root - no need to change directories
+- Make all changes directly in this directory
+- Test thoroughly before suggesting merges to main project
+- Use git commits to document your work
+- This workspace is specifically for AI experimentation
+- When ready, changes can be reviewed and potentially merged back
+`;
+
+    // Add mode-specific instructions if not default
+    if (modeConfig.instructions) {
+      content += `\n${modeConfig.instructions}\n`;
+    }
+    
+    await fs.writeFile(aiReadmePath, content);
+  }
+
   // Reset individual cubicle
   router.post('/:id/ai-office/cubicle/:cubicleIdx/reset', async (req, res) => {
     try {

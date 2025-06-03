@@ -44,3 +44,14 @@ export async function copyToClipboard(text, successMessage = 'Copied!') {
 export function isMobile() {
   return window.innerWidth <= MOBILE_BREAKPOINT;
 }
+
+// Show loading overlay
+export function showLoading(text = 'Loading...') {
+  document.getElementById('loading-text').textContent = text;
+  document.getElementById('loading-overlay').classList.remove('hidden');
+}
+
+// Hide loading overlay
+export function hideLoading() {
+  document.getElementById('loading-overlay').classList.add('hidden');
+}

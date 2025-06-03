@@ -23,13 +23,16 @@ export function populateCubicleManagementList() {
   
   state.currentAIOfficeProject.aiOffice.cubicles.forEach((cubicle, idx) => {
     const cubicleDiv = document.createElement('div');
-    cubicleDiv.className = 'bg-gray-800 p-3 rounded flex justify-between items-center';
+    cubicleDiv.className = 'bg-gray-800 p-3 rounded';
     cubicleDiv.innerHTML = `
-      <div>
-        <div class="font-semibold">${cubicle.name}</div>
-        <div class="text-xs text-gray-400 font-mono">${cubicle.path}</div>
+      <div class="flex justify-between items-center mb-2">
+        <div>
+          <div class="font-semibold">${cubicle.name}</div>
+          <div class="text-xs text-gray-400 font-mono">${cubicle.path}</div>
+          <div class="text-xs text-gray-500 mt-1">Mode: <span class="text-purple-400">${cubicle.aiMode || 'default'}</span></div>
+        </div>
       </div>
-      <div class="flex gap-2">
+      <div class="flex gap-2 flex-wrap">
         <button onclick="window.cubicleManagement.refreshCubicle('${state.currentAIOfficeProject.id}', ${idx})" 
                 class="px-3 py-1 bg-blue-600 rounded text-sm" title="Refresh from GitHub">
           🔄 Refresh
@@ -259,3 +262,5 @@ export async function addMultipleCubicles() {
     alert('Error adding cubicles: ' + error.message);
   }
 }
+
+// Mode selection functions removed - now using dropdowns in AI Office view

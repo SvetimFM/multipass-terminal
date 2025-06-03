@@ -97,13 +97,18 @@ export async function attachTerminal(sessionName) {
       theme: {
         background: '#1a1a1a',
         foreground: '#d4d4d4'
-      }
+      },
+      // Enable right-click for copy/paste
+      rightClickSelectsWord: true
     });
     
     const fitAddon = new FitAddon.FitAddon();
     state.currentTerminal.loadAddon(fitAddon);
     state.currentTerminal.open(terminalContainer);
     fitAddon.fit();
+    
+    // Add copy/paste keyboard shortcuts
+    setupTerminalCopyPaste(state.currentTerminal);
     
     // Handle resize
     if (state.resizeListener) {
@@ -169,6 +174,93 @@ export function closeTerminal() {
   document.getElementById('terminal-view').classList.add('hidden');
   document.getElementById('projects-view').classList.remove('hidden');
   document.getElementById('main-header').classList.remove('hidden');
+}
+
+// Setup copy/paste for terminal
+function setupTerminalCopyPaste(term) {
+  // Handle keyboard shortcuts
+  term.attachCustomKeyEventHandler((event) => {
+    // Ctrl+C for copy (when there's a selection)
+    if (event.ctrlKey && event.key === 'c' && term.hasSelection()) {
+      copyTerminalSelection(term);
+      return false;
+    }
+    // Ctrl+V for paste
+    if (event.ctrlKey && event.key === 'v') {
+      pasteToTerminal(term);
+      return false;
+    }
+    // Ctrl+Shift+C for copy (common terminal shortcut)
+    if (event.ctrlKey && event.shiftKey && event.key === 'C') {
+      copyTerminalSelection(term);
+      return false;
+    }
+    // Ctrl+Shift+V for paste (common terminal shortcut)
+    if (event.ctrlKey && event.shiftKey && event.key === 'V') {
+      pasteToTerminal(term);
+      return false;
+    }
+    return true;
+  });
+  
+  // Add right-click context menu
+  const container = term.element || term._core.element;
+  container.addEventListener('contextmenu', (e) => {
+    e.preventDefault();
+    if (term.hasSelection()) {
+      copyTerminalSelection(term);
+      showToast('Copied to clipboard!');
+    }
+  });
+}
+
+// Copy selected text from terminal
+export function copyTerminalSelection(term = state.currentTerminal) {
+  if (!term || !term.hasSelection()) {
+    showToast('No text selected');
+    return;
+  }
+  
+  const selection = term.getSelection();
+  if (selection) {
+    navigator.clipboard.writeText(selection).then(() => {
+      showToast('Copied to clipboard!');
+    }).catch(() => {
+      // Fallback for older browsers
+      const textarea = document.createElement('textarea');
+      textarea.value = selection;
+      textarea.style.position = 'fixed';
+      textarea.style.opacity = '0';
+      document.body.appendChild(textarea);
+      textarea.select();
+      try {
+        document.execCommand('copy');
+        showToast('Copied to clipboard!');
+      } catch (e) {
+        showToast('Copy failed');
+      }
+      document.body.removeChild(textarea);
+    });
+  }
+}
+
+// Paste text to terminal
+export async function pasteToTerminal(term = state.currentTerminal) {
+  if (!term) {
+    showToast('No terminal active');
+    return;
+  }
+  
+  try {
+    const text = await navigator.clipboard.readText();
+    if (text && state.currentWs && state.currentWs.readyState === WebSocket.OPEN) {
+      state.currentWs.send(text);
+      showToast('Pasted!');
+    }
+  } catch (err) {
+    // Fallback or permission denied
+    showToast('Unable to paste - check clipboard permissions');
+  }
 }
 
 // For AI Office grid terminals

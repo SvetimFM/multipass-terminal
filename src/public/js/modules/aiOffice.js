@@ -3,6 +3,92 @@ import { state, setState } from './state.js';
 import { showToast } from './utils.js';
 import { loadProjects } from './projects.js';
 
+// Setup copy/paste for cubicle terminals
+function setupCubicleCopyPaste(term, cubicleKey) {
+  // Handle keyboard shortcuts
+  term.attachCustomKeyEventHandler((event) => {
+    // Ctrl+C for copy (when there's a selection)
+    if (event.ctrlKey && event.key === 'c' && term.hasSelection()) {
+      copyCubicleSelection(term);
+      return false;
+    }
+    // Ctrl+V for paste
+    if (event.ctrlKey && event.key === 'v') {
+      pasteToCubicle(term, cubicleKey);
+      return false;
+    }
+    // Ctrl+Shift+C for copy
+    if (event.ctrlKey && event.shiftKey && event.key === 'C') {
+      copyCubicleSelection(term);
+      return false;
+    }
+    // Ctrl+Shift+V for paste
+    if (event.ctrlKey && event.shiftKey && event.key === 'V') {
+      pasteToCubicle(term, cubicleKey);
+      return false;
+    }
+    return true;
+  });
+  
+  // Add right-click context menu
+  const container = term.element || term._core.element;
+  container.addEventListener('contextmenu', (e) => {
+    e.preventDefault();
+    if (term.hasSelection()) {
+      copyCubicleSelection(term);
+    }
+  });
+}
+
+// Copy from cubicle terminal
+function copyCubicleSelection(term) {
+  if (!term || !term.hasSelection()) {
+    showToast('No text selected');
+    return;
+  }
+  
+  const selection = term.getSelection();
+  if (selection) {
+    navigator.clipboard.writeText(selection).then(() => {
+      showToast('Copied!');
+    }).catch(() => {
+      // Fallback
+      const textarea = document.createElement('textarea');
+      textarea.value = selection;
+      textarea.style.position = 'fixed';
+      textarea.style.opacity = '0';
+      document.body.appendChild(textarea);
+      textarea.select();
+      try {
+        document.execCommand('copy');
+        showToast('Copied!');
+      } catch (e) {
+        showToast('Copy failed');
+      }
+      document.body.removeChild(textarea);
+    });
+  }
+}
+
+// Paste to cubicle terminal
+async function pasteToCubicle(term, cubicleKey) {
+  const ws = state.cubicleWebSockets.get(cubicleKey);
+  if (!ws || ws.readyState !== WebSocket.OPEN) {
+    showToast('Terminal not connected');
+    return;
+  }
+  
+  try {
+    const text = await navigator.clipboard.readText();
+    if (text) {
+      ws.send(text);
+      showToast('Pasted!');
+    }
+  } catch (err) {
+    showToast('Unable to paste - check clipboard permissions');
+  }
+}
+
 export async function setupAIOffice(projectId) {
   const count = prompt(`How many cubicles? (default: ${state.DEFAULT_CUBICLE_COUNT}, max: ${state.MAX_CUBICLE_COUNT})`, state.DEFAULT_CUBICLE_COUNT.toString());
   if (!count) return;
@@ -71,21 +157,73 @@ export async function openAIOfficeGrid(projectId) {
     container.className = 'grid grid-cols-2 gap-4 p-4';
   }
   
-  // Create terminals for each cubicle
-  project.aiOffice.cubicles.forEach((cubicle, idx) => {
-    const termDiv = document.createElement('div');
-    termDiv.className = 'bg-gray-800 rounded overflow-hidden flex flex-col';
-    termDiv.innerHTML = `
-      <div class="bg-gray-700 px-3 py-2 text-sm font-medium flex justify-between items-center">
-        <span>${cubicle.name}</span>
-        <button onclick="window.aiOffice.removeCubicle('${project.id}', ${idx})" class="text-red-400 hover:text-red-300 text-xs">✕</button>
-      </div>
-      <div id="cubicle-grid-terminal-${projectId}-${idx}" class="cubicle-terminal flex-1"></div>
-    `;
-    container.appendChild(termDiv);
-    
-    setTimeout(() => initCubicleTerminal(project, cubicle, idx, true), 100 * idx);
-  });
+  // Load AI modes first
+  fetch('/api/ai-modes')
+    .then(res => res.json())
+    .then(aiModes => {
+      // Create mode options HTML
+      const modeOptions = Object.entries(aiModes.modes).map(([key, mode]) => 
+        `<option value="${key}">${mode.name}</option>`
+      ).join('');
+      
+      // Create terminals for each cubicle
+      project.aiOffice.cubicles.forEach((cubicle, idx) => {
+        const currentMode = cubicle.aiMode || 'default';
+        const termDiv = document.createElement('div');
+        termDiv.className = 'bg-gray-800 rounded overflow-hidden';
+        termDiv.innerHTML = `
+          <div class="bg-gray-700 px-3 py-2 text-sm font-medium">
+            <div class="flex justify-between items-center">
+              <div class="flex items-center gap-3">
+                <span class="font-semibold">${cubicle.name}</span>
+                <select onchange="window.aiOffice.changeCubicleMode('${project.id}', ${idx}, this.value)" 
+                        class="bg-gray-800 text-xs px-3 py-1 rounded border border-gray-600 hover:border-purple-500 focus:border-purple-500 focus:outline-none cursor-pointer text-purple-400 font-medium"
+                        title="AI Mode - Click to change">
+                  ${modeOptions}
+                </select>
+              </div>
+              <div class="flex items-center gap-2">
+                <button onclick="window.aiOffice.pasteToCubicleTerminal('${project.id}', ${idx})" 
+                        class="text-green-400 hover:text-green-300 text-xs px-2 py-1 bg-gray-800 rounded" 
+                        title="Paste to terminal">
+                  📝
+                </button>
+                <button onclick="window.aiOffice.removeCubicle('${project.id}', ${idx})" 
+                        class="text-red-400 hover:text-red-300 text-sm">
+                  ✕
+                </button>
+              </div>
+            </div>
+          </div>
+          <div id="cubicle-grid-terminal-${projectId}-${idx}" class="cubicle-terminal"></div>
+        `;
+        container.appendChild(termDiv);
+        
+        // Set the current mode in the dropdown
+        const select = termDiv.querySelector('select');
+        select.value = currentMode;
+        
+        setTimeout(async () => await initCubicleTerminal(project, cubicle, idx, true), 100 * idx);
+      });
+    })
+    .catch(error => {
+      console.error('Error loading AI modes:', error);
+      // Fallback: create terminals without mode selector
+      project.aiOffice.cubicles.forEach((cubicle, idx) => {
+        const termDiv = document.createElement('div');
+        termDiv.className = 'bg-gray-800 rounded overflow-hidden';
+        termDiv.innerHTML = `
+          <div class="bg-gray-700 px-3 py-2 text-sm font-medium flex justify-between items-center">
+            <span>${cubicle.name}</span>
+            <button onclick="window.aiOffice.removeCubicle('${project.id}', ${idx})" class="text-red-400 hover:text-red-300 text-xs">✕</button>
+          </div>
+          <div id="cubicle-grid-terminal-${projectId}-${idx}" class="cubicle-terminal"></div>
+        `;
+        container.appendChild(termDiv);
+        
+        setTimeout(async () => await initCubicleTerminal(project, cubicle, idx, true), 100 * idx);
+      });
+    });
 }
 
 export function closeAIOfficeGrid() {
@@ -107,7 +245,7 @@ export function closeAIOfficeGrid() {
   document.getElementById('ai-office-grid').classList.add('hidden');
 }
 
-export function initCubicleTerminal(project, cubicle, idx, isGrid = false) {
+export async function initCubicleTerminal(project, cubicle, idx, isGrid = false) {
   const terminalId = isGrid ? `cubicle-grid-terminal-${project.id}-${idx}` : `cubicle-terminal-${idx}`;
   const container = document.getElementById(terminalId);
   
@@ -116,6 +254,41 @@ export function initCubicleTerminal(project, cubicle, idx, isGrid = false) {
   // Clear existing content
   container.innerHTML = '';
   
+  // Create session name for this cubicle
+  const sessionName = `ai-office-${project.id}-${cubicle.name}`;
+  
+  // Check if session already exists
+  try {
+    const checkResponse = await fetch(`/api/sessions/${encodeURIComponent(sessionName)}`);
+    const checkData = await checkResponse.json();
+    
+    if (!checkData.exists) {
+      // Session doesn't exist, create it
+      const sessionResponse = await fetch('/api/sessions', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          name: sessionName, 
+          projectId: project.id,
+          isCubicle: true,
+          cubiclePath: cubicle.path
+        })
+      });
+      
+      if (!sessionResponse.ok) {
+        const errorData = await sessionResponse.json();
+        console.error('Failed to create session for cubicle:', errorData);
+        return;
+      }
+      console.log(`Created new session: ${sessionName}`);
+    } else {
+      console.log(`Session ${sessionName} already exists, connecting to it...`);
+    }
+  } catch (error) {
+    console.error('Error checking/creating cubicle session:', error);
+    return;
+  }
+  
   const term = new Terminal({
     cursorBlink: true,
     fontSize: isGrid ? 12 : 14,
@@ -123,19 +296,23 @@ export function initCubicleTerminal(project, cubicle, idx, isGrid = false) {
     theme: {
       background: '#1a1a1a',
       foreground: '#d4d4d4'
-    }
+    },
+    rightClickSelectsWord: true
   });
   
   const fitAddon = new FitAddon.FitAddon();
   term.loadAddon(fitAddon);
   term.open(container);
   
-  // Store terminal
+  // Store terminal and websocket reference for this cubicle
   state.cubicleTerminals.set(`${project.id}-${idx}`, { term, fitAddon });
   
-  // Connect WebSocket
+  // Setup copy/paste support
+  setupCubicleCopyPaste(term, `${project.id}-${idx}`);
+  
+  // Connect WebSocket with the session name
   const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-  const ws = new WebSocket(`${protocol}//${window.location.host}/terminal/${cubicle.name}`);
+  const ws = new WebSocket(`${protocol}//${window.location.host}/terminal/${sessionName}`);
   
   ws.onopen = () => {
     console.log(`Connected to cubicle ${cubicle.name}`);
@@ -166,7 +343,13 @@ export function initCubicleTerminal(project, cubicle, idx, isGrid = false) {
   // Handle resize for grid view
   if (isGrid) {
     const resizeObserver = new ResizeObserver(() => {
-      fitAddon.fit();
+      try {
+        if (fitAddon) {
+          fitAddon.fit();
+        }
+      } catch (e) {
+        // Ignore resize errors
+      }
     });
     resizeObserver.observe(container);
   }
@@ -213,29 +396,44 @@ export async function removeCubicle(projectId, cubicleIdx) {
   }
 }
 
-export async function syncWithParent() {
-  if (!state.currentAIOfficeProject) return;
+// Paste to project terminal (non-cubicle)
+export async function pasteToProjectTerminal(sessionName) {
+  const ws = state.cubicleWebSockets.get(sessionName);
   
-  if (!confirm('This will sync all cubicles with the parent project. Any uncommitted changes will be lost. Continue?')) {
+  if (!ws || ws.readyState !== WebSocket.OPEN) {
+    showToast('Terminal not connected');
     return;
   }
   
   try {
-    const response = await fetch(`/api/projects/${state.currentAIOfficeProject.id}/ai-office/sync`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' }
-    });
-    
-    if (response.ok) {
-      const result = await response.json();
-      alert(`Sync completed! ${result.synced} cubicles updated.`);
+    const text = await navigator.clipboard.readText();
+    if (text) {
+      ws.send(text);
+      showToast('Pasted!');
     } else {
-      const error = await response.json();
-      alert('Failed to sync: ' + error.error);
+      showToast('Clipboard is empty');
     }
-  } catch (error) {
-    console.error('Error syncing with parent:', error);
-    alert('Error syncing: ' + error.message);
+  } catch (err) {
+    // Try fallback for older browsers or permission issues
+    try {
+      const textarea = document.createElement('textarea');
+      textarea.style.position = 'fixed';
+      textarea.style.opacity = '0';
+      document.body.appendChild(textarea);
+      textarea.focus();
+      document.execCommand('paste');
+      const text = textarea.value;
+      document.body.removeChild(textarea);
+      
+      if (text) {
+        ws.send(text);
+        showToast('Pasted!');
+      } else {
+        showToast('Unable to paste - check clipboard permissions');
+      }
+    } catch (e) {
+      showToast('Unable to paste - check clipboard permissions');
+    }
   }
 }
 
@@ -249,13 +447,23 @@ export async function addTerminal() {
   
   // Create terminal div
   const termDiv = document.createElement('div');
-  termDiv.className = 'bg-gray-800 rounded overflow-hidden flex flex-col';
+  termDiv.className = 'bg-gray-800 rounded overflow-hidden';
   termDiv.innerHTML = `
     <div class="bg-gray-700 px-3 py-2 text-sm font-medium flex justify-between items-center">
       <span>${terminalName} (Project Root)</span>
-      <button onclick="window.aiOffice.removeTerminalFromGrid('${sessionName}')" class="text-red-400 hover:text-red-300 text-xs">✕</button>
+      <div class="flex items-center gap-2">
+        <button onclick="window.aiOffice.pasteToProjectTerminal('${sessionName}')" 
+                class="text-green-400 hover:text-green-300 text-xs px-2 py-1 bg-gray-800 rounded" 
+                title="Paste to terminal">
+          📝
+        </button>
+        <button onclick="window.aiOffice.removeTerminalFromGrid('${sessionName}')" 
+                class="text-red-400 hover:text-red-300 text-xs">
+          ✕
+        </button>
+      </div>
     </div>
-    <div id="terminal-grid-${sessionName}" class="cubicle-terminal flex-1"></div>
+    <div id="terminal-grid-${sessionName}" class="cubicle-terminal"></div>
   `;
   container.appendChild(termDiv);
   
@@ -334,5 +542,85 @@ export function removeTerminalFromGrid(sessionName) {
   const termDiv = document.getElementById(`terminal-grid-${sessionName}`).parentElement;
   if (termDiv) {
     termDiv.remove();
+  }
+}
+
+// Paste to specific cubicle terminal
+export async function pasteToCubicleTerminal(projectId, cubicleIdx) {
+  const cubicleKey = `${projectId}-${cubicleIdx}`;
+  const ws = state.cubicleWebSockets.get(cubicleKey);
+  
+  if (!ws || ws.readyState !== WebSocket.OPEN) {
+    showToast('Terminal not connected');
+    return;
+  }
+  
+  try {
+    const text = await navigator.clipboard.readText();
+    if (text) {
+      ws.send(text);
+      showToast('Pasted!');
+    } else {
+      showToast('Clipboard is empty');
+    }
+  } catch (err) {
+    // Try fallback for older browsers or permission issues
+    try {
+      const textarea = document.createElement('textarea');
+      textarea.style.position = 'fixed';
+      textarea.style.opacity = '0';
+      document.body.appendChild(textarea);
+      textarea.focus();
+      document.execCommand('paste');
+      const text = textarea.value;
+      document.body.removeChild(textarea);
+      
+      if (text) {
+        ws.send(text);
+        showToast('Pasted!');
+      } else {
+        showToast('Unable to paste - check clipboard permissions');
+      }
+    } catch (e) {
+      showToast('Unable to paste - check clipboard permissions');
+    }
+  }
+}
+
+// Change cubicle mode directly from dropdown
+export async function changeCubicleMode(projectId, cubicleIdx, newMode) {
+  try {
+    // Get mode name for toast
+    const modesResponse = await fetch('/api/ai-modes');
+    const aiModes = await modesResponse.json();
+    const modeName = aiModes.modes[newMode]?.name || newMode;
+    
+    const response = await fetch(`/api/projects/${projectId}/ai-office/set-mode`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ mode: newMode, target: 'cubicle', cubicleIdx })
+    });
+    
+    if (response.ok) {
+      // Update the local project data
+      if (state.currentAIOfficeProject && 
+          state.currentAIOfficeProject.id === projectId && 
+          state.currentAIOfficeProject.aiOffice.cubicles[cubicleIdx]) {
+        state.currentAIOfficeProject.aiOffice.cubicles[cubicleIdx].aiMode = newMode;
+      }
+      showToast(`Mode changed to ${modeName}`);
+      // Reload projects to ensure persistence
+      await loadProjects();
+    } else {
+      const error = await response.json();
+      alert('Failed to change mode: ' + error.error);
+      // Reset dropdown to previous value
+      openAIOfficeGrid(projectId);
+    }
+  } catch (error) {
+    console.error('Error changing cubicle mode:', error);
+    alert('Error changing mode: ' + error.message);
+    // Reset dropdown to previous value
+    openAIOfficeGrid(projectId);
   }
 }

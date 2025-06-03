@@ -73,6 +73,24 @@ module.exports = (sessions, projects, saveSessions) => {
     }
   });
 
+  // Check if session exists
+  router.get('/:name', (req, res) => {
+    try {
+      const sanitizedName = sanitizeName(req.params.name);
+      
+      exec(`tmux has-session -t "${sanitizedName}" 2>/dev/null`, (error) => {
+        if (error) {
+          res.json({ exists: false });
+        } else {
+          const metadata = sessions.get(sanitizedName) || {};
+          res.json({ exists: true, ...metadata });
+        }
+      });
+    } catch (error) {
+      res.status(400).json({ error: error.message });
+    }
+  });
+
   // Delete session
   router.delete('/:name', (req, res) => {
     try {

@@ -1,0 +1,104 @@
+[
+  {
+    "id": "default",
+    "name": "Terminal Self Edit",
+    "path": "/mnt/j/DevWorkspace/Active Projects/vibecodes/ship_anywhere_serverside",
+    "aiOffice": {
+      "enabled": true,
+      "cubicleCount": 2,
+      "cubicles": [
+        {
+          "name": "cubicle-1",
+          "path": "/mnt/j/DevWorkspace/Active Projects/vibecodes/ship_anywhere_serverside/ai-office/cubicle-1",
+          "aiMode": "tester"
+        },
+        {
+          "name": "cubicle-2",
+          "path": "/mnt/j/DevWorkspace/Active Projects/vibecodes/ship_anywhere_serverside/ai-office/cubicle-2"
+        }
+      ],
+      "highestCubicleNum": 7,
+      "createdAt": "2025-06-02T07:13:10.030Z"
+    }
+  },
+  {
+    "id": "proj-1748847680784",
+    "name": "resumaestro",
+    "path": "/mnt/j/DevWorkspace/Active Projects/resumaestro/src/resumaestro",
+    "githubUrl": "https://github.com/SvetimFM/resumaestro",
+    "aiOffice": {
+      "enabled": true,
+      "cubicleCount": 3,
+      "cubicles": [
+        {
+          "name": "cubicle-1",
+          "path": "/mnt/j/DevWorkspace/Active Projects/resumaestro/src/resumaestro/ai-office/cubicle-1"
+        },
+        {
+          "name": "cubicle-2",
+          "path": "/mnt/j/DevWorkspace/Active Projects/resumaestro/src/resumaestro/ai-office/cubicle-2"
+        },
+        {
+          "name": "cubicle-3",
+          "path": "/mnt/j/DevWorkspace/Active Projects/resumaestro/src/resumaestro/ai-office/cubicle-3"
+        }
+      ],
+      "createdAt": "2025-06-02T07:03:34.119Z"
+    }
+  },
+  {
+    "id": "proj-1748848049933",
+    "name": "IECMOC_Validator",
+    "path": "/mnt/j/DevWorkspace/Active Projects/IECMOC_Validator",
+    "githubUrl": "https://github.com/SvetimFM/IECMOC_Validator",
+    "aiOffice": {
+      "enabled": true,
+      "cubicleCount": 4,
+      "cubicles": [
+        {
+          "name": "cubicle-2",
+          "path": "/mnt/j/DevWorkspace/Active Projects/IECMOC_Validator/ai-office/cubicle-2"
+        },
+        {
+          "name": "cubicle-3",
+          "path": "/mnt/j/DevWorkspace/Active Projects/IECMOC_Validator/ai-office/cubicle-3"
+        },
+        {
+          "name": "cubicle-3",
+          "path": "/mnt/j/DevWorkspace/Active Projects/IECMOC_Validator/ai-office/cubicle-3"
+        },
+        {
+          "name": "cubicle-4",
+          "path": "/mnt/j/DevWorkspace/Active Projects/IECMOC_Validator/ai-office/cubicle-4"
+        }
+      ],
+      "createdAt": "2025-06-02T07:07:40.064Z"
+    }
+  },
+  {
+    "id": "proj-1748848775303",
+    "name": "O3Measure",
+    "path": "/mnt/j/DevWorkspace/Active Projects/o3_measure/node_iteration/O3Measure",
+    "githubUrl": "https://github.com/SvetimFM/O3Measure",
+    "aiOffice": {
+      "enabled": true,
+      "cubicleCount": 3,
+      "cubicles": [
+        {
+          "name": "cubicle-1",
+          "path": "/mnt/j/DevWorkspace/Active Projects/o3_measure/node_iteration/O3Measure/ai-office/cubicle-1"
+        },
+        {
+          "name": "cubicle-2",
+          "path": "/mnt/j/DevWorkspace/Active Projects/o3_measure/node_iteration/O3Measure/ai-office/cubicle-2"
+        },
+        {
+          "name": "cubicle-3",
+          "path": "/mnt/j/DevWorkspace/Active Projects/o3_measure/node_iteration/O3Measure/ai-office/cubicle-3"
+        }
+      ],
+      "highestCubicleNum": 3,
+      "createdAt": "2025-06-02T07:19:51.415Z"
+    }
+  }
+]

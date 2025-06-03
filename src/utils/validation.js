@@ -23,7 +23,8 @@ const validateProjectId = (projectId) => {
   if (!projectId || typeof projectId !== 'string') {
     throw new Error('Project ID is required');
   }
-  if (!projectId.match(/^proj-\d+$/)) {
+  // Allow 'default' as a special case, or the standard format
+  if (projectId !== 'default' && !projectId.match(/^proj-\d+$/)) {
     throw new Error('Invalid project ID format');
   }
   return projectId;

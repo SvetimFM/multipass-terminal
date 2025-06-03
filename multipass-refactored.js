@@ -85,6 +85,12 @@ app.get('/api/config', (req, res) => {
   });
 });
 
+// AI Modes endpoint
+app.get('/api/ai-modes', (req, res) => {
+  const aiModes = require('./config/ai-modes');
+  res.json(aiModes);
+});
+
 // Get home directory
 app.get('/api/home', (req, res) => {
   res.json({ home: process.env.HOME || '/home/user' });

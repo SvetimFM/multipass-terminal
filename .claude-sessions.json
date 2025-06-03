@@ -1,0 +1,35 @@
+{
+  "ai-office-default-cubicle-5": {
+    "projectId": "default",
+    "project": "Terminal Self Edit",
+    "isCubicle": true,
+    "cubiclePath": "/mnt/j/DevWorkspace/Active Projects/vibecodes/ship_anywhere_serverside/ai-office/cubicle-5",
+    "createdAt": "2025-06-03T02:23:36.282Z"
+  },
+  "ai-office-default-cubicle-6": {
+    "projectId": "default",
+    "project": "Terminal Self Edit",
+    "isCubicle": true,
+    "cubiclePath": "/mnt/j/DevWorkspace/Active Projects/vibecodes/ship_anywhere_serverside/ai-office/cubicle-6",
+    "createdAt": "2025-06-03T02:32:54.087Z"
+  },
+  "ai-office-default-terminal-4": {
+    "projectId": "default",
+    "project": "Terminal Self Edit",
+    "isCubicle": false,
+    "createdAt": "2025-06-03T02:50:49.652Z"
+  },
+  "ai-office-default-terminal-5": {
+    "projectId": "default",
+    "project": "Terminal Self Edit",
+    "isCubicle": false,
+    "createdAt": "2025-06-03T02:50:51.012Z"
+  },
+  "ai-office-default-cubicle-7": {
+    "projectId": "default",
+    "project": "Terminal Self Edit",
+    "isCubicle": true,
+    "cubiclePath": "/mnt/j/DevWorkspace/Active Projects/vibecodes/ship_anywhere_serverside/ai-office/cubicle-7",
+    "createdAt": "2025-06-03T02:50:53.631Z"
+  }
+}

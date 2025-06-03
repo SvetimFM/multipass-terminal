@@ -8,33 +8,28 @@ export async function browseFolder(folder = '') {
     if (!response.ok) {
       throw new Error('Failed to browse folder');
     }
-    const data = await response.json();
+    const entries = await response.json();
     
-    setState('currentPath', data.path);
-    document.getElementById('current-path').textContent = data.path;
+    // Set current path
+    setState('currentPath', folder || entries[0]?.path?.split('/').slice(0, -1).join('/') || '/');
+    document.getElementById('current-path').textContent = state.currentPath;
     
     const folderList = document.getElementById('file-list');
     folderList.innerHTML = '';
     
-    // Add parent directory option if not at root
-    if (data.path !== '/') {
-      const parentDiv = document.createElement('div');
-      parentDiv.className = 'p-2 hover:bg-gray-700 cursor-pointer flex items-center';
-      parentDiv.innerHTML = '<span class="mr-2">📁</span><span class="text-blue-400">..</span>';
-      parentDiv.onclick = () => {
-        const parentPath = data.path.split('/').slice(0, -1).join('/') || '/';
-        browseFolder(parentPath);
-      };
-      folderList.appendChild(parentDiv);
-    }
-    
-    // Add folders
-    data.folders.forEach(folder => {
-      const folderDiv = document.createElement('div');
-      folderDiv.className = 'p-2 hover:bg-gray-700 cursor-pointer flex items-center';
-      folderDiv.innerHTML = `<span class="mr-2">📁</span><span>${folder.name}</span>`;
-      folderDiv.onclick = () => browseFolder(folder.path);
-      folderList.appendChild(folderDiv);
+    // The API already includes .. directory if needed, so just iterate through all entries
+    entries.forEach(entry => {
+      if (entry.isDirectory) {
+        const folderDiv = document.createElement('div');
+        folderDiv.className = 'p-2 hover:bg-gray-700 cursor-pointer flex items-center';
+        if (entry.name === '..') {
+          folderDiv.innerHTML = '<span class="mr-2">📁</span><span class="text-blue-400">..</span>';
+        } else {
+          folderDiv.innerHTML = `<span class="mr-2">📁</span><span>${entry.name}</span>`;
+        }
+        folderDiv.onclick = () => browseFolder(entry.path);
+        folderList.appendChild(folderDiv);
+      }
     });
   } catch (error) {
     console.error('Error browsing folder:', error);

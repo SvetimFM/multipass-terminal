@@ -94,21 +94,23 @@
         <div id="terminal"></div>
       </div>
       
-<<<<<<< HEAD
       <!-- Quick Commands - Desktop -->
       <div class="bg-gray-700 p-2 flex gap-2 overflow-x-auto flex-shrink-0 hidden md:flex">
-        <button onclick="window.terminal.sendToTerminal('claude\\n')" class="px-3 py-1 bg-blue-600 rounded text-sm font-semibold">claude</button>
+        <button onclick="window.terminal.copyTerminalSelection()" class="px-3 py-1 bg-green-600 rounded text-sm" title="Copy selected text (Ctrl+C)">📋 Copy</button>
+        <button onclick="window.terminal.pasteToTerminal()" class="px-3 py-1 bg-green-600 rounded text-sm" title="Paste from clipboard (Ctrl+V)">📝 Paste</button>
+        <div class="w-px bg-gray-600 mx-1"></div>
+        <button onclick="window.terminal.sendToTerminal('claude\n')" class="px-3 py-1 bg-blue-600 rounded text-sm font-semibold">claude</button>
         <button onclick="window.terminal.exitClaude()" class="px-3 py-1 bg-red-600 rounded text-sm font-semibold" title="Exit Claude (Ctrl+C twice)">Exit Claude</button>
         <button id="auto-accept-btn" onclick="window.terminal.toggleAutoAccept()" class="px-3 py-1 bg-gray-600 rounded text-sm">
           Auto-Accept: <span id="auto-accept-status">OFF</span>
         </button>
-        <button onclick="window.terminal.sendToTerminal('\\x1b[Z')" class="px-3 py-1 bg-purple-600 rounded text-sm" title="Send Shift+Tab">⇧ Tab</button>
-        <button onclick="window.terminal.sendToTerminal('ls -la\\n')" class="px-3 py-1 bg-gray-600 rounded text-sm">ls -la</button>
-        <button onclick="window.terminal.sendToTerminal('pwd\\n')" class="px-3 py-1 bg-gray-600 rounded text-sm">pwd</button>
-        <button onclick="window.terminal.sendToTerminal('git status\\n')" class="px-3 py-1 bg-gray-600 rounded text-sm">git status</button>
-        <button onclick="window.terminal.sendToTerminal('git log --oneline -10\\n')" class="px-3 py-1 bg-gray-600 rounded text-sm">git log</button>
-        <button onclick="window.terminal.sendToTerminal('npm run\\n')" class="px-3 py-1 bg-gray-600 rounded text-sm">npm run</button>
-        <button onclick="window.terminal.sendToTerminal('clear\\n')" class="px-3 py-1 bg-gray-600 rounded text-sm">clear</button>
+        <button onclick="window.terminal.sendToTerminal('\x1b[Z')" class="px-3 py-1 bg-purple-600 rounded text-sm" title="Send Shift+Tab">⇧ Tab</button>
+        <button onclick="window.terminal.sendToTerminal('ls -la\n')" class="px-3 py-1 bg-gray-600 rounded text-sm">ls -la</button>
+        <button onclick="window.terminal.sendToTerminal('pwd\n')" class="px-3 py-1 bg-gray-600 rounded text-sm">pwd</button>
+        <button onclick="window.terminal.sendToTerminal('git status\n')" class="px-3 py-1 bg-gray-600 rounded text-sm">git status</button>
+        <button onclick="window.terminal.sendToTerminal('git log --oneline -10\n')" class="px-3 py-1 bg-gray-600 rounded text-sm">git log</button>
+        <button onclick="window.terminal.sendToTerminal('npm run\n')" class="px-3 py-1 bg-gray-600 rounded text-sm">npm run</button>
+        <button onclick="window.terminal.sendToTerminal('clear\n')" class="px-3 py-1 bg-gray-600 rounded text-sm">clear</button>
       </div>
       
       <!-- Quick Commands - Mobile -->
@@ -117,7 +119,7 @@
         <div class="text-xs text-gray-400 text-center mb-2">Tip: Long press command buttons to copy</div>
         <!-- Priority Actions -->
         <div class="mobile-button-grid mb-2">
-          <button onclick="window.terminal.sendToTerminal('claude\\n')" class="priority-button bg-blue-600 rounded haptic-feedback" oncontextmenu="window.utils.copyToClipboard('claude', 'Command copied!'); return false;">
+          <button onclick="window.terminal.sendToTerminal('claude\n')" class="priority-button bg-blue-600 rounded haptic-feedback" oncontextmenu="window.utils.copyToClipboard('claude', 'Command copied!'); return false;">
             🤖 Claude
           </button>
           <button onclick="window.terminal.exitClaude()" class="priority-button bg-red-600 rounded haptic-feedback">
@@ -139,37 +141,21 @@
         
         <div id="mobile-commands-expanded" class="button-group-collapsed">
           <div class="terminal-commands-mobile mt-2">
-            <button onclick="window.terminal.sendToTerminal('\\x1b[Z')" class="bg-purple-600 rounded haptic-feedback relative group">
+            <button onclick="window.terminal.sendToTerminal('\x1b[Z')" class="bg-purple-600 rounded haptic-feedback relative group">
               ⇧ Tab
               <span onclick="event.stopPropagation(); window.utils.copyToClipboard('Shift+Tab', 'Command info copied!')" class="absolute top-0 right-0 bg-gray-700 px-1 py-0.5 text-xs rounded opacity-0 group-active:opacity-100">📋</span>
             </button>
-            <button onclick="window.terminal.sendToTerminal('ls -la\\n')" oncontextmenu="window.utils.copyToClipboard('ls -la', 'Command copied!'); return false;" class="bg-gray-600 rounded haptic-feedback">📁 List Files</button>
-            <button onclick="window.terminal.sendToTerminal('pwd\\n')" oncontextmenu="window.utils.copyToClipboard('pwd', 'Command copied!'); return false;" class="bg-gray-600 rounded haptic-feedback">📍 Current Dir</button>
-            <button onclick="window.terminal.sendToTerminal('git status\\n')" oncontextmenu="window.utils.copyToClipboard('git status', 'Command copied!'); return false;" class="bg-gray-600 rounded haptic-feedback">🔍 Git Status</button>
-            <button onclick="window.terminal.sendToTerminal('git log --oneline -10\\n')" oncontextmenu="window.utils.copyToClipboard('git log --oneline -10', 'Command copied!'); return false;" class="bg-gray-600 rounded haptic-feedback">📜 Git Log</button>
-            <button onclick="window.terminal.sendToTerminal('npm run\\n')" oncontextmenu="window.utils.copyToClipboard('npm run', 'Command copied!'); return false;" class="bg-gray-600 rounded haptic-feedback">📦 NPM Scripts</button>
-            <button onclick="window.terminal.sendToTerminal('clear\\n')" oncontextmenu="window.utils.copyToClipboard('clear', 'Command copied!'); return false;" class="bg-gray-600 rounded haptic-feedback">🧹 Clear</button>
+            <button onclick="window.terminal.sendToTerminal('ls -la\n')" oncontextmenu="window.utils.copyToClipboard('ls -la', 'Command copied!'); return false;" class="bg-gray-600 rounded haptic-feedback">📁 List Files</button>
+            <button onclick="window.terminal.sendToTerminal('pwd\n')" oncontextmenu="window.utils.copyToClipboard('pwd', 'Command copied!'); return false;" class="bg-gray-600 rounded haptic-feedback">📍 Current Dir</button>
+            <button onclick="window.terminal.sendToTerminal('git status\n')" oncontextmenu="window.utils.copyToClipboard('git status', 'Command copied!'); return false;" class="bg-gray-600 rounded haptic-feedback">🔍 Git Status</button>
+            <button onclick="window.terminal.sendToTerminal('git log --oneline -10\n')" oncontextmenu="window.utils.copyToClipboard('git log --oneline -10', 'Command copied!'); return false;" class="bg-gray-600 rounded haptic-feedback">📜 Git Log</button>
+            <button onclick="window.terminal.sendToTerminal('npm run\n')" oncontextmenu="window.utils.copyToClipboard('npm run', 'Command copied!'); return false;" class="bg-gray-600 rounded haptic-feedback">📦 NPM Scripts</button>
+            <button onclick="window.terminal.sendToTerminal('clear\n')" oncontextmenu="window.utils.copyToClipboard('clear', 'Command copied!'); return false;" class="bg-gray-600 rounded haptic-feedback">🧹 Clear</button>
             <button id="auto-accept-btn-mobile" onclick="window.terminal.toggleAutoAccept()" class="bg-gray-600 rounded haptic-feedback col-span-2">
               Auto-Accept: <span id="auto-accept-status-mobile">OFF</span>
             </button>
           </div>
         </div>
-=======
-      <!-- Quick Commands -->
-      <div class="bg-gray-700 p-2 flex gap-2 overflow-x-auto flex-shrink-0">
-        <button onclick="sendToTerminal('claude\n')" class="px-3 py-1 bg-blue-600 rounded text-sm font-semibold">claude</button>
-        <button onclick="exitClaude()" class="px-3 py-1 bg-red-600 rounded text-sm font-semibold" title="Exit Claude (Ctrl+C twice)">Exit Claude</button>
-        <button id="auto-accept-btn" onclick="toggleAutoAccept()" class="px-3 py-1 bg-gray-600 rounded text-sm">
-          Auto-Accept: <span id="auto-accept-status">OFF</span>
-        </button>
-        <button onclick="sendToTerminal('\\x1b[Z')" class="px-3 py-1 bg-purple-600 rounded text-sm" title="Send Shift+Tab">⇧ Tab</button>
-        <button onclick="sendToTerminal('ls -la\n')" class="px-3 py-1 bg-gray-600 rounded text-sm">ls -la</button>
-        <button onclick="sendToTerminal('pwd\n')" class="px-3 py-1 bg-gray-600 rounded text-sm">pwd</button>
-        <button onclick="sendToTerminal('git status\n')" class="px-3 py-1 bg-gray-600 rounded text-sm">git status</button>
-        <button onclick="sendToTerminal('git log --oneline -10\n')" class="px-3 py-1 bg-gray-600 rounded text-sm">git log</button>
-        <button onclick="sendToTerminal('npm run\n')" class="px-3 py-1 bg-gray-600 rounded text-sm">npm run</button>
-        <button onclick="clearTerminal()" class="px-3 py-1 bg-gray-600 rounded text-sm">Clear</button>
->>>>>>> 9b63242 (Fix terminal command escaping and enhance AI Office sync)
       </div>
     </div>
 
@@ -207,7 +193,7 @@
     </div>
 
     <!-- Cubicle Management Modal -->
-    <div id="cubicle-management-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-60">
+    <div id="cubicle-management-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-[100]">
       <div class="bg-gray-800 w-full max-w-4xl mx-auto mt-10 rounded-lg shadow-xl max-h-[80vh] flex flex-col">
         <div class="p-4 border-b border-gray-700 flex justify-between items-center">
           <h3 class="text-lg font-semibold">Cubicle Management</h3>
@@ -225,9 +211,6 @@
                 </button>
                 <button onclick="window.cubicleManagement.pullFromMainAll()" class="px-4 py-2 bg-green-600 rounded text-sm" title="Pull latest from main branch">
                   ⬇️ Pull from Main (All)
-                </button>
-                <button onclick="window.aiOffice.syncWithParent()" class="px-4 py-2 bg-yellow-600 rounded text-sm" title="Sync all cubicles with parent project">
-                  🔁 Sync with Parent Project
                 </button>
                 <button onclick="window.cubicleManagement.resetAllCubicles()" class="px-4 py-2 bg-red-600 rounded text-sm" title="Reset all cubicles to clean state">
                   ⚠️ Reset All Cubicles
@@ -275,18 +258,16 @@
             Close
           </button>
         </div>
-<<<<<<< HEAD
         <!-- Quick Commands for All Terminals - Desktop -->
         <div class="mt-2 hidden md:flex gap-2 overflow-x-auto">
-          <button onclick="window.terminal.broadcastToAllTerminals('claude\\n')" class="px-3 py-1 bg-blue-600 rounded text-sm font-semibold">claude (all)</button>
+          <button onclick="window.terminal.broadcastToAllTerminals('claude\n')" class="px-3 py-1 bg-blue-600 rounded text-sm font-semibold">claude (all)</button>
           <button onclick="window.terminal.exitClaudeAll()" class="px-3 py-1 bg-red-600 rounded text-sm font-semibold" title="Exit Claude in all terminals">Exit Claude (all)</button>
-          <button onclick="window.terminal.broadcastToAllTerminals('\\x1b[Z')" class="px-3 py-1 bg-purple-600 rounded text-sm" title="Send Shift+Tab to all">⇧ Tab (all)</button>
-          <button onclick="window.terminal.broadcastToAllTerminals('ls -la\\n')" class="px-3 py-1 bg-gray-600 rounded text-sm">ls -la (all)</button>
-          <button onclick="window.terminal.broadcastToAllTerminals('pwd\\n')" class="px-3 py-1 bg-gray-600 rounded text-sm">pwd (all)</button>
-          <button onclick="window.terminal.broadcastToAllTerminals('git status\\n')" class="px-3 py-1 bg-gray-600 rounded text-sm">git status (all)</button>
-          <button onclick="window.terminal.broadcastToAllTerminals('clear\\n')" class="px-3 py-1 bg-gray-600 rounded text-sm">clear (all)</button>
+          <button onclick="window.terminal.broadcastToAllTerminals('\x1b[Z')" class="px-3 py-1 bg-purple-600 rounded text-sm" title="Send Shift+Tab to all">⇧ Tab (all)</button>
+          <button onclick="window.terminal.broadcastToAllTerminals('ls -la\n')" class="px-3 py-1 bg-gray-600 rounded text-sm">ls -la (all)</button>
+          <button onclick="window.terminal.broadcastToAllTerminals('pwd\n')" class="px-3 py-1 bg-gray-600 rounded text-sm">pwd (all)</button>
+          <button onclick="window.terminal.broadcastToAllTerminals('git status\n')" class="px-3 py-1 bg-gray-600 rounded text-sm">git status (all)</button>
+          <button onclick="window.terminal.broadcastToAllTerminals('clear\n')" class="px-3 py-1 bg-gray-600 rounded text-sm">clear (all)</button>
           <button onclick="window.cubicleManagement.openCubicleManagement()" class="px-3 py-1 bg-indigo-600 rounded text-sm" title="Manage cubicles">⚙️ Manage</button>
-          <button onclick="window.aiOffice.syncWithParent()" class="px-3 py-1 bg-yellow-600 rounded text-sm" title="Sync all cubicles with parent project">Sync with Parent</button>
           <button id="grid-auto-accept-btn" onclick="window.terminal.toggleGridAutoAccept()" class="px-3 py-1 bg-gray-600 rounded text-sm font-semibold" title="Send Shift+Tab once to all terminals">Accept Once: <span id="grid-auto-accept-status">OFF</span></button>
           <button onclick="window.aiOffice.addCubicle(window.state.currentAIOfficeProject.id)" class="px-3 py-1 bg-green-600 rounded text-sm">+ Add Cubicle</button>
           <button onclick="window.aiOffice.addTerminal()" class="px-3 py-1 bg-blue-500 rounded text-sm">+ Add Terminal</button>
@@ -296,41 +277,27 @@
         <div class="mt-2 md:hidden">
           <!-- Priority Grid Actions -->
           <div class="mobile-button-grid three-column mb-2">
-            <button onclick="window.terminal.broadcastToAllTerminals('claude\\n')" class="priority-button bg-blue-600 rounded haptic-feedback">
+            <button onclick="window.terminal.broadcastToAllTerminals('claude\n')" class="priority-button bg-blue-600 rounded haptic-feedback">
               🤖 All
             </button>
             <button onclick="window.terminal.exitClaudeAll()" class="priority-button bg-red-600 rounded haptic-feedback">
               🛑 Exit All
             </button>
-            <button onclick="window.aiOffice.syncWithParent()" class="priority-button bg-yellow-600 rounded haptic-feedback">
-              🔄 Sync
+            <button onclick="window.cubicleManagement.openCubicleManagement()" class="priority-button bg-indigo-600 rounded haptic-feedback">
+              ⚙️ Manage
             </button>
           </div>
           
           <!-- Secondary Actions -->
           <div class="swipe-container">
-            <button onclick="window.terminal.broadcastToAllTerminals('\\x1b[Z')" class="swipe-item secondary-button bg-purple-600 rounded">⇧ Tab All</button>
-            <button onclick="window.terminal.broadcastToAllTerminals('clear\\n')" class="swipe-item secondary-button bg-gray-600 rounded">Clear All</button>
+            <button onclick="window.terminal.broadcastToAllTerminals('\x1b[Z')" class="swipe-item secondary-button bg-purple-600 rounded">⇧ Tab All</button>
+            <button onclick="window.terminal.broadcastToAllTerminals('clear\n')" class="swipe-item secondary-button bg-gray-600 rounded">Clear All</button>
             <button onclick="window.aiOffice.addCubicle(window.state.currentAIOfficeProject.id)" class="swipe-item secondary-button bg-green-600 rounded">+ Cubicle</button>
             <button onclick="window.aiOffice.addTerminal()" class="swipe-item secondary-button bg-blue-500 rounded">+ Terminal</button>
             <button id="grid-auto-accept-btn-mobile" onclick="window.terminal.toggleGridAutoAccept()" class="swipe-item secondary-button bg-gray-600 rounded">
               Accept: <span id="grid-auto-accept-status-mobile">OFF</span>
             </button>
           </div>
-=======
-        <!-- Quick Commands for All Terminals -->
-        <div class="mt-2 flex gap-2 overflow-x-auto">
-          <button onclick="broadcastToAllTerminals('claude\n')" class="px-3 py-1 bg-blue-600 rounded text-sm font-semibold">claude (all)</button>
-          <button onclick="exitClaudeAll()" class="px-3 py-1 bg-red-600 rounded text-sm font-semibold" title="Exit Claude in all terminals">Exit Claude (all)</button>
-          <button onclick="broadcastToAllTerminals('\\x1b[Z')" class="px-3 py-1 bg-purple-600 rounded text-sm" title="Send Shift+Tab to all">⇧ Tab (all)</button>
-          <button onclick="broadcastToAllTerminals('ls -la\n')" class="px-3 py-1 bg-gray-600 rounded text-sm">ls -la (all)</button>
-          <button onclick="broadcastToAllTerminals('pwd\n')" class="px-3 py-1 bg-gray-600 rounded text-sm">pwd (all)</button>
-          <button onclick="broadcastToAllTerminals('git status\n')" class="px-3 py-1 bg-gray-600 rounded text-sm">git status (all)</button>
-          <button onclick="clearAllTerminals()" class="px-3 py-1 bg-gray-600 rounded text-sm">Clear All</button>
-          <button onclick="syncWithParent()" class="px-3 py-1 bg-yellow-600 rounded text-sm" title="Sync all cubicles with parent project">Sync with Parent</button>
-          <button onclick="addCubicle()" class="px-3 py-1 bg-green-600 rounded text-sm">+ Add Cubicle</button>
-          <button onclick="addTerminal()" class="px-3 py-1 bg-blue-500 rounded text-sm">+ Add Terminal</button>
->>>>>>> 9b63242 (Fix terminal command escaping and enhance AI Office sync)
         </div>
       </div>
       <div id="cubicle-terminals" class="grid gap-4 p-4">
@@ -339,9 +306,7 @@
     </div>
   </div>
 
-<<<<<<< HEAD
-  <script type="module" src="/js/app.js"></script>
-=======
+
   <!-- Loading Overlay -->
   <div id="loading-overlay" class="loading-overlay hidden">
     <div>
@@ -350,7 +315,6 @@
     </div>
   </div>
 
-  <script src="/js/app.js"></script>
->>>>>>> 9b63242 (Fix terminal command escaping and enhance AI Office sync)
+  <script type="module" src="/js/app.js"></script>
 </body>
 </html>
