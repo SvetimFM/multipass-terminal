@@ -81,7 +81,15 @@ async function pasteToCubicle(term, cubicleKey) {
   try {
     const text = await navigator.clipboard.readText();
     if (text) {
-      ws.send(text);
+      try {
+        ws.send(JSON.stringify({
+          type: 'input',
+          data: text
+        }));
+      } catch (e) {
+        // Fallback to raw send
+        ws.send(text);
+      }
       showToast('Pasted!');
     }
   } catch (err) {
@@ -310,13 +318,28 @@ export async function initCubicleTerminal(project, cubicle, idx, isGrid = false)
   // Setup copy/paste support
   setupCubicleCopyPaste(term, `${project.id}-${idx}`);
   
-  // Connect WebSocket with the session name
+  // Calculate initial dimensions for cubicle terminal
+  const termRect = container.getBoundingClientRect();
+  const initialCols = Math.floor(termRect.width / 7); // Smaller font for grid
+  const initialRows = Math.floor(termRect.height / 14);
+  
+  // Connect WebSocket with the session name and dimensions
   const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-  const ws = new WebSocket(`${protocol}//${window.location.host}/terminal/${sessionName}`);
+  const ws = new WebSocket(`${protocol}//${window.location.host}/terminal/${sessionName}?cols=${initialCols}&rows=${initialRows}`);
   
   ws.onopen = () => {
     console.log(`Connected to cubicle ${cubicle.name}`);
     fitAddon.fit();
+    
+    // Send initial resize to ensure sync
+    const dimensions = fitAddon.proposeDimensions();
+    if (dimensions) {
+      ws.send(JSON.stringify({
+        type: 'resize',
+        cols: dimensions.cols,
+        rows: dimensions.rows
+      }));
+    }
   };
   
   ws.onmessage = (event) => {
@@ -333,23 +356,52 @@ export async function initCubicleTerminal(project, cubicle, idx, isGrid = false)
   
   term.onData((data) => {
     if (ws.readyState === WebSocket.OPEN) {
-      ws.send(data);
+      try {
+        ws.send(JSON.stringify({
+          type: 'input',
+          data: data
+        }));
+      } catch (e) {
+        // Fallback to raw send
+        ws.send(data);
+      }
     }
   });
   
   // Store WebSocket
   state.cubicleWebSockets.set(`${project.id}-${idx}`, ws);
   
-  // Handle resize for grid view
+  // Handle resize for grid view with debouncing
   if (isGrid) {
+    let resizeTimer = null;
     const resizeObserver = new ResizeObserver(() => {
-      try {
-        if (fitAddon) {
-          fitAddon.fit();
-        }
-      } catch (e) {
-        // Ignore resize errors
+      // Clear any pending resize
+      if (resizeTimer) {
+        clearTimeout(resizeTimer);
       }
+      
+      // Debounce resize events
+      resizeTimer = setTimeout(() => {
+        try {
+          if (fitAddon) {
+            fitAddon.fit();
+            
+            // Send resize message to server
+            if (ws.readyState === WebSocket.OPEN) {
+              const dimensions = fitAddon.proposeDimensions();
+              if (dimensions) {
+                ws.send(JSON.stringify({
+                  type: 'resize',
+                  cols: dimensions.cols,
+                  rows: dimensions.rows
+                }));
+              }
+            }
+          }
+        } catch (e) {
+          // Ignore resize errors
+        }
+      }, 150); // Debounce for 150ms
     });
     resizeObserver.observe(container);
   }
