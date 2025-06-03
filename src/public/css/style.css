@@ -141,3 +141,82 @@ body {
   text-align: center;
   font-size: 18px;
 }
+
+/* Terminal resize handles */
+.resize-handle {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 12px;
+  cursor: ns-resize;
+  user-select: none;
+  -webkit-user-select: none;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  transition: background-color 0.2s;
+}
+
+.resize-handle-bottom {
+  bottom: 0;
+}
+
+.resize-handle-top {
+  top: 0;
+}
+
+.resize-handle:hover {
+  background-color: rgba(59, 130, 246, 0.1);
+}
+
+.resize-handle:active {
+  background-color: rgba(59, 130, 246, 0.2);
+}
+
+/* Touch-friendly resize grip */
+.resize-grip {
+  width: 50px;
+  height: 4px;
+  background-color: #4b5563;
+  border-radius: 2px;
+  transition: all 0.2s;
+}
+
+.resize-handle:hover .resize-grip {
+  background-color: #3b82f6;
+  height: 5px;
+}
+
+/* Touch-optimized for tablets/mobile */
+@media (pointer: coarse) {
+  .resize-handle {
+    height: 24px;
+  }
+  
+  .resize-grip {
+    width: 80px;
+    height: 6px;
+  }
+}
+
+/* Resizing state */
+.resizing {
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+/* Make containers position relative for resize handles */
+.terminal-container {
+  position: relative;
+}
+
+.cubicle-terminal {
+  position: relative;
+}
+
+/* Prevent terminal text selection while resizing */
+.resizing .xterm {
+  pointer-events: none;
+}

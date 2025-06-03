@@ -4,6 +4,7 @@ import { showToast, copyToClipboard } from './utils.js';
 import { clipboardService } from '../clipboard.js';
 import { TerminalFactory } from '../terminalFactory.js';
 import { getTerminalSettings } from './terminalSettings.js';
+import { initializeMainTerminalResize } from './terminalResize.js';
 
 export function sendToTerminal(command) {
   if (state.currentWs && state.currentWs.readyState === WebSocket.OPEN) {
@@ -149,6 +150,11 @@ export async function attachTerminal(sessionName) {
   
   // Clear terminal
   state.currentTerminal.clear();
+  
+  // Initialize resize functionality for main terminal
+  setTimeout(() => {
+    initializeMainTerminalResize();
+  }, 100);
   
   // Handle WebSocket events
   state.currentWs.onopen = () => {
