@@ -858,7 +858,7 @@ function createMobileFAB() {
   const fabMenu = document.createElement('div');
   fabMenu.className = 'fab-menu hidden';
   fabMenu.innerHTML = `
-    <button onclick="sendToTerminal('claude\\n')" class="bg-blue-500">🤖</button>
+    <button onclick="sendToTerminal(llmConfig.currentLLM.command + '\\n')" class="bg-blue-500">🤖</button>
     <button onclick="sendToTerminal('\\x1b[Z')" class="bg-purple-500">⇧</button>
     <button onclick="copyTerminalSelection()" class="bg-green-500">📋</button>
   `;
@@ -990,7 +990,7 @@ function updateMobileCommandsExpanded() {
       copySection.innerHTML = `
         <div class="text-xs text-gray-400 mb-2">Quick Copy Commands:</div>
         <div class="flex flex-wrap gap-2">
-          <button onclick="copyToClipboard('claude', 'Command copied!')" class="text-xs bg-gray-700 px-2 py-1 rounded">claude</button>
+          <button onclick="copyToClipboard(llmConfig.currentLLM.command, 'Command copied!')" class="text-xs bg-gray-700 px-2 py-1 rounded" id="quick-copy-llm">ai</button>
           <button onclick="copyToClipboard('ls -la', 'Command copied!')" class="text-xs bg-gray-700 px-2 py-1 rounded">ls -la</button>
           <button onclick="copyToClipboard('git status', 'Command copied!')" class="text-xs bg-gray-700 px-2 py-1 rounded">git status</button>
           <button onclick="copyToClipboard('git pull', 'Command copied!')" class="text-xs bg-gray-700 px-2 py-1 rounded">git pull</button>
