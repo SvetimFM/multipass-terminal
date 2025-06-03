@@ -44,7 +44,15 @@
       "Bash(git pull:*)",
       "Bash(git cherry-pick:*)",
       "Bash(git push:*)",
-      "Bash(npm start)"
+      "Bash(npm start)",
+      "Bash(rg:*)",
+      "Bash(for file in src/routes/*.js)",
+      "Bash(do echo \"=== $file ===\")",
+      "Bash(done)",
+      "Bash(git merge:*)",
+      "Bash(git rebase:*)",
+      "Bash(git stash:*)",
+      "Bash(wc:*)"
     ],
     "deny": []
   }

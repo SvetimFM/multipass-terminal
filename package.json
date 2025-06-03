@@ -1,7 +1,7 @@
 {
-  "name": "multipass-ai-terminal",
-  "version": "1.0.0",
-  "description": "AI Terminal with per-project AI Offices for remote development",
+  "name": "multipass-terminal",
+  "version": "2.0.0",
+  "description": "LLM-agnostic terminal interface with isolated AI workspaces for development",
   "main": "multipass-refactored.js",
   "scripts": {
     "start": "node multipass-refactored.js",
