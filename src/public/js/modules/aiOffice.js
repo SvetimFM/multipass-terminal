@@ -16,7 +16,9 @@ function setupCubicleCopyPaste(term, cubicleKey) {
       return false;
     }
     // Ctrl+V for paste
-    if (event.ctrlKey && event.key === 'v') {
+    if (event.ctrlKey && event.key === 'v' && !event.repeat) {
+      event.preventDefault();
+      event.stopPropagation();
       pasteToCubicle(term, cubicleKey);
       return false;
     }
@@ -26,7 +28,9 @@ function setupCubicleCopyPaste(term, cubicleKey) {
       return false;
     }
     // Ctrl+Shift+V for paste
-    if (event.ctrlKey && event.shiftKey && event.key === 'V') {
+    if (event.ctrlKey && event.shiftKey && event.key === 'V' && !event.repeat) {
+      event.preventDefault();
+      event.stopPropagation();
       pasteToCubicle(term, cubicleKey);
       return false;
     }
@@ -62,6 +66,11 @@ async function pasteToCubicle(term, cubicleKey) {
   if (!ws || ws.readyState !== WebSocket.OPEN) {
     showToast('Terminal not connected');
     return;
+  }
+  
+  // Focus the terminal before pasting to prevent double paste issues
+  if (term && term.focus) {
+    term.focus();
   }
   
   try {
@@ -433,7 +442,7 @@ export async function removeCubicle(projectId, cubicleIdx) {
 }
 
 
-// Read .AI_README in cubicle terminal
+// Read .AI_README in cubicle terminal - Copy to clipboard
 export async function readAIReadme(projectId, cubicleIdx) {
   try {
     // Get the cubicle session name
@@ -449,18 +458,23 @@ export async function readAIReadme(projectId, cubicleIdx) {
       return;
     }
     
-    const sessionName = cubicle.sessionName;
-    const ws = state.cubicleWebSockets.get(sessionName);
+    // Fetch the .AI_README content from the server
+    const response = await fetch(`/api/projects/${projectId}/aioffice/cubicles/${cubicleIdx}/read-ai-readme`);
     
-    if (!ws || ws.readyState !== WebSocket.OPEN) {
-      showToast('Terminal not connected');
-      return;
+    if (!response.ok) {
+      throw new Error('Failed to read .AI_README');
     }
     
-    // Send the command to read .AI_README
-    const command = 'cat .AI_README\n';
-    ws.send(command);
-    showToast('📖 Reading .AI_README...');
+    const data = await response.json();
+    const content = data.content || '';
+    
+    // Copy the content to clipboard
+    if (content) {
+      await copyToClipboard(content);
+      showToast('📖 .AI_README copied to clipboard! Paste it into the terminal.');
+    } else {
+      showToast('.AI_README is empty', 'warning');
+    }
   } catch (error) {
     console.error('Error reading .AI_README:', error);
     showToast('Failed to read .AI_README', 'error');
@@ -672,10 +686,24 @@ export async function pasteToCubicleTerminal(projectId, cubicleIdx) {
     return;
   }
   
+  // Get the terminal instance and focus it before pasting
+  const terminal = state.cubicleTerminals.get(cubicleKey);
+  if (terminal && terminal.focus) {
+    terminal.focus();
+  }
+  
   try {
     const text = await navigator.clipboard.readText();
     if (text) {
-      ws.send(text);
+      try {
+        ws.send(JSON.stringify({
+          type: 'input',
+          data: text
+        }));
+      } catch (e) {
+        // Fallback to raw send
+        ws.send(text);
+      }
       showToast('Pasted!');
     } else {
       showToast('Clipboard is empty');
@@ -693,7 +721,15 @@ export async function pasteToCubicleTerminal(projectId, cubicleIdx) {
       document.body.removeChild(textarea);
       
       if (text) {
-        ws.send(text);
+        try {
+          ws.send(JSON.stringify({
+            type: 'input',
+            data: text
+          }));
+        } catch (e) {
+          // Fallback to raw send
+          ws.send(text);
+        }
         showToast('Pasted!');
       } else {
         showToast('Unable to paste - check clipboard permissions');
