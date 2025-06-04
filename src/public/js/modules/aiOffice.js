@@ -312,9 +312,12 @@ export async function initCubicleTerminal(project, cubicle, idx, isGrid = false)
     rightClickSelectsWord: true
   };
   
-  const { terminal: term, fitAddon } = isGrid 
+  const terminalInstance = isGrid 
     ? TerminalFactory.createGridTerminal(container, terminalOptions)
     : TerminalFactory.createTerminalWithContainer(container, terminalOptions);
+  
+  const term = terminalInstance.terminal;
+  const fitAddon = terminalInstance.fitAddon;
   
   // Store terminal and websocket reference for this cubicle
   state.cubicleTerminals.set(`${project.id}-${idx}`, { term, fitAddon });
@@ -703,9 +706,9 @@ export async function pasteToCubicleTerminal(projectId, cubicleIdx) {
   }
   
   // Get the terminal instance and focus it before pasting
-  const terminal = state.cubicleTerminals.get(cubicleKey);
-  if (terminal && terminal.focus) {
-    terminal.focus();
+  const terminalData = state.cubicleTerminals.get(cubicleKey);
+  if (terminalData && terminalData.term && terminalData.term.focus) {
+    terminalData.term.focus();
   }
   
   try {
@@ -796,13 +799,7 @@ export async function changeCubicleMode(projectId, cubicleIdx, newMode) {
 }
 
 export async function sendEscToCubicle(projectId, cubicleIdx) {
-  const project = state.currentAIOfficeProject;
-  if (!project || project.id !== projectId) return;
-  
-  const cubicle = project.aiOffice.cubicles[cubicleIdx];
-  if (!cubicle) return;
-  
-  const cubicleKey = `${project.id}-${cubicle.name}`;
+  const cubicleKey = `${projectId}-${cubicleIdx}`;
   const ws = state.cubicleWebSockets.get(cubicleKey);
   
   if (!ws || ws.readyState !== WebSocket.OPEN) {
@@ -811,9 +808,9 @@ export async function sendEscToCubicle(projectId, cubicleIdx) {
   }
   
   // Get the terminal instance and focus it
-  const terminal = state.cubicleTerminals.get(cubicleKey);
-  if (terminal && terminal.focus) {
-    terminal.focus();
+  const terminalData = state.cubicleTerminals.get(cubicleKey);
+  if (terminalData && terminalData.term && terminalData.term.focus) {
+    terminalData.term.focus();
   }
   
   try {
