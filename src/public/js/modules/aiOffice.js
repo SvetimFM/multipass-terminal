@@ -264,10 +264,20 @@ export async function initCubicleTerminal(project, cubicle, idx, isGrid = false)
   const terminalId = isGrid ? `cubicle-grid-terminal-${project.id}-${idx}` : `cubicle-terminal-${idx}`;
   const container = document.getElementById(terminalId);
   
-  if (!container) return;
+  console.log('Initializing cubicle terminal:', { terminalId, container, project, cubicle, idx });
+  
+  if (!container) {
+    console.error('Container not found for terminal:', terminalId);
+    return;
+  }
   
   // Clear existing content
   container.innerHTML = '';
+  
+  // Ensure container has height
+  if (!container.offsetHeight) {
+    container.style.height = '400px';
+  }
   
   // Create session name for this cubicle
   const sessionName = `ai-office-${project.id}-${cubicle.name}`;
@@ -316,8 +326,19 @@ export async function initCubicleTerminal(project, cubicle, idx, isGrid = false)
     ? TerminalFactory.createGridTerminal(container, terminalOptions)
     : TerminalFactory.createTerminalWithContainer(container, terminalOptions);
   
+  console.log('Terminal instance created:', terminalInstance);
+  
   const term = terminalInstance.terminal;
   const fitAddon = terminalInstance.fitAddon;
+  
+  console.log('Terminal and fitAddon:', { term, fitAddon });
+  
+  // Ensure terminal fits properly after creation
+  setTimeout(() => {
+    if (fitAddon) {
+      fitAddon.fit();
+    }
+  }, 50);
   
   // Store terminal and websocket reference for this cubicle
   state.cubicleTerminals.set(`${project.id}-${idx}`, { term, fitAddon });
@@ -375,10 +396,11 @@ export async function initCubicleTerminal(project, cubicle, idx, isGrid = false)
   
   // Handle resize for grid view with debouncing
   if (isGrid) {
-    // Initialize vertical resize functionality
-    setTimeout(() => {
-      initializeCubicleResize(container, `${project.id}-${idx}`);
-    }, 100);
+    // Initialize vertical resize functionality on the wrapper div
+    const wrapperDiv = container.parentElement;
+    if (wrapperDiv) {
+      initializeCubicleResize(wrapperDiv, `${project.id}-${idx}`);
+    }
     
     let resizeTimer = null;
     const resizeObserver = new ResizeObserver(() => {
