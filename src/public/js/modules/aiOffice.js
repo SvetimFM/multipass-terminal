@@ -7,6 +7,22 @@ import { TerminalFactory } from '../terminalFactory.js';
 import { getTerminalSettings } from './terminalSettings.js';
 import { initializeCubicleResize } from './terminalResize.js';
 
+// Setup mouse wheel scrolling for cubicle terminals
+function setupCubicleMouseWheel(term) {
+  if (!term) return;
+  
+  // Ensure terminal is not in application cursor mode
+  term.options.applicationCursor = false;
+  
+  // Enable mouse events for scrolling
+  term.options.mouseEvents = true;
+  
+  // Sync viewport if available
+  if (term.viewport) {
+    term.viewport.syncScrollArea();
+  }
+}
+
 // Setup copy/paste for cubicle terminals
 function setupCubicleCopyPaste(term, cubicleKey) {
   // Handle keyboard shortcuts
@@ -347,6 +363,9 @@ export async function initCubicleTerminal(project, cubicle, idx, isGrid = false)
   // Setup copy/paste support
   setupCubicleCopyPaste(term, `${project.id}-${idx}`);
   
+  // Setup proper mouse wheel scrolling
+  setupCubicleMouseWheel(term);
+  
   // Connect WebSocket with the session name
   const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
   const ws = new WebSocket(`${protocol}//${window.location.host}/terminal/${sessionName}`);
@@ -606,6 +625,9 @@ function initProjectTerminal(project, sessionName) {
   };
   
   const { terminal: term, fitAddon } = TerminalFactory.createGridTerminal(container, terminalOptions);
+  
+  // Setup proper mouse wheel scrolling for project terminal
+  setupCubicleMouseWheel(term);
   
   // Create session in project root directory
   fetch('/api/sessions', {
