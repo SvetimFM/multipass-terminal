@@ -7,7 +7,7 @@ const DEFAULT_HEIGHTS = {
   main: 400,
   cubicle: 400,
   minHeight: 400,
-  maxHeight: 800
+  maxHeight: 2000
 };
 
 // Load saved heights from localStorage
@@ -88,7 +88,7 @@ export function makeResizable(container, terminalId, options = {}) {
     
     const currentY = e.type.includes('touch') ? e.touches[0].clientY : e.clientY;
     const deltaY = handlePosition === 'top' ? startY - currentY : currentY - startY;
-    const newHeight = Math.max(minHeight, Math.min(maxHeight, startHeight + deltaY));
+    const newHeight = Math.max(minHeight, startHeight + deltaY);
     
     container.style.height = newHeight + 'px';
     
