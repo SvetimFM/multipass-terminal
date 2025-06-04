@@ -309,6 +309,7 @@ export async function initCubicleTerminal(project, cubicle, idx, isGrid = false)
     fontSize: settings.fontSize,
     fontFamily: settings.fontFamily,
     theme: settings.theme,
+    scrollback: settings.scrollback,
     rightClickSelectsWord: true
   };
   
@@ -578,6 +579,7 @@ function initProjectTerminal(project, sessionName) {
     fontSize: settings.fontSize,
     fontFamily: settings.fontFamily,
     theme: settings.theme,
+    scrollback: settings.scrollback,
     rightClickSelectsWord: true
   };
   

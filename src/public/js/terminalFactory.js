@@ -10,7 +10,9 @@ const DEFAULT_TERMINAL_OPTIONS = {
     },
     allowTransparency: true,
     windowsMode: false,
-    scrollback: 10000  // Enable scrollback with 10k lines
+    scrollback: 2000,  // Default scrollback
+    smoothScrollDuration: 125,  // Smooth scrolling
+    scrollSensitivity: 1  // Normal scroll sensitivity
 };
 
 export class TerminalFactory {

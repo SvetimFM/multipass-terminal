@@ -19,15 +19,9 @@
       <div class="flex justify-between items-center">
         <h1 class="text-lg font-semibold">Multipass - Terminal for AI</h1>
         <div class="flex gap-2 items-center">
-          <!-- Font Size Controls -->
-          <div class="flex items-center gap-2 bg-gray-700 px-3 py-1 rounded">
-            <span class="text-xs text-gray-400">Font:</span>
-            <button onclick="window.terminalSettings.updateFontSize(Math.max(window.terminalSettings.getTerminalSettings().fontSize - 1, window.terminalSettings.MIN_FONT_SIZE))" 
-                    class="text-gray-300 hover:text-white px-1" title="Decrease font size">−</button>
-            <span id="font-size-display" class="text-sm font-mono px-1">14px</span>
-            <button onclick="window.terminalSettings.updateFontSize(Math.min(window.terminalSettings.getTerminalSettings().fontSize + 1, window.terminalSettings.MAX_FONT_SIZE))" 
-                    class="text-gray-300 hover:text-white px-1" title="Increase font size">+</button>
-          </div>
+          <button onclick="window.settings.openSettings()" class="bg-gray-700 px-3 py-1 rounded text-sm" title="Settings">
+            ⚙️ Settings
+          </button>
           <button onclick="window.sessions.showProjects()" class="bg-gray-700 px-3 py-1 rounded text-sm">
             Projects
           </button>
@@ -259,6 +253,89 @@
       </div>
     </div>
 
+    <!-- Settings Modal -->
+    <div id="settings-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50">
+      <div class="bg-gray-800 w-full max-w-md mx-auto mt-10 rounded-lg shadow-xl max-h-[80vh] flex flex-col">
+        <div class="p-4 border-b border-gray-700 flex justify-between items-center">
+          <h3 class="text-lg font-semibold">Settings</h3>
+          <button onclick="window.settings.closeSettings()" class="text-gray-400 hover:text-white">✕</button>
+        </div>
+        
+        <div class="flex-1 overflow-y-auto p-4">
+          <div class="space-y-6">
+            <!-- Font Settings -->
+            <div class="bg-gray-700 p-4 rounded-lg">
+              <h4 class="font-semibold mb-3">Font Settings</h4>
+              <div class="space-y-3">
+                <div>
+                  <label class="block text-sm mb-2">Font Size: <span id="settings-font-size-display" class="font-mono">14px</span></label>
+                  <div class="flex items-center gap-3">
+                    <input type="range" id="font-size-slider" min="10" max="24" value="14" 
+                           class="flex-1 bg-gray-600 appearance-none h-2 rounded cursor-pointer"
+                           onchange="window.settings.updateFontSizeFromSlider(this.value)">
+                    <div class="flex gap-1">
+                      <button onclick="window.settings.decreaseFontSize()" 
+                              class="px-2 py-1 bg-gray-600 hover:bg-gray-500 rounded text-sm">−</button>
+                      <button onclick="window.settings.increaseFontSize()" 
+                              class="px-2 py-1 bg-gray-600 hover:bg-gray-500 rounded text-sm">+</button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <!-- Scrollback Settings -->
+            <div class="bg-gray-700 p-4 rounded-lg">
+              <h4 class="font-semibold mb-3">Terminal Settings</h4>
+              <div class="space-y-3">
+                <div>
+                  <label class="block text-sm mb-2">Scrollback Buffer: <span id="settings-scrollback-display" class="font-mono">2000 lines</span></label>
+                  <div class="flex items-center gap-3">
+                    <input type="range" id="scrollback-slider" min="100" max="10000" step="100" value="2000" 
+                           class="flex-1 bg-gray-600 appearance-none h-2 rounded cursor-pointer"
+                           onchange="window.settings.updateScrollbackFromSlider(this.value)">
+                    <input type="number" id="scrollback-input" min="100" max="10000" step="100" value="2000"
+                           class="w-20 bg-gray-800 px-2 py-1 rounded text-sm"
+                           onchange="window.settings.updateScrollbackFromInput(this.value)">
+                  </div>
+                  <div class="text-xs text-gray-400 mt-1">Min: 100, Max: 10,000 lines</div>
+                </div>
+              </div>
+            </div>
+            
+            <!-- Quick Presets -->
+            <div class="bg-gray-700 p-4 rounded-lg">
+              <h4 class="font-semibold mb-3">Quick Presets</h4>
+              <div class="grid grid-cols-2 gap-2">
+                <button onclick="window.settings.applyPreset('small')" 
+                        class="px-3 py-2 bg-gray-600 hover:bg-gray-500 rounded text-sm">
+                  Small (12px, 1000 lines)
+                </button>
+                <button onclick="window.settings.applyPreset('medium')" 
+                        class="px-3 py-2 bg-gray-600 hover:bg-gray-500 rounded text-sm">
+                  Medium (14px, 2000 lines)
+                </button>
+                <button onclick="window.settings.applyPreset('large')" 
+                        class="px-3 py-2 bg-gray-600 hover:bg-gray-500 rounded text-sm">
+                  Large (16px, 3000 lines)
+                </button>
+                <button onclick="window.settings.applyPreset('max')" 
+                        class="px-3 py-2 bg-gray-600 hover:bg-gray-500 rounded text-sm">
+                  Max (18px, 5000 lines)
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="p-4 border-t border-gray-700">
+          <button onclick="window.settings.closeSettings()" class="w-full bg-gray-700 py-2 rounded">
+            Close
+          </button>
+        </div>
+      </div>
+    </div>
+
     <!-- AI Office Terminal Grid -->
     <div id="ai-office-grid" class="hidden fixed inset-0 bg-gray-900 z-50 overflow-auto">
       <div class="bg-gray-800 p-3 border-b border-gray-700 sticky top-0 z-10">
@@ -267,15 +344,9 @@
             <span id="ai-office-project-name"></span> - AI Office (<span id="ai-office-cubicle-count"></span> cubicles)
           </h2>
           <div class="flex gap-2 items-center">
-            <!-- Font Size Controls for Grid -->
-            <div class="flex items-center gap-2 bg-gray-700 px-3 py-1 rounded">
-              <span class="text-xs text-gray-400">Font:</span>
-              <button onclick="window.terminalSettings.updateFontSize(Math.max(window.terminalSettings.getTerminalSettings().fontSize - 1, window.terminalSettings.MIN_FONT_SIZE))" 
-                      class="text-gray-300 hover:text-white px-1" title="Decrease font size">−</button>
-              <span id="grid-font-size-display" class="text-sm font-mono px-1">14px</span>
-              <button onclick="window.terminalSettings.updateFontSize(Math.min(window.terminalSettings.getTerminalSettings().fontSize + 1, window.terminalSettings.MAX_FONT_SIZE))" 
-                      class="text-gray-300 hover:text-white px-1" title="Increase font size">+</button>
-            </div>
+            <button onclick="window.settings.openSettings()" class="bg-gray-700 px-3 py-1 rounded text-sm" title="Settings">
+              ⚙️ Settings
+            </button>
             <button onclick="window.aiOffice.closeAIOfficeGrid()" class="bg-gray-700 px-3 py-1 rounded text-sm">
               Close
             </button>

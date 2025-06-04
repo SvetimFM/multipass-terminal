@@ -107,6 +107,7 @@ export async function attachTerminal(sessionName) {
       fontSize: settings.fontSize,
       fontFamily: settings.fontFamily,
       theme: settings.theme,
+      scrollback: settings.scrollback,
       rightClickSelectsWord: true
     });
     

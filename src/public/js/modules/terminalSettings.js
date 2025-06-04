@@ -10,12 +10,17 @@ const DEFAULT_SETTINGS = {
     background: '#1a1a1a',
     foreground: '#d4d4d4',
     cursor: '#d4d4d4'
-  }
+  },
+  scrollback: 2000
 };
 
 // Font size limits
 const MIN_FONT_SIZE = 10;
 const MAX_FONT_SIZE = 24;
+
+// Scrollback limits
+const MIN_SCROLLBACK = 100;
+const MAX_SCROLLBACK = 10000;
 
 // Load settings from localStorage
 export function loadTerminalSettings() {
@@ -116,11 +121,48 @@ function updateFontSizeDisplays(fontSize) {
   });
 }
 
+// Update scrollback buffer size for all terminals
+export function updateScrollback(newSize) {
+  if (newSize < MIN_SCROLLBACK || newSize > MAX_SCROLLBACK) {
+    showToast(`Scrollback must be between ${MIN_SCROLLBACK} and ${MAX_SCROLLBACK} lines`);
+    return false;
+  }
+
+  const settings = getTerminalSettings();
+  settings.scrollback = newSize;
+  
+  // Save to localStorage
+  if (saveTerminalSettings(settings)) {
+    state.terminalSettings = settings;
+    
+    // Apply to main terminal if it exists
+    if (state.currentTerminal) {
+      state.currentTerminal.options.scrollback = newSize;
+    }
+    
+    // Apply to all cubicle terminals
+    state.cubicleTerminals.forEach(({ term }) => {
+      if (term) {
+        term.options.scrollback = newSize;
+      }
+    });
+    
+    showToast(`Scrollback buffer changed to ${newSize} lines`);
+    return true;
+  }
+  
+  showToast('Failed to save scrollback settings');
+  return false;
+}
+
 // Export for window object
 export const terminalSettings = {
   updateFontSize,
+  updateScrollback,
   initializeFontSizeControls,
   getTerminalSettings,
   MIN_FONT_SIZE,
-  MAX_FONT_SIZE
+  MAX_FONT_SIZE,
+  MIN_SCROLLBACK,
+  MAX_SCROLLBACK
 };
