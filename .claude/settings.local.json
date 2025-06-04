@@ -1,12 +1,14 @@
 {
   "permissions": {
     "allow": [
-      "Bash(mkdir:*)",
-      "Bash(npx cdk init:*)",
-      "Bash(touch:*)",
-      "Bash(git pull:*)",
-      "Bash(git checkout:*)",
-      "Bash(git add:*)"
+      "Bash(git fetch:*)",
+      "Bash(git rebase:*)",
+      "Bash(git stash:*)",
+      "Bash(grep:*)",
+      "Bash(git add:*)",
+      "Bash(timeout 10 npm start:*)",
+      "Bash(git push:*)",
+      "Bash(git commit:*)"
     ],
     "deny": []
   }
