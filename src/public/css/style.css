@@ -114,7 +114,7 @@ body {
   position: absolute;
   left: 0;
   right: 0;
-  height: 12px;
+  height: 6px;
   cursor: ns-resize;
   user-select: none;
   -webkit-user-select: none;
@@ -122,7 +122,7 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: transparent;
+  background: rgba(75, 85, 99, 0.3);
   transition: background-color 0.2s;
 }
 
@@ -145,16 +145,16 @@ body {
 
 /* Touch-friendly resize grip */
 .resize-grip {
-  width: 50px;
-  height: 4px;
-  background-color: #4b5563;
-  border-radius: 2px;
+  width: 40px;
+  height: 3px;
+  background-color: #6b7280;
+  border-radius: 1.5px;
   transition: all 0.2s;
 }
 
 .resize-handle:hover .resize-grip {
   background-color: #3b82f6;
-  height: 5px;
+  height: 4px;
 }
 
 /* Touch-optimized for tablets/mobile */
@@ -225,7 +225,8 @@ body {
   flex-direction: column;
   height: 400px;
   min-height: 400px;
-  padding-bottom: 12px; /* Space for resize handle */
+  padding-bottom: 6px; /* Space for resize handle */
+  position: relative; /* For absolute positioned resize handle */
 }
 
 /* Header takes only the space it needs */
