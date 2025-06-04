@@ -117,6 +117,9 @@ export async function attachTerminal(sessionName) {
     // Add copy/paste keyboard shortcuts
     setupTerminalCopyPaste(state.currentTerminal);
     
+    // Ensure mouse wheel scrolls the terminal viewport instead of cycling commands
+    setupTerminalMouseWheel(state.currentTerminal);
+    
     // Handle resize with debouncing
     if (state.resizeListener) {
       window.removeEventListener('resize', state.resizeListener);
@@ -232,6 +235,23 @@ export function closeTerminal() {
   document.getElementById('terminal-view').classList.add('hidden');
   document.getElementById('projects-view').classList.remove('hidden');
   document.getElementById('main-header').classList.remove('hidden');
+}
+
+// Setup mouse wheel scrolling
+function setupTerminalMouseWheel(term) {
+  if (!term) return;
+  
+  // Ensure terminal is not in application cursor mode which can cause
+  // mouse wheel to cycle through command history instead of scrolling
+  term.options.applicationCursor = false;
+  
+  // Enable mouse events for scrolling
+  term.options.mouseEvents = true;
+  
+  // If the terminal has a viewport, ensure it's scrollable
+  if (term.viewport) {
+    term.viewport.syncScrollArea();
+  }
 }
 
 // Setup copy/paste for terminal

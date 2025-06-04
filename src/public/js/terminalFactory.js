@@ -12,7 +12,10 @@ const DEFAULT_TERMINAL_OPTIONS = {
     windowsMode: false,
     scrollback: 2000,  // Default scrollback
     smoothScrollDuration: 125,  // Smooth scrolling
-    scrollSensitivity: 1  // Normal scroll sensitivity
+    scrollSensitivity: 1,  // Normal scroll sensitivity
+    altClickMovesCursor: false,  // Prevent alt+click from moving cursor
+    macOptionIsMeta: false,  // Ensure option key doesn't interfere on Mac
+    rightClickSelectsWord: false  // Disable right click word selection to avoid conflicts
 };
 
 export class TerminalFactory {
