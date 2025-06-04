@@ -28,8 +28,7 @@ body {
   flex: 1;
   background: #1a1b26;
   padding: 10px;
-  overflow-y: auto;
-  overflow-x: hidden;
+  overflow: hidden; /* Let xterm handle its own scrolling */
   width: 100%;
   height: 100%;
 }
@@ -65,50 +64,14 @@ body {
   background: #718096;
 }
 
-/* Ensure xterm viewport scrolls properly */
-.xterm {
-  height: 100%;
-}
-
-.xterm-viewport {
-  overflow-y: scroll !important;
-}
+/* Xterm styles moved to terminal containers section */
 
 .file-item {
   padding: 8px 12px;
   border-bottom: 1px solid #374151;
 }
 
-.cubicle-terminal {
-  height: 300px;
-  min-height: 150px;
-  max-height: 600px;
-  background: #1a1b26;
-  border-radius: 8px;
-  padding: 8px;
-  overflow-y: auto;
-  overflow-x: hidden;
-  position: relative;
-}
-
-/* Custom scrollbar for cubicle terminals */
-.cubicle-terminal::-webkit-scrollbar {
-  width: 8px;
-}
-
-.cubicle-terminal::-webkit-scrollbar-track {
-  background: #1a1b26;
-  border-radius: 4px;
-}
-
-.cubicle-terminal::-webkit-scrollbar-thumb {
-  background: #374151;
-  border-radius: 4px;
-}
-
-.cubicle-terminal::-webkit-scrollbar-thumb:hover {
-  background: #4b5563;
-}
+/* Remove duplicate cubicle-terminal styles - defined later */
 
 /* Loading animation */
 .loading-overlay {
@@ -150,7 +113,7 @@ body {
   position: absolute;
   left: 0;
   right: 0;
-  height: 12px;
+  height: 6px;
   cursor: ns-resize;
   user-select: none;
   -webkit-user-select: none;
@@ -158,12 +121,13 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: transparent;
+  background: rgba(75, 85, 99, 0.3);
   transition: background-color 0.2s;
 }
 
 .resize-handle-bottom {
   bottom: 0;
+  border-radius: 0 0 8px 8px;
 }
 
 .resize-handle-top {
@@ -180,16 +144,16 @@ body {
 
 /* Touch-friendly resize grip */
 .resize-grip {
-  width: 50px;
-  height: 4px;
-  background-color: #4b5563;
-  border-radius: 2px;
+  width: 40px;
+  height: 3px;
+  background-color: #6b7280;
+  border-radius: 1.5px;
   transition: all 0.2s;
 }
 
 .resize-handle:hover .resize-grip {
   background-color: #3b82f6;
-  height: 5px;
+  height: 4px;
 }
 
 /* Touch-optimized for tablets/mobile */
@@ -210,29 +174,63 @@ body {
   -webkit-user-select: none;
 }
 
-/* Make containers position relative for resize handles */
+/* Terminal containers */
 .terminal-container {
   position: relative;
+  height: 400px;
+  min-height: 400px;
+  overflow: hidden; /* Let xterm handle its own scrolling */
 }
 
 .cubicle-terminal {
   position: relative;
+  background: #1a1b26;
+  border-radius: 0 0 8px 8px;
+  display: flex;
+  flex-direction: column;
 }
+
+/* Xterm terminal styles */
+.terminal-container .xterm,
+.cubicle-terminal .xterm {
+  height: 100%;
+  width: 100%;
+}
+
+/* Remove our viewport override - let xterm handle scrolling */
 
 /* Prevent terminal text selection while resizing */
 .resizing .xterm {
   pointer-events: none;
 }
 
-/* Cubicle grid layout - prevent resize affecting other terminals */
+/* Cubicle grid layout */
 #cubicle-terminals {
   display: grid;
-  grid-auto-rows: auto;
-  align-items: start;
+  grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+  gap: 1rem;
+  padding: 1rem;
 }
 
+/* The wrapper div that contains header + terminal */
 #cubicle-terminals > div {
+  display: flex;
+  flex-direction: column;
+  height: 400px;
+  min-height: 400px;
+  padding-bottom: 6px; /* Space for resize handle */
+  position: relative; /* For absolute positioned resize handle */
+}
+
+/* Header takes only the space it needs */
+#cubicle-terminals > div > div:first-child {
+  flex-shrink: 0;
+}
+
+/* Terminal fills remaining space */
+#cubicle-terminals > div .cubicle-terminal {
+  flex: 1;
   min-height: 0;
-  contain: layout size;
+  height: auto;
 }
 

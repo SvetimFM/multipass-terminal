@@ -4,10 +4,10 @@ import { showToast } from './utils.js';
 
 // Default heights
 const DEFAULT_HEIGHTS = {
-  main: 600,
-  cubicle: 300,
-  minHeight: 150,
-  maxHeight: 800
+  main: 400,
+  cubicle: 400,
+  minHeight: 400,
+  maxHeight: 2000
 };
 
 // Load saved heights from localStorage
@@ -88,7 +88,7 @@ export function makeResizable(container, terminalId, options = {}) {
     
     const currentY = e.type.includes('touch') ? e.touches[0].clientY : e.clientY;
     const deltaY = handlePosition === 'top' ? startY - currentY : currentY - startY;
-    const newHeight = Math.max(minHeight, Math.min(maxHeight, startHeight + deltaY));
+    const newHeight = Math.max(minHeight, startHeight + deltaY);
     
     container.style.height = newHeight + 'px';
     
@@ -168,10 +168,10 @@ export function initializeMainTerminalResize() {
 
 // Initialize resize for cubicle terminals
 export function initializeCubicleResize(container, cubicleId) {
-  // Apply saved height
-  const heights = loadTerminalHeights();
-  const savedHeight = heights[`cubicle-${cubicleId}`] || DEFAULT_HEIGHTS.cubicle;
-  container.style.height = savedHeight + 'px';
+  if (!container) {
+    console.error('Container not found for cubicle resize:', cubicleId);
+    return;
+  }
   
   // Make resizable
   const cubicleData = state.cubicleTerminals.get(cubicleId);
@@ -185,8 +185,8 @@ export function initializeCubicleResize(container, cubicleId) {
         });
       }
     },
-    minHeight: 200,
-    maxHeight: 600
+    minHeight: DEFAULT_HEIGHTS.minHeight,
+    maxHeight: DEFAULT_HEIGHTS.maxHeight
   });
 }
 

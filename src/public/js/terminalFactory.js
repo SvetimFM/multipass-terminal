@@ -17,23 +17,18 @@ const DEFAULT_TERMINAL_OPTIONS = {
 
 export class TerminalFactory {
     static createTerminal(options = {}) {
-        const terminal = new Terminal({
+        const terminal = new window.Terminal({
             ...DEFAULT_TERMINAL_OPTIONS,
             ...options
         });
 
-        const fitAddon = new FitAddon.FitAddon();
+        const fitAddon = new window.FitAddon.FitAddon();
         terminal.loadAddon(fitAddon);
-        terminal.loadAddon(new WebLinksAddon.WebLinksAddon());
+        terminal.loadAddon(new window.WebLinksAddon.WebLinksAddon());
 
         return {
             terminal,
             fitAddon,
-            attachToWebSocket(ws) {
-                const attachAddon = new AttachAddon.AttachAddon(ws);
-                terminal.loadAddon(attachAddon);
-                return attachAddon;
-            },
             dispose() {
                 terminal.dispose();
             }
@@ -41,21 +36,26 @@ export class TerminalFactory {
     }
 
     static createTerminalWithContainer(container, options = {}) {
-        const { terminal, fitAddon, attachToWebSocket, dispose } = this.createTerminal(options);
+        const { terminal, fitAddon, dispose } = this.createTerminal(options);
         
         terminal.open(container);
-        fitAddon.fit();
+        
+        // Ensure container has dimensions before fitting
+        requestAnimationFrame(() => {
+            fitAddon.fit();
+        });
 
         // Auto-fit on window resize
         const resizeObserver = new ResizeObserver(() => {
-            fitAddon.fit();
+            requestAnimationFrame(() => {
+                fitAddon.fit();
+            });
         });
         resizeObserver.observe(container);
 
         return {
             terminal,
             fitAddon,
-            attachToWebSocket,
             dispose() {
                 resizeObserver.disconnect();
                 dispose();
@@ -64,7 +64,7 @@ export class TerminalFactory {
     }
 
     static createGridTerminal(container, options = {}) {
-        // Grid terminals use the same font size as regular terminals
+        // Grid terminals use the same creation as regular terminals
         return this.createTerminalWithContainer(container, options);
     }
 }
