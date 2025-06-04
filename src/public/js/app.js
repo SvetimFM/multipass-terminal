@@ -10,6 +10,7 @@ import * as fileBrowser from './modules/fileBrowser.js';
 import * as mobile from './modules/mobile.js';
 import { terminalSettings, initializeFontSizeControls } from './modules/terminalSettings.js';
 import { terminalResize } from './modules/terminalResize.js';
+import { settings } from './modules/settings.js';
 
 // Expose modules to window for onclick handlers
 window.utils = utils;
@@ -23,6 +24,7 @@ window.mobile = mobile;
 window.state = state;
 window.terminalSettings = terminalSettings;
 window.terminalResize = terminalResize;
+window.settings = settings;
 
 // Initialize application
 document.addEventListener('DOMContentLoaded', async () => {
@@ -30,6 +32,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   
   // Initialize terminal settings
   initializeFontSizeControls();
+  settings.initializeSettings();
   
   // Load initial data
   await projects.loadProjects();

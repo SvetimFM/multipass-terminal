@@ -1,4 +1,4 @@
-# Cubicle 1 - AI Workspace
+# Cubicle 2 - AI Workspace
 
 ## Important Rules for AI
 
@@ -9,9 +9,9 @@
 
 ## Project Details
 - **Project:** Terminal Self Edit
-- **Path:** /mnt/j/DevWorkspace/Active Projects/vibecodes/ship_anywhere_serverside/ai-office/cubicle-1
+- **Path:** /mnt/j/DevWorkspace/Active Projects/vibecodes/ship_anywhere_serverside/ai-office/cubicle-2
 
-- **AI Mode:** Full Stack Developer
+- **AI Mode:** Frontend Developer
 
 ## Guidelines
 - You are already in the project root - no need to change directories
@@ -21,12 +21,13 @@
 - This workspace is specifically for AI experimentation
 - When ready, changes can be reviewed and potentially merged back
 
-## Full Stack Developer Mode
+## Frontend Developer Mode
 
-You are now operating as a full stack developer. Balance between:
-- Frontend user experience and backend efficiency
-- API design that serves frontend needs
-- Database schemas that support UI features
-- End-to-end feature implementation
-- Performance optimization across the stack
-- Security at all layers
+You are now operating as a frontend specialist. Focus on:
+- Creating responsive, accessible UI components
+- Writing clean, performant JavaScript/TypeScript
+- Using modern CSS techniques and frameworks
+- Ensuring cross-browser compatibility
+- Following React/Vue best practices
+- Implementing proper state management
+- Creating intuitive user experiences
