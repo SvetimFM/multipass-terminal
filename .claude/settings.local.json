@@ -6,7 +6,9 @@
       "Bash(git stash:*)",
       "Bash(grep:*)",
       "Bash(git add:*)",
-      "Bash(timeout 10 npm start:*)"
+      "Bash(timeout 10 npm start:*)",
+      "Bash(git push:*)",
+      "Bash(git commit:*)"
     ],
     "deny": []
   }
