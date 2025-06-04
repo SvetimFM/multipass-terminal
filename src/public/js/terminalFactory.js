@@ -62,21 +62,7 @@ export class TerminalFactory {
     }
 
     static createGridTerminal(container, options = {}) {
-        // Ensure container has proper height for grid terminals
-        if (!container.style.height || container.style.height === '0px') {
-            container.style.height = '300px';
-        }
-        
-        // Grid terminals use the same font size as regular terminals
-        const result = this.createTerminalWithContainer(container, options);
-        
-        // Force a fit after a short delay to ensure proper sizing
-        setTimeout(() => {
-            if (result.fitAddon) {
-                result.fitAddon.fit();
-            }
-        }, 100);
-        
-        return result;
+        // Grid terminals use the same creation as regular terminals
+        return this.createTerminalWithContainer(container, options);
     }
 }

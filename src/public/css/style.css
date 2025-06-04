@@ -80,24 +80,12 @@ body {
 }
 
 .cubicle-terminal {
-  height: 300px;
-  min-height: 150px;
-  max-height: 600px;
   background: #1a1b26;
   border-radius: 8px;
-  padding: 8px;
-  overflow-y: auto;
-  overflow-x: hidden;
+  overflow: hidden;
   position: relative;
   display: flex;
   flex-direction: column;
-}
-
-/* Ensure xterm fills the cubicle container */
-.cubicle-terminal .xterm {
-  flex: 1;
-  height: 100%;
-  width: 100%;
 }
 
 /* Custom scrollbar for cubicle terminals */
@@ -219,13 +207,29 @@ body {
   -webkit-user-select: none;
 }
 
-/* Make containers position relative for resize handles */
+/* Terminal containers */
 .terminal-container {
   position: relative;
+  height: 600px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
 }
 
 .cubicle-terminal {
   position: relative;
+  height: 400px;
+  min-height: 200px;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Make xterm fill the container */
+.terminal-container .xterm,
+.cubicle-terminal .xterm {
+  flex: 1;
+  width: 100%;
+  height: 100%;
 }
 
 /* Prevent terminal text selection while resizing */
@@ -233,15 +237,17 @@ body {
   pointer-events: none;
 }
 
-/* Cubicle grid layout - prevent resize affecting other terminals */
+/* Cubicle grid layout */
 #cubicle-terminals {
   display: grid;
-  grid-auto-rows: auto;
-  align-items: start;
+  grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+  gap: 1rem;
+  padding: 1rem;
 }
 
 #cubicle-terminals > div {
-  min-height: 0;
-  contain: layout size;
+  display: flex;
+  flex-direction: column;
+  height: 400px;
 }
 
