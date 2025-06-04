@@ -15,6 +15,11 @@ const HOST = process.env.HOST || '0.0.0.0';
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'src/public')));
 
+// Serve .tmux.conf file
+app.get('/.tmux.conf', (req, res) => {
+  res.sendFile(path.join(__dirname, '.tmux.conf'));
+});
+
 // In-memory storage
 const sessions = new Map();
 const terminals = new Map();
@@ -103,6 +108,68 @@ app.get('/api/ai-modes', (req, res) => {
 // Get home directory
 app.get('/api/home', (req, res) => {
   res.json({ home: process.env.HOME || '/home/user' });
+});
+
+// Tmux config endpoint
+app.post('/api/tmux-config', async (req, res) => {
+  const { config } = req.body;
+  
+  if (!config) {
+    return res.status(400).json({ error: 'No configuration provided' });
+  }
+  
+  try {
+    // Create temporary tmux config file
+    const tmpFile = path.join(require('os').tmpdir(), `tmux-${Date.now()}.conf`);
+    await fs.writeFile(tmpFile, config);
+    
+    // Apply the config to all active tmux sessions
+    const { exec } = require('child_process');
+    const util = require('util');
+    const execPromise = util.promisify(exec);
+    
+    // Get all active sessions
+    const { stdout: sessionList } = await execPromise('tmux list-sessions -F "#{session_name}" 2>/dev/null || echo ""');
+    const sessions = sessionList.trim().split('\n').filter(Boolean);
+    
+    // Apply config to each session
+    for (const session of sessions) {
+      try {
+        await execPromise(`tmux source-file ${tmpFile} -t "${session}"`);
+      } catch (e) {
+        console.error(`Failed to apply config to session ${session}:`, e.message);
+      }
+    }
+    
+    // Also update the default .tmux.conf
+    const tmuxConfPath = path.join(process.env.HOME || '/home/user', '.tmux.conf');
+    await fs.writeFile(tmuxConfPath, config);
+    
+    // Clean up temp file
+    await fs.unlink(tmpFile).catch(() => {});
+    
+    res.json({ 
+      success: true, 
+      message: `Configuration applied to ${sessions.length} active sessions`,
+      sessions: sessions.length
+    });
+  } catch (error) {
+    console.error('Error applying tmux config:', error);
+    res.status(500).json({ error: 'Failed to apply configuration' });
+  }
+});
+
+// Get current tmux config
+app.get('/api/tmux-config', async (req, res) => {
+  try {
+    const tmuxConfPath = path.join(process.env.HOME || '/home/user', '.tmux.conf');
+    const config = await fs.readFile(tmuxConfPath, 'utf8');
+    res.json({ config });
+  } catch (error) {
+    // If file doesn't exist, return the default config
+    const defaultConfig = await fs.readFile(path.join(__dirname, '.tmux.conf'), 'utf8');
+    res.json({ config: defaultConfig });
+  }
 });
 
   // Error handling middleware (must be last)

@@ -153,6 +153,73 @@ function updateScrollbackDisplay(size) {
   }
 }
 
+// Load current tmux config
+export async function loadCurrentTmuxConfig() {
+  try {
+    const response = await fetch('/api/tmux-config');
+    const data = await response.json();
+    
+    const textarea = document.getElementById('tmux-config-textarea');
+    if (textarea) {
+      textarea.value = data.config;
+      showToast('Current tmux configuration loaded');
+    }
+  } catch (error) {
+    console.error('Error loading tmux config:', error);
+    showToast('Failed to load tmux configuration');
+  }
+}
+
+// Apply tmux config
+export async function applyTmuxConfig() {
+  const textarea = document.getElementById('tmux-config-textarea');
+  const config = textarea?.value?.trim();
+  
+  if (!config) {
+    showToast('Please enter a tmux configuration');
+    return;
+  }
+  
+  try {
+    const response = await fetch('/api/tmux-config', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ config })
+    });
+    
+    const data = await response.json();
+    
+    if (response.ok) {
+      showToast(`Configuration applied to ${data.sessions} sessions`);
+    } else {
+      showToast(data.error || 'Failed to apply configuration');
+    }
+  } catch (error) {
+    console.error('Error applying tmux config:', error);
+    showToast('Failed to apply tmux configuration');
+  }
+}
+
+// Reset tmux config to default
+export async function resetTmuxConfig() {
+  try {
+    // Load the default config from the project
+    const response = await fetch('/.tmux.conf');
+    const defaultConfig = await response.text();
+    
+    const textarea = document.getElementById('tmux-config-textarea');
+    if (textarea) {
+      textarea.value = defaultConfig;
+      showToast('Reset to default configuration');
+    }
+  } catch (error) {
+    console.error('Error resetting tmux config:', error);
+    showToast('Failed to reset configuration');
+  }
+}
+
 // Export for window object
 export const settings = {
   openSettings,
@@ -163,5 +230,8 @@ export const settings = {
   increaseFontSize,
   decreaseFontSize,
   applyPreset,
-  initializeSettings
+  initializeSettings,
+  loadCurrentTmuxConfig,
+  applyTmuxConfig,
+  resetTmuxConfig
 };
