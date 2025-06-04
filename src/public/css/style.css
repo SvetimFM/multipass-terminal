@@ -28,8 +28,7 @@ body {
   flex: 1;
   background: #1a1b26;
   padding: 10px;
-  overflow-y: auto;
-  overflow-x: hidden;
+  overflow: hidden; /* Let xterm handle its own scrolling */
   width: 100%;
   height: 100%;
 }
@@ -180,14 +179,13 @@ body {
   position: relative;
   height: 400px;
   min-height: 400px;
-  overflow: hidden;
+  overflow: hidden; /* Let xterm handle its own scrolling */
 }
 
 .cubicle-terminal {
   position: relative;
   background: #1a1b26;
   border-radius: 0 0 8px 8px;
-  overflow: hidden;
   display: flex;
   flex-direction: column;
 }
@@ -199,12 +197,7 @@ body {
   width: 100%;
 }
 
-/* Let xterm handle its own viewport scrolling */
-.terminal-container .xterm-viewport,
-.cubicle-terminal .xterm-viewport {
-  height: 100%;
-  overflow-y: auto;
-}
+/* Remove our viewport override - let xterm handle scrolling */
 
 /* Prevent terminal text selection while resizing */
 .resizing .xterm {
