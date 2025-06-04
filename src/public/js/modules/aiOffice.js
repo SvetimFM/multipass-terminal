@@ -264,7 +264,12 @@ export async function initCubicleTerminal(project, cubicle, idx, isGrid = false)
   const terminalId = isGrid ? `cubicle-grid-terminal-${project.id}-${idx}` : `cubicle-terminal-${idx}`;
   const container = document.getElementById(terminalId);
   
-  if (!container) return;
+  console.log('Initializing cubicle terminal:', { terminalId, container, project, cubicle, idx });
+  
+  if (!container) {
+    console.error('Container not found for terminal:', terminalId);
+    return;
+  }
   
   // Clear existing content
   container.innerHTML = '';
@@ -316,8 +321,12 @@ export async function initCubicleTerminal(project, cubicle, idx, isGrid = false)
     ? TerminalFactory.createGridTerminal(container, terminalOptions)
     : TerminalFactory.createTerminalWithContainer(container, terminalOptions);
   
+  console.log('Terminal instance created:', terminalInstance);
+  
   const term = terminalInstance.terminal;
   const fitAddon = terminalInstance.fitAddon;
+  
+  console.log('Terminal and fitAddon:', { term, fitAddon });
   
   // Store terminal and websocket reference for this cubicle
   state.cubicleTerminals.set(`${project.id}-${idx}`, { term, fitAddon });

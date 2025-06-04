@@ -15,23 +15,18 @@ const DEFAULT_TERMINAL_OPTIONS = {
 
 export class TerminalFactory {
     static createTerminal(options = {}) {
-        const terminal = new Terminal({
+        const terminal = new window.Terminal({
             ...DEFAULT_TERMINAL_OPTIONS,
             ...options
         });
 
-        const fitAddon = new FitAddon.FitAddon();
+        const fitAddon = new window.FitAddon.FitAddon();
         terminal.loadAddon(fitAddon);
-        terminal.loadAddon(new WebLinksAddon.WebLinksAddon());
+        terminal.loadAddon(new window.WebLinksAddon.WebLinksAddon());
 
         return {
             terminal,
             fitAddon,
-            attachToWebSocket(ws) {
-                const attachAddon = new AttachAddon.AttachAddon(ws);
-                terminal.loadAddon(attachAddon);
-                return attachAddon;
-            },
             dispose() {
                 terminal.dispose();
             }
@@ -39,7 +34,7 @@ export class TerminalFactory {
     }
 
     static createTerminalWithContainer(container, options = {}) {
-        const { terminal, fitAddon, attachToWebSocket, dispose } = this.createTerminal(options);
+        const { terminal, fitAddon, dispose } = this.createTerminal(options);
         
         terminal.open(container);
         fitAddon.fit();
@@ -53,7 +48,6 @@ export class TerminalFactory {
         return {
             terminal,
             fitAddon,
-            attachToWebSocket,
             dispose() {
                 resizeObserver.disconnect();
                 dispose();
