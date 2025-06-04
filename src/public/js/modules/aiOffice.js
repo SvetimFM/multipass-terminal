@@ -396,8 +396,11 @@ export async function initCubicleTerminal(project, cubicle, idx, isGrid = false)
   
   // Handle resize for grid view with debouncing
   if (isGrid) {
-    // Initialize vertical resize functionality
-    initializeCubicleResize(container, `${project.id}-${idx}`);
+    // Initialize vertical resize functionality on the wrapper div
+    const wrapperDiv = container.parentElement;
+    if (wrapperDiv) {
+      initializeCubicleResize(wrapperDiv, `${project.id}-${idx}`);
+    }
     
     let resizeTimer = null;
     const resizeObserver = new ResizeObserver(() => {

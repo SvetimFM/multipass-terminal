@@ -128,6 +128,7 @@ body {
 
 .resize-handle-bottom {
   bottom: 0;
+  border-radius: 0 0 8px 8px;
 }
 
 .resize-handle-top {
@@ -184,11 +185,11 @@ body {
 
 .cubicle-terminal {
   position: relative;
-  height: 400px;
-  min-height: 400px;
   background: #1a1b26;
-  border-radius: 8px;
+  border-radius: 0 0 8px 8px;
   overflow: hidden;
+  display: flex;
+  flex-direction: column;
 }
 
 /* Xterm terminal styles */
@@ -218,9 +219,24 @@ body {
   padding: 1rem;
 }
 
+/* The wrapper div that contains header + terminal */
 #cubicle-terminals > div {
   display: flex;
   flex-direction: column;
   height: 400px;
+  min-height: 400px;
+  padding-bottom: 12px; /* Space for resize handle */
+}
+
+/* Header takes only the space it needs */
+#cubicle-terminals > div > div:first-child {
+  flex-shrink: 0;
+}
+
+/* Terminal fills remaining space */
+#cubicle-terminals > div .cubicle-terminal {
+  flex: 1;
+  min-height: 0;
+  height: auto;
 }
 
