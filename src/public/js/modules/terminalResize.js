@@ -4,9 +4,9 @@ import { showToast } from './utils.js';
 
 // Default heights
 const DEFAULT_HEIGHTS = {
-  main: 600,
-  cubicle: 300,
-  minHeight: 150,
+  main: 400,
+  cubicle: 400,
+  minHeight: 400,
   maxHeight: 800
 };
 
@@ -185,8 +185,8 @@ export function initializeCubicleResize(container, cubicleId) {
         });
       }
     },
-    minHeight: 200,
-    maxHeight: 800
+    minHeight: DEFAULT_HEIGHTS.minHeight,
+    maxHeight: DEFAULT_HEIGHTS.maxHeight
   });
 }
 

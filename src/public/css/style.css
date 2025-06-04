@@ -65,13 +65,9 @@ body {
   background: #718096;
 }
 
-/* Ensure xterm viewport scrolls properly */
+/* Ensure xterm fills container */
 .xterm {
   height: 100%;
-}
-
-.xterm-viewport {
-  overflow-y: scroll !important;
 }
 
 .file-item {
@@ -82,7 +78,6 @@ body {
 .cubicle-terminal {
   background: #1a1b26;
   border-radius: 8px;
-  overflow: hidden;
   position: relative;
   display: flex;
   flex-direction: column;
@@ -210,16 +205,16 @@ body {
 /* Terminal containers */
 .terminal-container {
   position: relative;
-  height: 600px;
+  height: 400px;
+  min-height: 400px;
   display: flex;
   flex-direction: column;
-  overflow: hidden;
 }
 
 .cubicle-terminal {
   position: relative;
   height: 400px;
-  min-height: 200px;
+  min-height: 400px;
   display: flex;
   flex-direction: column;
 }
