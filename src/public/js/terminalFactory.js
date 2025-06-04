@@ -37,11 +37,17 @@ export class TerminalFactory {
         const { terminal, fitAddon, dispose } = this.createTerminal(options);
         
         terminal.open(container);
-        fitAddon.fit();
+        
+        // Ensure container has dimensions before fitting
+        requestAnimationFrame(() => {
+            fitAddon.fit();
+        });
 
         // Auto-fit on window resize
         const resizeObserver = new ResizeObserver(() => {
-            fitAddon.fit();
+            requestAnimationFrame(() => {
+                fitAddon.fit();
+            });
         });
         resizeObserver.observe(container);
 
@@ -56,7 +62,21 @@ export class TerminalFactory {
     }
 
     static createGridTerminal(container, options = {}) {
+        // Ensure container has proper height for grid terminals
+        if (!container.style.height || container.style.height === '0px') {
+            container.style.height = '300px';
+        }
+        
         // Grid terminals use the same font size as regular terminals
-        return this.createTerminalWithContainer(container, options);
+        const result = this.createTerminalWithContainer(container, options);
+        
+        // Force a fit after a short delay to ensure proper sizing
+        setTimeout(() => {
+            if (result.fitAddon) {
+                result.fitAddon.fit();
+            }
+        }, 100);
+        
+        return result;
     }
 }

@@ -168,10 +168,19 @@ export function initializeMainTerminalResize() {
 
 // Initialize resize for cubicle terminals
 export function initializeCubicleResize(container, cubicleId) {
+  // Ensure container exists and has proper dimensions
+  if (!container) {
+    console.error('Container not found for cubicle resize:', cubicleId);
+    return;
+  }
+  
   // Apply saved height
   const heights = loadTerminalHeights();
   const savedHeight = heights[`cubicle-${cubicleId}`] || DEFAULT_HEIGHTS.cubicle;
   container.style.height = savedHeight + 'px';
+  
+  // Force layout recalculation
+  container.offsetHeight;
   
   // Make resizable
   const cubicleData = state.cubicleTerminals.get(cubicleId);

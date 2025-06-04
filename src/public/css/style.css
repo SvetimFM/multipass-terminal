@@ -89,6 +89,15 @@ body {
   overflow-y: auto;
   overflow-x: hidden;
   position: relative;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Ensure xterm fills the cubicle container */
+.cubicle-terminal .xterm {
+  flex: 1;
+  height: 100%;
+  width: 100%;
 }
 
 /* Custom scrollbar for cubicle terminals */

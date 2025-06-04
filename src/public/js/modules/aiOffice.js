@@ -274,6 +274,13 @@ export async function initCubicleTerminal(project, cubicle, idx, isGrid = false)
   // Clear existing content
   container.innerHTML = '';
   
+  // Ensure container has proper height before initializing terminal
+  if (!container.style.height || container.style.height === '0px') {
+    const heights = window.terminalResize?.loadTerminalHeights() || {};
+    const savedHeight = heights[`cubicle-${project.id}-${idx}`] || 300;
+    container.style.height = savedHeight + 'px';
+  }
+  
   // Create session name for this cubicle
   const sessionName = `ai-office-${project.id}-${cubicle.name}`;
   
@@ -327,6 +334,13 @@ export async function initCubicleTerminal(project, cubicle, idx, isGrid = false)
   const fitAddon = terminalInstance.fitAddon;
   
   console.log('Terminal and fitAddon:', { term, fitAddon });
+  
+  // Ensure terminal fits properly after creation
+  setTimeout(() => {
+    if (fitAddon) {
+      fitAddon.fit();
+    }
+  }, 50);
   
   // Store terminal and websocket reference for this cubicle
   state.cubicleTerminals.set(`${project.id}-${idx}`, { term, fitAddon });
@@ -384,10 +398,16 @@ export async function initCubicleTerminal(project, cubicle, idx, isGrid = false)
   
   // Handle resize for grid view with debouncing
   if (isGrid) {
-    // Initialize vertical resize functionality
+    // Initialize vertical resize functionality after ensuring terminal is ready
     setTimeout(() => {
+      // Double-check container height before initializing resize
+      if (!container.style.height || container.style.height === '0px') {
+        const heights = window.terminalResize?.loadTerminalHeights() || {};
+        const savedHeight = heights[`cubicle-${project.id}-${idx}`] || 300;
+        container.style.height = savedHeight + 'px';
+      }
       initializeCubicleResize(container, `${project.id}-${idx}`);
-    }, 100);
+    }, 150);
     
     let resizeTimer = null;
     const resizeObserver = new ResizeObserver(() => {
