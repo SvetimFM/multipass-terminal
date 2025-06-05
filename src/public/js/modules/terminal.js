@@ -21,9 +21,25 @@ export function sendToTerminal(command) {
 }
 
 export function exitClaude() {
-  // Send Ctrl+C twice quickly to exit Claude
+  // Deprecated - use exitLLM instead
+  exitLLM();
+}
+
+export function exitLLM() {
+  // Send Ctrl+C twice quickly to exit LLM
+  const delay = state.llmConfig?.exitDelay || 50;
   sendToTerminal('\x03');
-  setTimeout(() => sendToTerminal('\x03'), 50);
+  setTimeout(() => sendToTerminal('\x03'), delay);
+}
+
+export function sendLLMCommand() {
+  const command = state.llmConfig?.command || 'claude';
+  sendToTerminal(command + '\n');
+}
+
+export function copyLLMCommand() {
+  const command = state.llmConfig?.command || 'claude';
+  copyToClipboard(command, 'Command copied!');
 }
 
 export function toggleAutoAccept() {
@@ -376,9 +392,20 @@ export function broadcastToAllTerminals(command) {
 }
 
 export function exitClaudeAll() {
+  // Deprecated - use exitLLMAll instead
+  exitLLMAll();
+}
+
+export function exitLLMAll() {
   // Send Ctrl+C twice quickly to all terminals
+  const delay = state.llmConfig?.exitDelay || 50;
   broadcastToAllTerminals('\x03');
-  setTimeout(() => broadcastToAllTerminals('\x03'), 50);
+  setTimeout(() => broadcastToAllTerminals('\x03'), delay);
+}
+
+export function broadcastLLMCommand() {
+  const command = state.llmConfig?.command || 'claude';
+  broadcastToAllTerminals(command + '\n');
 }
 
 export function toggleGridAutoAccept() {

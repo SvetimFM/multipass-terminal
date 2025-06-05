@@ -15,18 +15,31 @@
   <!-- Main App -->
   <div id="main-app">
     <!-- Header -->
-    <div id="main-header" class="bg-gray-800 p-3 border-b border-gray-700">
+    <div id="main-header" class="context-bar">
       <div class="flex justify-between items-center">
-        <h1 class="text-lg font-semibold">Multipass - Terminal for AI</h1>
+        <h1 class="text-lg font-semibold text-gray-200">Multipass - Terminal for AI</h1>
         <div class="flex gap-2 items-center">
-          <button onclick="window.settings.openSettings()" class="bg-gray-700 px-3 py-1 rounded text-sm" title="Settings">
-            ⚙️ Settings
-          </button>
-          <button onclick="window.sessions.showProjects()" class="bg-gray-700 px-3 py-1 rounded text-sm">
+          <!-- Projects/Sessions -->
+          <button onclick="window.sessions.showProjects()" class="context-button">
+            <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"></path>
+            </svg>
             Projects
           </button>
-          <button onclick="window.sessions.showSessions()" class="bg-blue-600 px-3 py-1 rounded text-sm">
+          <button onclick="window.sessions.showSessions()" class="context-button">
+            <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 9l3 3-3 3m5 0h3M5 20h14a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+            </svg>
             Sessions
+          </button>
+          
+          <!-- Settings -->
+          <div class="w-px h-6 bg-gray-600"></div>
+          <button onclick="window.settings.openSettings()" class="context-button" title="Settings">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+            </svg>
           </button>
         </div>
       </div>
@@ -102,8 +115,8 @@
         <button onclick="window.terminal.copyTerminalSelection()" class="px-3 py-1 bg-green-600 rounded text-sm" title="Copy selected text (Ctrl+C)">📋 Copy</button>
         <button onclick="window.terminal.pasteToTerminal()" class="px-3 py-1 bg-green-600 rounded text-sm" title="Paste from clipboard (Ctrl+V)">📝 Paste</button>
         <div class="w-px bg-gray-600 mx-1"></div>
-        <button onclick="window.terminal.sendToTerminal('claude\n')" class="px-3 py-1 bg-blue-600 rounded text-sm font-semibold">claude</button>
-        <button onclick="window.terminal.exitClaude()" class="px-3 py-1 bg-red-600 rounded text-sm font-semibold" title="Exit Claude (Ctrl+C twice)">Exit Claude</button>
+        <button onclick="window.terminal.sendLLMCommand()" class="px-3 py-1 bg-blue-600 rounded text-sm font-semibold" id="llm-button">claude</button>
+        <button onclick="window.terminal.exitLLM()" class="px-3 py-1 bg-red-600 rounded text-sm font-semibold" title="Exit LLM (Ctrl+C twice)" id="exit-llm-button">Exit Claude</button>
         <button id="auto-accept-btn" onclick="window.terminal.toggleAutoAccept()" class="px-3 py-1 bg-gray-600 rounded text-sm">
           Auto-Accept: <span id="auto-accept-status">OFF</span>
         </button>
@@ -122,10 +135,10 @@
         <div class="text-xs text-gray-400 text-center mb-2">Tip: Long press command buttons to copy</div>
         <!-- Priority Actions -->
         <div class="mobile-button-grid mb-2">
-          <button onclick="window.terminal.sendToTerminal('claude\n')" class="priority-button bg-blue-600 rounded haptic-feedback" oncontextmenu="window.utils.copyToClipboard('claude', 'Command copied!'); return false;">
+          <button onclick="window.terminal.sendLLMCommand()" class="priority-button bg-blue-600 rounded haptic-feedback" oncontextmenu="window.terminal.copyLLMCommand(); return false;" id="llm-button-mobile">
             🤖 Claude
           </button>
-          <button onclick="window.terminal.exitClaude()" class="priority-button bg-red-600 rounded haptic-feedback">
+          <button onclick="window.terminal.exitLLM()" class="priority-button bg-red-600 rounded haptic-feedback">
             🛑 Exit
           </button>
           <button onclick="window.mobile.copyTerminalSelection()" class="priority-button bg-green-600 rounded haptic-feedback">
@@ -367,44 +380,146 @@
     </div>
 
     <!-- AI Office Terminal Grid -->
-    <div id="ai-office-grid" class="hidden fixed inset-0 bg-gray-900 z-50 overflow-auto">
+    <div id="ai-office-grid" class="hidden fixed inset-0 bg-gray-950 z-50 overflow-auto">
       <div class="bg-gray-800 p-3 border-b border-gray-700 sticky top-0 z-10">
         <div class="flex justify-between items-center">
           <h2 class="text-lg font-semibold">
             <span id="ai-office-project-name"></span> - AI Office (<span id="ai-office-cubicle-count"></span> cubicles)
           </h2>
           <div class="flex gap-2 items-center">
-            <button onclick="window.settings.openSettings()" class="bg-gray-700 px-3 py-1 rounded text-sm" title="Settings">
-              ⚙️ Settings
-            </button>
             <button onclick="window.aiOffice.closeAIOfficeGrid()" class="bg-gray-700 px-3 py-1 rounded text-sm">
               Close
             </button>
           </div>
         </div>
         <!-- Quick Commands for All Terminals - Desktop -->
-        <div class="mt-2 hidden md:flex gap-2 overflow-x-auto">
-          <button onclick="window.terminal.broadcastToAllTerminals('claude\n')" class="px-3 py-1 bg-blue-600 rounded text-sm font-semibold">claude (all)</button>
-          <button onclick="window.terminal.exitClaudeAll()" class="px-3 py-1 bg-red-600 rounded text-sm font-semibold" title="Exit Claude in all terminals">Exit Claude (all)</button>
-          <button onclick="window.terminal.broadcastToAllTerminals('\x1b[Z')" class="px-3 py-1 bg-purple-600 rounded text-sm" title="Send Shift+Tab to all">⇧ Tab (all)</button>
-          <button onclick="window.terminal.broadcastToAllTerminals('ls -la\n')" class="px-3 py-1 bg-gray-600 rounded text-sm">ls -la (all)</button>
-          <button onclick="window.terminal.broadcastToAllTerminals('pwd\n')" class="px-3 py-1 bg-gray-600 rounded text-sm">pwd (all)</button>
-          <button onclick="window.terminal.broadcastToAllTerminals('git status\n')" class="px-3 py-1 bg-gray-600 rounded text-sm">git status (all)</button>
-          <button onclick="window.terminal.broadcastToAllTerminals('clear\n')" class="px-3 py-1 bg-gray-600 rounded text-sm">clear (all)</button>
-          <button onclick="window.cubicleManagement.openCubicleManagement()" class="px-3 py-1 bg-indigo-600 rounded text-sm" title="Manage cubicles">⚙️ Manage</button>
-          <button id="grid-auto-accept-btn" onclick="window.terminal.toggleGridAutoAccept()" class="px-3 py-1 bg-gray-600 rounded text-sm font-semibold" title="Send Shift+Tab once to all terminals">Accept Once: <span id="grid-auto-accept-status">OFF</span></button>
-          <button onclick="window.aiOffice.addCubicle(window.state.currentAIOfficeProject.id)" class="px-3 py-1 bg-green-600 rounded text-sm">+ Add Cubicle</button>
-          <button onclick="window.aiOffice.addTerminal()" class="px-3 py-1 bg-blue-500 rounded text-sm">+ Add Terminal</button>
+        <div class="mt-2 hidden md:flex gap-2 overflow-x-auto items-center">
+          <!-- Quick Access AI Actions -->
+          <button onclick="window.terminal.broadcastLLMCommand()" class="context-button bg-blue-600 hover:bg-blue-700" id="launch-llm-all-button">
+            🤖 Launch Claude (All)
+          </button>
+          <button onclick="window.terminal.exitLLMAll()" class="context-button bg-red-600 hover:bg-red-700" id="exit-llm-all-button">
+            🛑 Exit Claude (All)
+          </button>
+          <button id="grid-auto-accept-btn" onclick="window.terminal.toggleGridAutoAccept()" class="context-button">
+            <span id="grid-auto-accept-icon">⏸️</span> Auto Accept: <span id="grid-auto-accept-status">OFF</span>
+          </button>
+          
+          <div class="w-px h-6 bg-gray-600 mx-1"></div>
+          
+          <!-- Commands Dropdown -->
+          <div class="dropdown">
+            <button onclick="window.utils.toggleDropdown('ai-office-commands-dropdown')" class="context-button">
+              <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"></path>
+              </svg>
+              Commands
+              <svg class="w-3 h-3 inline ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+              </svg>
+            </button>
+            <div id="ai-office-commands-dropdown" class="dropdown-content">
+              <div class="dropdown-header">Git Commands</div>
+              <div class="dropdown-item" onclick="window.utils.copyCommand('git status')">git status</div>
+              <div class="dropdown-item" onclick="window.utils.copyCommand('git add .')">git add .</div>
+              <div class="dropdown-item" onclick="window.utils.copyCommand('git commit -m &quot;&quot;')">git commit -m ""</div>
+              <div class="dropdown-item" onclick="window.utils.copyCommand('git push')">git push</div>
+              <div class="dropdown-item" onclick="window.utils.copyCommand('git pull')">git pull</div>
+              <div class="dropdown-separator"></div>
+              <div class="dropdown-header">GitHub CLI</div>
+              <div class="dropdown-item" onclick="window.utils.copyCommand('gh pr create')">gh pr create</div>
+              <div class="dropdown-item" onclick="window.utils.copyCommand('gh pr list')">gh pr list</div>
+              <div class="dropdown-item" onclick="window.utils.copyCommand('gh repo view --web')">gh repo view --web</div>
+              <div class="dropdown-separator"></div>
+              <div class="dropdown-header">Unix Commands</div>
+              <div class="dropdown-item" onclick="window.utils.copyCommand('ls -la')">ls -la</div>
+              <div class="dropdown-item" onclick="window.utils.copyCommand('pwd')">pwd</div>
+              <div class="dropdown-item" onclick="window.utils.copyCommand('cd ..')">cd ..</div>
+              <div class="dropdown-item" onclick="window.utils.copyCommand('mkdir')">mkdir</div>
+              <div class="dropdown-item" onclick="window.utils.copyCommand('rm -rf')">rm -rf</div>
+            </div>
+          </div>
+          
+          <!-- Broadcast Commands -->
+          <div class="dropdown">
+            <button onclick="window.utils.toggleDropdown('broadcast-dropdown')" class="context-button">
+              <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z"></path>
+              </svg>
+              Broadcast
+              <svg class="w-3 h-3 inline ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+              </svg>
+            </button>
+            <div id="broadcast-dropdown" class="dropdown-content">
+              <div class="dropdown-header">Send to All Terminals</div>
+              <div class="dropdown-item" onclick="window.terminal.broadcastToAllTerminals('ls -la\n')">ls -la</div>
+              <div class="dropdown-item" onclick="window.terminal.broadcastToAllTerminals('pwd\n')">pwd</div>
+              <div class="dropdown-item" onclick="window.terminal.broadcastToAllTerminals('git status\n')">git status</div>
+              <div class="dropdown-item" onclick="window.terminal.broadcastToAllTerminals('clear\n')">clear</div>
+              <div class="dropdown-separator"></div>
+              <div class="dropdown-item" onclick="window.utils.showCustomBroadcast()">
+                <span class="text-purple-400">⚡</span> Custom Command...
+              </div>
+            </div>
+          </div>
+          
+          <!-- Cubicle Management -->
+          <div class="dropdown">
+            <button onclick="window.utils.toggleDropdown('cubicle-dropdown')" class="context-button">
+              <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
+              </svg>
+              Cubicles
+              <svg class="w-3 h-3 inline ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+              </svg>
+            </button>
+            <div id="cubicle-dropdown" class="dropdown-content">
+              <div class="dropdown-item" onclick="window.aiOffice.addCubicle(window.state.currentAIOfficeProject.id)">
+                <span class="text-green-400">➕</span> Add Cubicle
+              </div>
+              <div class="dropdown-item" onclick="window.aiOffice.addTerminal()">
+                <span class="text-blue-400">➕</span> Add Terminal
+              </div>
+              <div class="dropdown-separator"></div>
+              <div class="dropdown-item" onclick="window.cubicleManagement.openCubicleManagement()">
+                <span class="text-indigo-400">⚙️</span> Manage Cubicles
+              </div>
+            </div>
+          </div>
+          
+          <!-- More Options (including Settings) -->
+          <div class="dropdown">
+            <button onclick="window.utils.toggleDropdown('ai-office-more-dropdown')" class="context-button">
+              <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z"></path>
+              </svg>
+              More
+              <svg class="w-3 h-3 inline ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+              </svg>
+            </button>
+            <div id="ai-office-more-dropdown" class="dropdown-content">
+              <div class="dropdown-item" onclick="window.settings.openSettings()">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                </svg>
+                Settings
+              </div>
+            </div>
+          </div>
         </div>
         
         <!-- Quick Commands for All Terminals - Mobile -->
         <div class="mt-2 md:hidden">
           <!-- Priority Grid Actions -->
           <div class="mobile-button-grid three-column mb-2">
-            <button onclick="window.terminal.broadcastToAllTerminals('claude\n')" class="priority-button bg-blue-600 rounded haptic-feedback">
+            <button onclick="window.terminal.broadcastLLMCommand()" class="priority-button bg-blue-600 rounded haptic-feedback">
               🤖 All
             </button>
-            <button onclick="window.terminal.exitClaudeAll()" class="priority-button bg-red-600 rounded haptic-feedback">
+            <button onclick="window.terminal.exitLLMAll()" class="priority-button bg-red-600 rounded haptic-feedback">
               🛑 Exit All
             </button>
             <button onclick="window.cubicleManagement.openCubicleManagement()" class="priority-button bg-indigo-600 rounded haptic-feedback">

@@ -34,6 +34,20 @@ document.addEventListener('DOMContentLoaded', async () => {
   initializeFontSizeControls();
   settings.initializeSettings();
   
+  // Fetch LLM configuration
+  try {
+    const response = await fetch('/api/config');
+    if (response.ok) {
+      const config = await response.json();
+      if (config.currentLLM) {
+        state.llmConfig = config.currentLLM;
+        updateLLMButtons();
+      }
+    }
+  } catch (error) {
+    console.error('Failed to fetch LLM config:', error);
+  }
+  
   // Load initial data
   await projects.loadProjects();
   
@@ -159,6 +173,44 @@ window.addEventListener('error', (event) => {
     utils.showToast('An error occurred. Check console for details.');
   }
 });
+
+// Update LLM buttons with current LLM name
+function updateLLMButtons() {
+  const llmName = state.llmConfig?.name || 'Claude';
+  const llmCommand = state.llmConfig?.command || 'claude';
+  
+  // Update button text
+  const buttons = [
+    document.getElementById('llm-button'),
+    document.getElementById('llm-button-mobile'),
+    document.getElementById('exit-llm-button'),
+    document.getElementById('launch-llm-all-button'),
+    document.getElementById('exit-llm-all-button')
+  ];
+  
+  buttons.forEach(btn => {
+    if (btn) {
+      if (btn.id === 'llm-button' || btn.id === 'llm-button-mobile') {
+        btn.textContent = btn.id === 'llm-button-mobile' ? `🤖 ${llmName}` : llmCommand;
+      } else if (btn.id === 'exit-llm-button') {
+        btn.textContent = `Exit ${llmName}`;
+      } else if (btn.id === 'launch-llm-all-button') {
+        btn.textContent = `🤖 Launch ${llmName} (All)`;
+      } else if (btn.id === 'exit-llm-all-button') {
+        btn.textContent = `🛑 Exit ${llmName} (All)`;
+      }
+    }
+  });
+  
+  // Update menu text
+  const menuTexts = [
+    document.getElementById('launch-llm-menu-text'),
+    document.getElementById('exit-llm-menu-text')
+  ];
+  
+  if (menuTexts[0]) menuTexts[0].textContent = `Launch ${llmName} (All)`;
+  if (menuTexts[1]) menuTexts[1].textContent = `Exit ${llmName} (All)`;
+}
 
 // Cleanup on page unload
 window.addEventListener('beforeunload', () => {

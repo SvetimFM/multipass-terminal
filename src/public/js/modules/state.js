@@ -19,6 +19,14 @@ export const state = {
   // Settings
   terminalSettings: null,
   
+  // LLM Configuration
+  llmConfig: {
+    name: 'Claude',
+    command: 'claude',
+    exitSequence: '\x03\x03',
+    exitDelay: 50
+  },
+  
   // Constants
   AUTO_ACCEPT_INTERVAL: 2000,
   DEFAULT_CUBICLE_COUNT: 3,
