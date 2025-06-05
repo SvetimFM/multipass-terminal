@@ -7,6 +7,129 @@ import { TerminalFactory } from '../terminalFactory.js';
 import { getTerminalSettings } from './terminalSettings.js';
 import { initializeCubicleResize } from './terminalResize.js';
 
+// Context menu state
+let currentContextMenu = null;
+
+// Show context menu for cubicle terminals
+function showCubicleContextMenu(event, term, cubicleKey) {
+  // Remove any existing context menu
+  if (currentContextMenu) {
+    currentContextMenu.remove();
+  }
+  
+  // Get cubicle info from key
+  const [projectId, cubicleIdx] = cubicleKey.split('-');
+  const project = state.currentAIOfficeProject;
+  const cubicle = project?.aiOffice?.cubicles[cubicleIdx];
+  
+  // Create context menu
+  const menu = document.createElement('div');
+  menu.className = 'absolute bg-gray-800 border border-gray-600 rounded shadow-lg py-1 z-50';
+  menu.style.left = `${event.pageX}px`;
+  menu.style.top = `${event.pageY}px`;
+  
+  // Menu items
+  const menuItems = [];
+  
+  // Copy selection if text is selected
+  if (term.hasSelection()) {
+    menuItems.push({
+      label: '📋 Copy',
+      action: () => copyCubicleSelection(term)
+    });
+  }
+  
+  // Always show paste
+  menuItems.push({
+    label: '📝 Paste',
+    action: () => pasteToCubicle(term, cubicleKey)
+  });
+  
+  // Open in file explorer
+  if (cubicle) {
+    menuItems.push({
+      label: '📁 Open in File Explorer',
+      action: () => openCubicleInFileExplorer(cubicle.path)
+    });
+  }
+  
+  // Add separator if we have items above
+  if (menuItems.length > 0) {
+    menuItems.push({ separator: true });
+  }
+  
+  // Terminal actions
+  menuItems.push({
+    label: '🔄 Clear Terminal',
+    action: () => {
+      term.clear();
+      showToast('Terminal cleared');
+    }
+  });
+  
+  menuItems.push({
+    label: '⎋ Send ESC',
+    action: () => sendEscToCubicle(projectId, cubicleIdx)
+  });
+  
+  // Build menu HTML
+  menuItems.forEach((item, index) => {
+    if (item.separator) {
+      const separator = document.createElement('div');
+      separator.className = 'border-t border-gray-700 my-1';
+      menu.appendChild(separator);
+    } else {
+      const menuItem = document.createElement('div');
+      menuItem.className = 'px-4 py-2 hover:bg-gray-700 cursor-pointer text-sm whitespace-nowrap';
+      menuItem.textContent = item.label;
+      menuItem.onclick = () => {
+        item.action();
+        menu.remove();
+      };
+      menu.appendChild(menuItem);
+    }
+  });
+  
+  // Add to body
+  document.body.appendChild(menu);
+  currentContextMenu = menu;
+  
+  // Close menu when clicking outside
+  const closeMenu = (e) => {
+    if (!menu.contains(e.target)) {
+      menu.remove();
+      document.removeEventListener('click', closeMenu);
+      document.removeEventListener('contextmenu', closeMenu);
+      currentContextMenu = null;
+    }
+  };
+  
+  // Delay adding listeners to prevent immediate closure
+  setTimeout(() => {
+    document.addEventListener('click', closeMenu);
+    document.addEventListener('contextmenu', closeMenu);
+  }, 0);
+  
+  // Adjust position if menu goes off screen
+  const rect = menu.getBoundingClientRect();
+  if (rect.right > window.innerWidth) {
+    menu.style.left = `${event.pageX - rect.width}px`;
+  }
+  if (rect.bottom > window.innerHeight) {
+    menu.style.top = `${event.pageY - rect.height}px`;
+  }
+}
+
+// Open cubicle in file explorer
+export function openCubicleInFileExplorer(cubiclePath) {
+  // Open the file browser modal with the cubicle path
+  import('./fileBrowser.js').then(({ browseFolder }) => {
+    document.getElementById('file-browser-modal').classList.remove('hidden');
+    browseFolder(cubiclePath);
+    showToast('Opened cubicle in file explorer');
+  });
+}
+
 // Setup mouse wheel scrolling for cubicle terminals
 function setupCubicleMouseWheel(term) {
   if (!term) return;
@@ -58,9 +181,7 @@ function setupCubicleCopyPaste(term, cubicleKey) {
   const container = term.element || term._core.element;
   container.addEventListener('contextmenu', (e) => {
     e.preventDefault();
-    if (term.hasSelection()) {
-      copyCubicleSelection(term);
-    }
+    showCubicleContextMenu(e, term, cubicleKey);
   });
 }
 
@@ -192,36 +313,60 @@ export async function openAIOfficeGrid(projectId) {
         const termDiv = document.createElement('div');
         termDiv.className = 'bg-gray-800 rounded overflow-hidden';
         termDiv.innerHTML = `
-          <div class="bg-gray-700 px-3 py-2 text-sm font-medium">
-            <div class="flex justify-between items-center">
-              <div class="flex items-center gap-3">
-                <span class="font-semibold">${cubicle.name}</span>
+          <div class="bg-gray-900 border-b border-gray-700 px-3 py-2">
+            <div class="flex items-center justify-between">
+              <!-- Left section: Name and path -->
+              <div class="flex items-center gap-3 min-w-0">
+                <div class="flex items-center gap-2">
+                  <span class="font-semibold text-gray-200">${cubicle.name}</span>
+                  <span class="text-xs text-gray-500">│</span>
+                  <span class="text-xs text-gray-400 truncate font-mono">${cubicle.path.split('/').slice(-2).join('/')}</span>
+                </div>
+              </div>
+              
+              <!-- Center section: AI Mode selector -->
+              <div class="flex items-center gap-2">
                 <select onchange="window.aiOffice.changeCubicleMode('${project.id}', ${idx}, this.value)" 
-                        class="bg-gray-800 text-xs px-3 py-1 rounded border border-gray-600 hover:border-purple-500 focus:border-purple-500 focus:outline-none cursor-pointer text-purple-400 font-medium"
-                        title="AI Mode - Click to change">
+                        class="bg-gray-800 text-xs px-2 py-1 rounded border border-gray-700 hover:border-purple-500 focus:border-purple-500 focus:outline-none cursor-pointer text-purple-400 font-medium"
+                        title="AI Mode">
                   ${modeOptions}
                 </select>
               </div>
-              <div class="flex items-center gap-2">
+              
+              <!-- Right section: Action buttons -->
+              <div class="flex items-center gap-1">
                 <button onclick="window.aiOffice.readAIReadme('${project.id}', ${idx})" 
-                        class="text-blue-400 hover:text-blue-300 text-xs px-2 py-1 bg-gray-800 rounded flex items-center gap-1" 
-                        title="Read .AI_README in terminal">
-                  <span>📖</span>
-                  <span class="hidden sm:inline">Read AI</span>
+                        class="text-gray-400 hover:text-blue-400 p-1.5 rounded hover:bg-gray-800 transition-colors" 
+                        title="Copy .AI_README to clipboard">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path>
+                  </svg>
+                </button>
+                <button onclick="window.aiOffice.openCubicleInFileExplorer('${cubicle.path}')" 
+                        class="text-gray-400 hover:text-blue-400 p-1.5 rounded hover:bg-gray-800 transition-colors" 
+                        title="Open in file explorer">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"></path>
+                  </svg>
                 </button>
                 <button onclick="window.aiOffice.pasteToCubicleTerminal('${project.id}', ${idx})" 
-                        class="text-green-400 hover:text-green-300 text-xs px-2 py-1 bg-gray-800 rounded" 
+                        class="text-gray-400 hover:text-green-400 p-1.5 rounded hover:bg-gray-800 transition-colors" 
                         title="Paste to terminal">
-                  📝
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
+                  </svg>
                 </button>
                 <button onclick="window.aiOffice.sendEscToCubicle('${project.id}', ${idx})" 
-                        class="text-orange-400 hover:text-orange-300 text-xs px-2 py-1 bg-gray-800 rounded md:hidden" 
+                        class="text-gray-400 hover:text-orange-400 p-1.5 rounded hover:bg-gray-800 transition-colors md:hidden" 
                         title="Send ESC key">
-                  ⎋
+                  <span class="text-xs font-bold">ESC</span>
                 </button>
+                <div class="w-px h-4 bg-gray-700 mx-1"></div>
                 <button onclick="window.aiOffice.removeCubicle('${project.id}', ${idx})" 
-                        class="text-red-400 hover:text-red-300 text-sm">
-                  ✕
+                        class="text-gray-400 hover:text-red-400 p-1.5 rounded hover:bg-gray-800 transition-colors">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                  </svg>
                 </button>
               </div>
             </div>
@@ -244,9 +389,54 @@ export async function openAIOfficeGrid(projectId) {
         const termDiv = document.createElement('div');
         termDiv.className = 'bg-gray-800 rounded overflow-hidden';
         termDiv.innerHTML = `
-          <div class="bg-gray-700 px-3 py-2 text-sm font-medium flex justify-between items-center">
-            <span>${cubicle.name}</span>
-            <button onclick="window.aiOffice.removeCubicle('${project.id}', ${idx})" class="text-red-400 hover:text-red-300 text-xs">✕</button>
+          <div class="bg-gray-900 border-b border-gray-700 px-3 py-2">
+            <div class="flex items-center justify-between">
+              <!-- Left section: Name and path -->
+              <div class="flex items-center gap-3 min-w-0">
+                <div class="flex items-center gap-2">
+                  <span class="font-semibold text-gray-200">${cubicle.name}</span>
+                  <span class="text-xs text-gray-500">│</span>
+                  <span class="text-xs text-gray-400 truncate font-mono">${cubicle.path.split('/').slice(-2).join('/')}</span>
+                </div>
+              </div>
+              
+              <!-- Right section: Action buttons -->
+              <div class="flex items-center gap-1">
+                <button onclick="window.aiOffice.readAIReadme('${project.id}', ${idx})" 
+                        class="text-gray-400 hover:text-blue-400 p-1.5 rounded hover:bg-gray-800 transition-colors" 
+                        title="Copy .AI_README to clipboard">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path>
+                  </svg>
+                </button>
+                <button onclick="window.aiOffice.openCubicleInFileExplorer('${cubicle.path}')" 
+                        class="text-gray-400 hover:text-blue-400 p-1.5 rounded hover:bg-gray-800 transition-colors" 
+                        title="Open in file explorer">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"></path>
+                  </svg>
+                </button>
+                <button onclick="window.aiOffice.pasteToCubicleTerminal('${project.id}', ${idx})" 
+                        class="text-gray-400 hover:text-green-400 p-1.5 rounded hover:bg-gray-800 transition-colors" 
+                        title="Paste to terminal">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
+                  </svg>
+                </button>
+                <button onclick="window.aiOffice.sendEscToCubicle('${project.id}', ${idx})" 
+                        class="text-gray-400 hover:text-orange-400 p-1.5 rounded hover:bg-gray-800 transition-colors md:hidden" 
+                        title="Send ESC key">
+                  <span class="text-xs font-bold">ESC</span>
+                </button>
+                <div class="w-px h-4 bg-gray-700 mx-1"></div>
+                <button onclick="window.aiOffice.removeCubicle('${project.id}', ${idx})" 
+                        class="text-gray-400 hover:text-red-400 p-1.5 rounded hover:bg-gray-800 transition-colors">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                  </svg>
+                </button>
+              </div>
+            </div>
           </div>
           <div id="cubicle-grid-terminal-${projectId}-${idx}" class="cubicle-terminal"></div>
         `;
@@ -590,18 +780,34 @@ export async function addTerminal() {
   const termDiv = document.createElement('div');
   termDiv.className = 'bg-gray-800 rounded overflow-hidden';
   termDiv.innerHTML = `
-    <div class="bg-gray-700 px-3 py-2 text-sm font-medium flex justify-between items-center">
-      <span>${terminalName} (Project Root)</span>
-      <div class="flex items-center gap-2">
-        <button onclick="window.aiOffice.pasteToProjectTerminal('${sessionName}')" 
-                class="text-green-400 hover:text-green-300 text-xs px-2 py-1 bg-gray-800 rounded" 
-                title="Paste to terminal">
-          📝
-        </button>
-        <button onclick="window.aiOffice.removeTerminalFromGrid('${sessionName}')" 
-                class="text-red-400 hover:text-red-300 text-xs">
-          ✕
-        </button>
+    <div class="bg-gray-900 border-b border-gray-700 px-3 py-2">
+      <div class="flex items-center justify-between">
+        <!-- Left section: Name and path -->
+        <div class="flex items-center gap-3 min-w-0">
+          <div class="flex items-center gap-2">
+            <span class="font-semibold text-gray-200">${terminalName}</span>
+            <span class="text-xs text-gray-500">│</span>
+            <span class="text-xs text-gray-400 font-mono">Project Root</span>
+          </div>
+        </div>
+        
+        <!-- Right section: Action buttons -->
+        <div class="flex items-center gap-1">
+          <button onclick="window.aiOffice.pasteToProjectTerminal('${sessionName}')" 
+                  class="text-gray-400 hover:text-green-400 p-1.5 rounded hover:bg-gray-800 transition-colors" 
+                  title="Paste to terminal">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
+            </svg>
+          </button>
+          <div class="w-px h-4 bg-gray-700 mx-1"></div>
+          <button onclick="window.aiOffice.removeTerminalFromGrid('${sessionName}')" 
+                  class="text-gray-400 hover:text-red-400 p-1.5 rounded hover:bg-gray-800 transition-colors">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+            </svg>
+          </button>
+        </div>
       </div>
     </div>
     <div id="terminal-grid-${sessionName}" class="cubicle-terminal"></div>
