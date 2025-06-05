@@ -101,52 +101,51 @@ body {
   100% { transform: rotate(360deg); }
 }
 
-.loading-text {
+/* Toast notifications */
+.toast {
+  position: fixed;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #4a5568;
   color: white;
-  margin-top: 20px;
-  text-align: center;
-  font-size: 18px;
+  padding: 12px 24px;
+  border-radius: 8px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  z-index: 10001;
+  animation: slideUp 0.3s ease-out;
 }
 
-/* Terminal resize handles */
+@keyframes slideUp {
+  from {
+    transform: translateX(-50%) translateY(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(-50%) translateY(0);
+    opacity: 1;
+  }
+}
+
+/* Resize handle styles */
 .resize-handle {
   position: absolute;
+  bottom: 0;
   left: 0;
   right: 0;
-  height: 6px;
+  height: 12px;
   cursor: ns-resize;
-  user-select: none;
-  -webkit-user-select: none;
-  z-index: 10;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(75, 85, 99, 0.3);
-  transition: background-color 0.2s;
+  background: transparent;
+  z-index: 10;
 }
 
-.resize-handle-bottom {
-  bottom: 0;
-  border-radius: 0 0 8px 8px;
-}
-
-.resize-handle-top {
-  top: 0;
-}
-
-.resize-handle:hover {
-  background-color: rgba(59, 130, 246, 0.1);
-}
-
-.resize-handle:active {
-  background-color: rgba(59, 130, 246, 0.2);
-}
-
-/* Touch-friendly resize grip */
 .resize-grip {
   width: 40px;
   height: 3px;
-  background-color: #6b7280;
+  background-color: #4a5568;
   border-radius: 1.5px;
   transition: all 0.2s;
 }
@@ -234,3 +233,81 @@ body {
   height: auto;
 }
 
+/* Dropdown menus */
+.dropdown {
+  position: relative;
+  display: inline-block;
+}
+
+.dropdown-content {
+  display: none;
+  position: absolute;
+  right: 0;
+  background-color: #1f2937;
+  min-width: 200px;
+  box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+  border: 1px solid #374151;
+  border-radius: 0.375rem;
+  z-index: 1000;
+  margin-top: 0.25rem;
+}
+
+.dropdown-content.show {
+  display: block;
+}
+
+.dropdown-item {
+  color: white;
+  padding: 0.75rem 1rem;
+  text-decoration: none;
+  display: block;
+  font-size: 0.875rem;
+  transition: background-color 0.2s;
+  cursor: pointer;
+}
+
+.dropdown-item:hover {
+  background-color: #374151;
+}
+
+.dropdown-separator {
+  height: 1px;
+  background-color: #374151;
+  margin: 0.25rem 0;
+}
+
+.dropdown-header {
+  color: #9ca3af;
+  padding: 0.5rem 1rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+/* Context bar improvements */
+.context-bar {
+  background-color: #1f2937;
+  border-bottom: 1px solid #374151;
+  padding: 0.75rem 1rem;
+}
+
+.context-button {
+  background-color: #374151;
+  color: #e5e7eb;
+  padding: 0.375rem 0.75rem;
+  border-radius: 0.375rem;
+  font-size: 0.875rem;
+  border: 1px solid transparent;
+  transition: all 0.2s;
+  cursor: pointer;
+}
+
+.context-button:hover {
+  background-color: #4b5563;
+  border-color: #6b7280;
+}
+
+.context-button.active {
+  background-color: #3b82f6;
+  color: white;
+}

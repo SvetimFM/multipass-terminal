@@ -311,7 +311,7 @@ export async function openAIOfficeGrid(projectId) {
       project.aiOffice.cubicles.forEach((cubicle, idx) => {
         const currentMode = cubicle.aiMode || 'default';
         const termDiv = document.createElement('div');
-        termDiv.className = 'bg-gray-800 rounded overflow-hidden';
+        termDiv.className = 'bg-gray-800 rounded overflow-hidden shadow-lg border border-gray-700';
         termDiv.innerHTML = `
           <div class="bg-gray-900 border-b border-gray-700 px-3 py-2">
             <div class="flex items-center justify-between">
@@ -387,7 +387,7 @@ export async function openAIOfficeGrid(projectId) {
       // Fallback: create terminals without mode selector
       project.aiOffice.cubicles.forEach((cubicle, idx) => {
         const termDiv = document.createElement('div');
-        termDiv.className = 'bg-gray-800 rounded overflow-hidden';
+        termDiv.className = 'bg-gray-800 rounded overflow-hidden shadow-lg border border-gray-700';
         termDiv.innerHTML = `
           <div class="bg-gray-900 border-b border-gray-700 px-3 py-2">
             <div class="flex items-center justify-between">

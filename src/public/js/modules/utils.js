@@ -45,3 +45,53 @@ export function showLoading(text = 'Loading...') {
 export function hideLoading() {
   document.getElementById('loading-overlay').classList.add('hidden');
 }
+
+// Toggle dropdown menu
+export function toggleDropdown(dropdownId) {
+  const dropdown = document.getElementById(dropdownId);
+  const allDropdowns = document.querySelectorAll('.dropdown-content');
+  
+  // Close all other dropdowns
+  allDropdowns.forEach(d => {
+    if (d.id !== dropdownId) {
+      d.classList.remove('show');
+    }
+  });
+  
+  // Toggle current dropdown
+  dropdown.classList.toggle('show');
+  
+  // Close dropdown when clicking outside
+  const closeDropdown = (e) => {
+    if (!e.target.closest('.dropdown')) {
+      dropdown.classList.remove('show');
+      document.removeEventListener('click', closeDropdown);
+    }
+  };
+  
+  // Add listener after a small delay to prevent immediate closing
+  setTimeout(() => {
+    document.addEventListener('click', closeDropdown);
+  }, 0);
+}
+
+// Copy command to clipboard
+export async function copyCommand(command) {
+  await copyToClipboard(command, `Copied: ${command}`);
+  // Close any open dropdowns
+  document.querySelectorAll('.dropdown-content').forEach(d => {
+    d.classList.remove('show');
+  });
+}
+
+// Show custom broadcast dialog
+export function showCustomBroadcast() {
+  const command = prompt('Enter command to broadcast to all terminals:');
+  if (command) {
+    window.terminal.broadcastToAllTerminals(command + '\n');
+  }
+  // Close dropdown
+  document.querySelectorAll('.dropdown-content').forEach(d => {
+    d.classList.remove('show');
+  });
+}
