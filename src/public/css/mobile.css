@@ -299,3 +299,66 @@ button:focus-visible {
     background-color: rgba(59, 130, 246, 0.2); /* blue highlight */
   }
 }
+
+/* iPhone-specific terminal layout fixes */
+@media (max-width: 428px) { /* iPhone 12/13/14 Pro Max and smaller */
+  /* Prevent horizontal scrolling in terminals */
+  body {
+    overflow-x: hidden;
+  }
+  
+  #terminal-view {
+    width: 100vw !important;
+    max-width: 100vw !important;
+    overflow-x: hidden !important;
+  }
+  
+  .terminal-container {
+    width: 100% !important;
+    max-width: 100% !important;
+    padding: 5px !important;
+    box-sizing: border-box !important;
+    overflow-x: hidden !important;
+  }
+  
+  #terminal {
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+  
+  /* Ensure xterm terminal fits properly */
+  .xterm {
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+  
+  .xterm-viewport {
+    width: 100% !important;
+    overflow-x: hidden !important;
+  }
+  
+  .xterm-screen {
+    width: 100% !important;
+  }
+  
+  /* Adjust font size for narrow screens */
+  .xterm {
+    font-size: 12px !important;
+  }
+  
+  /* Grid layout for cubicles on mobile */
+  #cubicle-terminals {
+    grid-template-columns: 1fr !important;
+    padding: 0.5rem !important;
+  }
+  
+  /* Adjust quick commands for mobile */
+  .mobile-quick-actions {
+    padding: 6px !important;
+  }
+  
+  /* Ensure modals don't cause horizontal scroll */
+  .fixed {
+    max-width: 100vw !important;
+  }
+}
