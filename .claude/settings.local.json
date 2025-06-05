@@ -12,7 +12,8 @@
       "Bash(curl:*)",
       "Bash(git checkout:*)",
       "Bash(find:*)",
-      "Bash(git checkout:*)"
+      "Bash(git checkout:*)",
+      "Bash(npm install:*)"
     ],
     "deny": []
   }
