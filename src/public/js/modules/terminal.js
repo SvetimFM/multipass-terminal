@@ -327,16 +327,6 @@ function setupTerminalCopyPaste(term) {
     }
     return true;
   });
-  
-  // Add right-click context menu
-  const container = term.element || term._core.element;
-  container.addEventListener('contextmenu', (e) => {
-    e.preventDefault();
-    if (term.hasSelection()) {
-      copyTerminalSelection(term);
-      showToast('Copied to clipboard!');
-    }
-  });
 }
 
 // Copy selected text from terminal

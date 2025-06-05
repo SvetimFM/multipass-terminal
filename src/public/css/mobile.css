@@ -361,4 +361,39 @@ button:focus-visible {
   .fixed {
     max-width: 100vw !important;
   }
+  
+  /* Double-stack context bars on mobile */
+  .context-bar {
+    flex-direction: column !important;
+    gap: 0.5rem !important;
+    padding: 0.5rem !important;
+  }
+  
+  .context-bar > div {
+    width: 100% !important;
+  }
+  
+  /* Stack AI Office context bar items vertically */
+  #ai-office-grid .bg-gray-800 > div:first-child {
+    flex-direction: column !important;
+    gap: 0.5rem !important;
+  }
+  
+  #ai-office-grid .bg-gray-800 h2 {
+    font-size: 1rem !important;
+    text-align: center !important;
+  }
+  
+  /* Hide desktop commands on mobile AI Office */
+  #ai-office-grid .hidden.md\\:flex {
+    display: none !important;
+  }
+  
+  /* Ensure dropdowns work on mobile */
+  .dropdown-content {
+    position: fixed !important;
+    left: 1rem !important;
+    right: 1rem !important;
+    width: auto !important;
+  }
 }
