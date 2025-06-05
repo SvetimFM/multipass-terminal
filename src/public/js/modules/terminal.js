@@ -272,6 +272,9 @@ function setupTerminalMouseWheel(term) {
 
 // Setup copy/paste for terminal
 function setupTerminalCopyPaste(term) {
+  // Track paste in progress to prevent multiple pastes
+  let pasteInProgress = false;
+  
   // Handle keyboard shortcuts
   term.attachCustomKeyEventHandler((event) => {
     // Ctrl+C for copy (when there's a selection)
@@ -280,10 +283,22 @@ function setupTerminalCopyPaste(term) {
       return false;
     }
     // Ctrl+V for paste
-    if (event.ctrlKey && event.key === 'v' && !event.repeat) {
+    if (event.ctrlKey && event.key === 'v') {
       event.preventDefault();
       event.stopPropagation();
-      pasteToTerminal(term);
+      
+      // Prevent multiple pastes
+      if (pasteInProgress) {
+        return false;
+      }
+      
+      pasteInProgress = true;
+      pasteToTerminal(term).finally(() => {
+        // Reset after a short delay to ensure we don't miss legitimate paste attempts
+        setTimeout(() => {
+          pasteInProgress = false;
+        }, 100);
+      });
       return false;
     }
     // Ctrl+Shift+C for copy (common terminal shortcut)
@@ -292,10 +307,22 @@ function setupTerminalCopyPaste(term) {
       return false;
     }
     // Ctrl+Shift+V for paste (common terminal shortcut)
-    if (event.ctrlKey && event.shiftKey && event.key === 'V' && !event.repeat) {
+    if (event.ctrlKey && event.shiftKey && event.key === 'V') {
       event.preventDefault();
       event.stopPropagation();
-      pasteToTerminal(term);
+      
+      // Prevent multiple pastes
+      if (pasteInProgress) {
+        return false;
+      }
+      
+      pasteInProgress = true;
+      pasteToTerminal(term).finally(() => {
+        // Reset after a short delay
+        setTimeout(() => {
+          pasteInProgress = false;
+        }, 100);
+      });
       return false;
     }
     return true;
@@ -346,7 +373,7 @@ export function copyTerminalSelection(term = state.currentTerminal) {
 export async function pasteToTerminal(term = state.currentTerminal) {
   if (!term) {
     showToast('No terminal active');
-    return;
+    return Promise.resolve();
   }
   
   // Focus the terminal before pasting to prevent double paste issues
@@ -368,9 +395,11 @@ export async function pasteToTerminal(term = state.currentTerminal) {
       }
       showToast('Pasted!');
     }
+    return Promise.resolve();
   } catch (err) {
     // Fallback or permission denied
     showToast('Unable to paste - check clipboard permissions');
+    return Promise.resolve();
   }
 }
 
