@@ -420,9 +420,6 @@
             <span id="ai-office-project-name"></span> - AI Office (<span id="ai-office-cubicle-count"></span> cubicles)
           </h2>
           <div class="flex gap-2 items-center">
-            <button onclick="window.settings.openSettings()" class="bg-gray-700 px-3 py-1 rounded text-sm" title="Settings">
-              ⚙️ Settings
-            </button>
             <button onclick="window.aiOffice.closeAIOfficeGrid()" class="bg-gray-700 px-3 py-1 rounded text-sm">
               Close
             </button>
@@ -430,28 +427,49 @@
         </div>
         <!-- Quick Commands for All Terminals - Desktop -->
         <div class="mt-2 hidden md:flex gap-2 overflow-x-auto items-center">
-          <!-- AI Automation -->
+          <!-- Quick Access AI Actions -->
+          <button onclick="window.terminal.broadcastToAllTerminals('claude\n')" class="context-button bg-blue-600 hover:bg-blue-700">
+            🤖 Launch Claude (All)
+          </button>
+          <button onclick="window.terminal.exitClaudeAll()" class="context-button bg-red-600 hover:bg-red-700">
+            🛑 Exit Claude (All)
+          </button>
+          <button id="grid-auto-accept-btn" onclick="window.terminal.toggleGridAutoAccept()" class="context-button">
+            <span id="grid-auto-accept-icon">⏸️</span> Auto Accept: <span id="grid-auto-accept-status">OFF</span>
+          </button>
+          
+          <div class="w-px h-6 bg-gray-600 mx-1"></div>
+          
+          <!-- Commands Dropdown -->
           <div class="dropdown">
-            <button onclick="window.utils.toggleDropdown('ai-automation-dropdown')" class="context-button">
+            <button onclick="window.utils.toggleDropdown('ai-office-commands-dropdown')" class="context-button">
               <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"></path>
               </svg>
-              AI Automation
+              Commands
               <svg class="w-3 h-3 inline ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
               </svg>
             </button>
-            <div id="ai-automation-dropdown" class="dropdown-content">
-              <div class="dropdown-item" onclick="window.terminal.broadcastToAllTerminals('claude\n')">
-                <span class="text-blue-400">🤖</span> Launch Claude (All)
-              </div>
-              <div class="dropdown-item" onclick="window.terminal.exitClaudeAll()">
-                <span class="text-red-400">🛑</span> Exit Claude (All)
-              </div>
+            <div id="ai-office-commands-dropdown" class="dropdown-content">
+              <div class="dropdown-header">Git Commands</div>
+              <div class="dropdown-item" onclick="window.utils.copyCommand('git status')">git status</div>
+              <div class="dropdown-item" onclick="window.utils.copyCommand('git add .')">git add .</div>
+              <div class="dropdown-item" onclick="window.utils.copyCommand('git commit -m &quot;&quot;')">git commit -m ""</div>
+              <div class="dropdown-item" onclick="window.utils.copyCommand('git push')">git push</div>
+              <div class="dropdown-item" onclick="window.utils.copyCommand('git pull')">git pull</div>
               <div class="dropdown-separator"></div>
-              <div class="dropdown-item" onclick="window.terminal.toggleGridAutoAccept()">
-                <span id="grid-auto-accept-icon">⏸️</span> Auto Accept: <span id="grid-auto-accept-status">OFF</span>
-              </div>
+              <div class="dropdown-header">GitHub CLI</div>
+              <div class="dropdown-item" onclick="window.utils.copyCommand('gh pr create')">gh pr create</div>
+              <div class="dropdown-item" onclick="window.utils.copyCommand('gh pr list')">gh pr list</div>
+              <div class="dropdown-item" onclick="window.utils.copyCommand('gh repo view --web')">gh repo view --web</div>
+              <div class="dropdown-separator"></div>
+              <div class="dropdown-header">Unix Commands</div>
+              <div class="dropdown-item" onclick="window.utils.copyCommand('ls -la')">ls -la</div>
+              <div class="dropdown-item" onclick="window.utils.copyCommand('pwd')">pwd</div>
+              <div class="dropdown-item" onclick="window.utils.copyCommand('cd ..')">cd ..</div>
+              <div class="dropdown-item" onclick="window.utils.copyCommand('mkdir')">mkdir</div>
+              <div class="dropdown-item" onclick="window.utils.copyCommand('rm -rf')">rm -rf</div>
             </div>
           </div>
           
@@ -500,6 +518,28 @@
               <div class="dropdown-separator"></div>
               <div class="dropdown-item" onclick="window.cubicleManagement.openCubicleManagement()">
                 <span class="text-indigo-400">⚙️</span> Manage Cubicles
+              </div>
+            </div>
+          </div>
+          
+          <!-- More Options (including Settings) -->
+          <div class="dropdown">
+            <button onclick="window.utils.toggleDropdown('ai-office-more-dropdown')" class="context-button">
+              <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z"></path>
+              </svg>
+              More
+              <svg class="w-3 h-3 inline ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+              </svg>
+            </button>
+            <div id="ai-office-more-dropdown" class="dropdown-content">
+              <div class="dropdown-item" onclick="window.settings.openSettings()">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                </svg>
+                Settings
               </div>
             </div>
           </div>

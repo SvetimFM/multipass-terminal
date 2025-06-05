@@ -241,47 +241,69 @@ body {
 
 .dropdown-content {
   display: none;
-  position: absolute;
-  right: 0;
-  background-color: #1f2937;
-  min-width: 200px;
-  box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+  position: fixed;
+  background-color: #111827;
+  min-width: 220px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.1);
   border: 1px solid #374151;
-  border-radius: 0.375rem;
-  z-index: 1000;
-  margin-top: 0.25rem;
+  border-radius: 0.5rem;
+  z-index: 10000;
+  margin-top: 0.5rem;
+  max-height: 80vh;
+  overflow-y: auto;
+  backdrop-filter: blur(10px);
+  background-color: rgba(17, 24, 39, 0.95);
 }
 
 .dropdown-content.show {
   display: block;
+  animation: dropdownSlide 0.2s ease-out;
+}
+
+@keyframes dropdownSlide {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .dropdown-item {
-  color: white;
-  padding: 0.75rem 1rem;
+  color: #e5e7eb;
+  padding: 0.625rem 1rem;
   text-decoration: none;
-  display: block;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
   font-size: 0.875rem;
-  transition: background-color 0.2s;
+  transition: all 0.15s ease;
   cursor: pointer;
+  border-radius: 0.25rem;
+  margin: 0.125rem 0.375rem;
 }
 
 .dropdown-item:hover {
   background-color: #374151;
+  color: white;
+  transform: translateX(2px);
 }
 
 .dropdown-separator {
   height: 1px;
-  background-color: #374151;
-  margin: 0.25rem 0;
+  background: linear-gradient(to right, transparent, #374151 20%, #374151 80%, transparent);
+  margin: 0.5rem 0;
 }
 
 .dropdown-header {
-  color: #9ca3af;
-  padding: 0.5rem 1rem;
-  font-size: 0.75rem;
+  color: #6b7280;
+  padding: 0.5rem 1rem 0.25rem;
+  font-size: 0.6875rem;
   font-weight: 600;
   text-transform: uppercase;
+  letter-spacing: 0.05em;
 }
 
 /* Context bar improvements */
@@ -300,6 +322,9 @@ body {
   border: 1px solid transparent;
   transition: all 0.2s;
   cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
 }
 
 .context-button:hover {
@@ -310,4 +335,45 @@ body {
 .context-button.active {
   background-color: #3b82f6;
   color: white;
+}
+
+/* Quick access button styles */
+.context-button.bg-blue-600 {
+  background-color: #2563eb;
+  color: white;
+  font-weight: 500;
+}
+
+.context-button.bg-blue-600:hover {
+  background-color: #1d4ed8;
+  border-color: #2563eb;
+}
+
+.context-button.bg-red-600 {
+  background-color: #dc2626;
+  color: white;
+  font-weight: 500;
+}
+
+.context-button.bg-red-600:hover {
+  background-color: #b91c1c;
+  border-color: #dc2626;
+}
+
+/* Custom scrollbar for dropdowns */
+.dropdown-content::-webkit-scrollbar {
+  width: 6px;
+}
+
+.dropdown-content::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.dropdown-content::-webkit-scrollbar-thumb {
+  background: #4b5563;
+  border-radius: 3px;
+}
+
+.dropdown-content::-webkit-scrollbar-thumb:hover {
+  background: #6b7280;
 }
