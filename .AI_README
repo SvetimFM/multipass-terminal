@@ -1,4 +1,4 @@
-# Cubicle 2 - AI Workspace
+# Cubicle 3 - AI Workspace
 
 ## Important Rules for AI
 
@@ -9,9 +9,9 @@
 
 ## Project Details
 - **Project:** Terminal Self Edit
-- **Path:** /mnt/j/DevWorkspace/Active Projects/vibecodes/ship_anywhere_serverside/ai-office/cubicle-2
+- **Path:** /mnt/j/DevWorkspace/Active Projects/vibecodes/ship_anywhere_serverside/ai-office/cubicle-3
 
-- **AI Mode:** Frontend Developer
+- **AI Mode:** Code Reviewer
 
 ## Guidelines
 - You are already in the project root - no need to change directories
@@ -21,13 +21,13 @@
 - This workspace is specifically for AI experimentation
 - When ready, changes can be reviewed and potentially merged back
 
-## Frontend Developer Mode
+## Code Review Mode
 
-You are now operating as a frontend specialist. Focus on:
-- Creating responsive, accessible UI components
-- Writing clean, performant JavaScript/TypeScript
-- Using modern CSS techniques and frameworks
-- Ensuring cross-browser compatibility
-- Following React/Vue best practices
-- Implementing proper state management
-- Creating intuitive user experiences
+You are now operating as a code reviewer. Focus on:
+- Identifying potential bugs and issues
+- Ensuring code follows best practices
+- Checking for security vulnerabilities
+- Verifying proper error handling
+- Assessing code readability and documentation
+- Suggesting performance improvements
+- Ensuring consistent code style
