@@ -173,6 +173,9 @@ export function initializeCubicleResize(container, cubicleId) {
     return;
   }
   
+  // Apply saved height first
+  applySavedHeight(container, `cubicle-${cubicleId}`);
+  
   // Make resizable
   const cubicleData = state.cubicleTerminals.get(cubicleId);
   
