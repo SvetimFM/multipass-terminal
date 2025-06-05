@@ -63,5 +63,23 @@ module.exports = {
   },
   
   // AI command
-  AI_COMMAND: process.env.AI_COMMAND || 'claude'
+  AI_COMMAND: process.env.AI_COMMAND || 'claude',
+  
+  // LLM Configuration
+  LLM_CONFIG: {
+    default: 'claude',
+    llms: {
+      claude: {
+        name: 'Claude',
+        command: 'claude',
+        sessionPrefix: 'claude-',
+        exitSequence: '\x03\x03',
+        exitDelay: 50
+      }
+    },
+    ui: {
+      primaryColor: '#3b82f6',
+      dangerColor: '#dc2626'
+    }
+  }
 };

@@ -33,39 +33,6 @@
             Sessions
           </button>
           
-          <!-- Commands Dropdown -->
-          <div class="dropdown">
-            <button onclick="window.utils.toggleDropdown('commands-dropdown')" class="context-button">
-              <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"></path>
-              </svg>
-              Commands
-              <svg class="w-3 h-3 inline ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
-              </svg>
-            </button>
-            <div id="commands-dropdown" class="dropdown-content">
-              <div class="dropdown-header">Git Commands</div>
-              <div class="dropdown-item" onclick="window.utils.copyCommand('git status')">git status</div>
-              <div class="dropdown-item" onclick="window.utils.copyCommand('git add .')">git add .</div>
-              <div class="dropdown-item" onclick="window.utils.copyCommand('git commit -m &quot;&quot;')">git commit -m ""</div>
-              <div class="dropdown-item" onclick="window.utils.copyCommand('git push')">git push</div>
-              <div class="dropdown-item" onclick="window.utils.copyCommand('git pull')">git pull</div>
-              <div class="dropdown-separator"></div>
-              <div class="dropdown-header">GitHub CLI</div>
-              <div class="dropdown-item" onclick="window.utils.copyCommand('gh pr create')">gh pr create</div>
-              <div class="dropdown-item" onclick="window.utils.copyCommand('gh pr list')">gh pr list</div>
-              <div class="dropdown-item" onclick="window.utils.copyCommand('gh repo view --web')">gh repo view --web</div>
-              <div class="dropdown-separator"></div>
-              <div class="dropdown-header">Unix Commands</div>
-              <div class="dropdown-item" onclick="window.utils.copyCommand('ls -la')">ls -la</div>
-              <div class="dropdown-item" onclick="window.utils.copyCommand('pwd')">pwd</div>
-              <div class="dropdown-item" onclick="window.utils.copyCommand('cd ..')">cd ..</div>
-              <div class="dropdown-item" onclick="window.utils.copyCommand('mkdir')">mkdir</div>
-              <div class="dropdown-item" onclick="window.utils.copyCommand('rm -rf')">rm -rf</div>
-            </div>
-          </div>
-          
           <!-- Settings -->
           <div class="w-px h-6 bg-gray-600"></div>
           <button onclick="window.settings.openSettings()" class="context-button" title="Settings">
@@ -148,8 +115,8 @@
         <button onclick="window.terminal.copyTerminalSelection()" class="px-3 py-1 bg-green-600 rounded text-sm" title="Copy selected text (Ctrl+C)">📋 Copy</button>
         <button onclick="window.terminal.pasteToTerminal()" class="px-3 py-1 bg-green-600 rounded text-sm" title="Paste from clipboard (Ctrl+V)">📝 Paste</button>
         <div class="w-px bg-gray-600 mx-1"></div>
-        <button onclick="window.terminal.sendToTerminal('claude\n')" class="px-3 py-1 bg-blue-600 rounded text-sm font-semibold">claude</button>
-        <button onclick="window.terminal.exitClaude()" class="px-3 py-1 bg-red-600 rounded text-sm font-semibold" title="Exit Claude (Ctrl+C twice)">Exit Claude</button>
+        <button onclick="window.terminal.sendLLMCommand()" class="px-3 py-1 bg-blue-600 rounded text-sm font-semibold" id="llm-button">claude</button>
+        <button onclick="window.terminal.exitLLM()" class="px-3 py-1 bg-red-600 rounded text-sm font-semibold" title="Exit LLM (Ctrl+C twice)" id="exit-llm-button">Exit Claude</button>
         <button id="auto-accept-btn" onclick="window.terminal.toggleAutoAccept()" class="px-3 py-1 bg-gray-600 rounded text-sm">
           Auto-Accept: <span id="auto-accept-status">OFF</span>
         </button>
@@ -168,10 +135,10 @@
         <div class="text-xs text-gray-400 text-center mb-2">Tip: Long press command buttons to copy</div>
         <!-- Priority Actions -->
         <div class="mobile-button-grid mb-2">
-          <button onclick="window.terminal.sendToTerminal('claude\n')" class="priority-button bg-blue-600 rounded haptic-feedback" oncontextmenu="window.utils.copyToClipboard('claude', 'Command copied!'); return false;">
+          <button onclick="window.terminal.sendLLMCommand()" class="priority-button bg-blue-600 rounded haptic-feedback" oncontextmenu="window.terminal.copyLLMCommand(); return false;" id="llm-button-mobile">
             🤖 Claude
           </button>
-          <button onclick="window.terminal.exitClaude()" class="priority-button bg-red-600 rounded haptic-feedback">
+          <button onclick="window.terminal.exitLLM()" class="priority-button bg-red-600 rounded haptic-feedback">
             🛑 Exit
           </button>
           <button onclick="window.mobile.copyTerminalSelection()" class="priority-button bg-green-600 rounded haptic-feedback">
@@ -428,10 +395,10 @@
         <!-- Quick Commands for All Terminals - Desktop -->
         <div class="mt-2 hidden md:flex gap-2 overflow-x-auto items-center">
           <!-- Quick Access AI Actions -->
-          <button onclick="window.terminal.broadcastToAllTerminals('claude\n')" class="context-button bg-blue-600 hover:bg-blue-700">
+          <button onclick="window.terminal.broadcastLLMCommand()" class="context-button bg-blue-600 hover:bg-blue-700" id="launch-llm-all-button">
             🤖 Launch Claude (All)
           </button>
-          <button onclick="window.terminal.exitClaudeAll()" class="context-button bg-red-600 hover:bg-red-700">
+          <button onclick="window.terminal.exitLLMAll()" class="context-button bg-red-600 hover:bg-red-700" id="exit-llm-all-button">
             🛑 Exit Claude (All)
           </button>
           <button id="grid-auto-accept-btn" onclick="window.terminal.toggleGridAutoAccept()" class="context-button">
@@ -549,10 +516,10 @@
         <div class="mt-2 md:hidden">
           <!-- Priority Grid Actions -->
           <div class="mobile-button-grid three-column mb-2">
-            <button onclick="window.terminal.broadcastToAllTerminals('claude\n')" class="priority-button bg-blue-600 rounded haptic-feedback">
+            <button onclick="window.terminal.broadcastLLMCommand()" class="priority-button bg-blue-600 rounded haptic-feedback">
               🤖 All
             </button>
-            <button onclick="window.terminal.exitClaudeAll()" class="priority-button bg-red-600 rounded haptic-feedback">
+            <button onclick="window.terminal.exitLLMAll()" class="priority-button bg-red-600 rounded haptic-feedback">
               🛑 Exit All
             </button>
             <button onclick="window.cubicleManagement.openCubicleManagement()" class="priority-button bg-indigo-600 rounded haptic-feedback">
