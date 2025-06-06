@@ -350,6 +350,38 @@ button:focus-visible {
   #cubicle-terminals {
     grid-template-columns: 1fr !important;
     padding: 0.5rem !important;
+    gap: 0.5rem !important;
+  }
+  
+  /* Fix cubicle terminal containers on mobile */
+  #cubicle-terminals > div {
+    width: 100% !important;
+    max-width: 100% !important;
+    height: 300px !important;
+    min-height: 300px !important;
+  }
+  
+  /* Ensure cubicle terminals fit properly */
+  .cubicle-terminal {
+    width: 100% !important;
+    max-width: 100% !important;
+    overflow-x: hidden !important;
+  }
+  
+  /* Fix cubicle terminal xterm instances */
+  .cubicle-terminal .xterm {
+    width: 100% !important;
+    max-width: 100% !important;
+    font-size: 11px !important;
+  }
+  
+  .cubicle-terminal .xterm-viewport {
+    width: 100% !important;
+    overflow-x: hidden !important;
+  }
+  
+  .cubicle-terminal .xterm-screen {
+    width: 100% !important;
   }
   
   /* Adjust quick commands for mobile */
@@ -395,5 +427,23 @@ button:focus-visible {
     left: 1rem !important;
     right: 1rem !important;
     width: auto !important;
+  }
+  
+  /* Fix AI office grid container */
+  #ai-office-grid {
+    width: 100vw !important;
+    max-width: 100vw !important;
+    overflow-x: hidden !important;
+  }
+  
+  /* Fix cubicle header buttons */
+  .bg-gray-800.p-2.border-b.border-gray-700 {
+    flex-wrap: wrap !important;
+    gap: 0.25rem !important;
+  }
+  
+  .bg-gray-800.p-2.border-b.border-gray-700 button {
+    font-size: 0.75rem !important;
+    padding: 0.25rem 0.5rem !important;
   }
 }
