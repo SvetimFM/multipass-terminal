@@ -124,7 +124,7 @@ export async function attachTerminal(sessionName) {
       fontFamily: settings.fontFamily,
       theme: settings.theme,
       scrollback: settings.scrollback,
-      rightClickSelectsWord: true
+      rightClickSelectsWord: false
     });
     
     state.currentTerminal = terminal;
@@ -364,11 +364,6 @@ export async function pasteToTerminal(term = state.currentTerminal) {
   if (!term) {
     showToast('No terminal active');
     return Promise.resolve();
-  }
-  
-  // Focus the terminal before pasting to prevent double paste issues
-  if (term.focus) {
-    term.focus();
   }
   
   try {

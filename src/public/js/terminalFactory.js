@@ -15,7 +15,9 @@ const DEFAULT_TERMINAL_OPTIONS = {
     scrollSensitivity: 1,  // Normal scroll sensitivity
     altClickMovesCursor: false,  // Prevent alt+click from moving cursor
     macOptionIsMeta: false,  // Ensure option key doesn't interfere on Mac
-    rightClickSelectsWord: false  // Disable right click word selection to avoid conflicts
+    rightClickSelectsWord: false,  // Disable right click word selection to avoid conflicts
+    convertEol: true,  // Convert line endings
+    rendererType: 'canvas'  // Use canvas renderer for better performance
 };
 
 export class TerminalFactory {
