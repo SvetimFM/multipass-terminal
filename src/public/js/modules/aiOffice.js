@@ -526,7 +526,7 @@ export async function initCubicleTerminal(project, cubicle, idx, isGrid = false)
     fontFamily: settings.fontFamily,
     theme: settings.theme,
     scrollback: settings.scrollback,
-    rightClickSelectsWord: true
+    rightClickSelectsWord: false
   };
   
   const terminalInstance = isGrid 
@@ -827,7 +827,7 @@ function initProjectTerminal(project, sessionName) {
     fontFamily: settings.fontFamily,
     theme: settings.theme,
     scrollback: settings.scrollback,
-    rightClickSelectsWord: true
+    rightClickSelectsWord: false
   };
   
   const { terminal: term, fitAddon } = TerminalFactory.createGridTerminal(container, terminalOptions);
