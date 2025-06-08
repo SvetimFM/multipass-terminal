@@ -556,6 +556,42 @@ export async function initCubicleTerminal(project, cubicle, idx, isGrid = false)
   // Setup proper mouse wheel scrolling
   setupCubicleMouseWheel(term);
   
+  // Selection preservation state for this cubicle
+  let isSelecting = false;
+  let selectionBuffer = [];
+  let bufferTimer = null;
+  
+  // Track mouse selection state
+  const terminalElement = term.element;
+  terminalElement.addEventListener('mousedown', () => {
+    isSelecting = true;
+  });
+  
+  terminalElement.addEventListener('mouseup', () => {
+    isSelecting = false;
+    // Flush any buffered data after selection is complete
+    if (selectionBuffer.length > 0) {
+      setTimeout(() => {
+        selectionBuffer.forEach(data => term.write(data));
+        selectionBuffer = [];
+      }, 50);
+    }
+  });
+  
+  // Also clear selection state if mouse leaves the terminal
+  terminalElement.addEventListener('mouseleave', () => {
+    if (isSelecting) {
+      isSelecting = false;
+      // Flush buffered data
+      if (selectionBuffer.length > 0) {
+        setTimeout(() => {
+          selectionBuffer.forEach(data => term.write(data));
+          selectionBuffer = [];
+        }, 50);
+      }
+    }
+  });
+  
   // Connect WebSocket with the session name
   const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
   const ws = new WebSocket(`${protocol}//${window.location.host}/terminal/${sessionName}`);
@@ -576,7 +612,27 @@ export async function initCubicleTerminal(project, cubicle, idx, isGrid = false)
   };
   
   ws.onmessage = (event) => {
-    term.write(event.data);
+    // If user is selecting text, buffer the data instead of writing immediately
+    if (isSelecting && term.hasSelection()) {
+      selectionBuffer.push(event.data);
+      
+      // Clear any existing timer
+      if (bufferTimer) {
+        clearTimeout(bufferTimer);
+      }
+      
+      // Set a timeout to flush buffer if selection takes too long
+      bufferTimer = setTimeout(() => {
+        if (selectionBuffer.length > 0) {
+          selectionBuffer.forEach(data => term.write(data));
+          selectionBuffer = [];
+        }
+        bufferTimer = null;
+      }, 1000); // Flush after 1 second max
+    } else {
+      // Normal write when not selecting
+      term.write(event.data);
+    }
   };
   
   ws.onerror = (error) => {

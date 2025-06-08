@@ -168,13 +168,46 @@ export async function attachTerminal(sessionName) {
     window.addEventListener('resize', state.resizeListener);
   }
   
-  // Clear terminal
-  state.currentTerminal.clear();
-  
   // Initialize resize functionality for main terminal
   setTimeout(() => {
     initializeMainTerminalResize();
   }, 100);
+  
+  // Selection preservation state
+  let isSelecting = false;
+  let selectionBuffer = [];
+  let bufferTimer = null;
+  
+  // Track mouse selection state
+  const terminalElement = state.currentTerminal.element;
+  terminalElement.addEventListener('mousedown', () => {
+    isSelecting = true;
+  });
+  
+  terminalElement.addEventListener('mouseup', () => {
+    isSelecting = false;
+    // Flush any buffered data after selection is complete
+    if (selectionBuffer.length > 0) {
+      setTimeout(() => {
+        selectionBuffer.forEach(data => state.currentTerminal.write(data));
+        selectionBuffer = [];
+      }, 50);
+    }
+  });
+  
+  // Also clear selection state if mouse leaves the terminal
+  terminalElement.addEventListener('mouseleave', () => {
+    if (isSelecting) {
+      isSelecting = false;
+      // Flush buffered data
+      if (selectionBuffer.length > 0) {
+        setTimeout(() => {
+          selectionBuffer.forEach(data => state.currentTerminal.write(data));
+          selectionBuffer = [];
+        }, 50);
+      }
+    }
+  });
   
   // Handle WebSocket events
   state.currentWs.onopen = () => {
@@ -196,7 +229,27 @@ export async function attachTerminal(sessionName) {
   };
   
   state.currentWs.onmessage = (event) => {
-    state.currentTerminal.write(event.data);
+    // If user is selecting text, buffer the data instead of writing immediately
+    if (isSelecting && state.currentTerminal.hasSelection()) {
+      selectionBuffer.push(event.data);
+      
+      // Clear any existing timer
+      if (bufferTimer) {
+        clearTimeout(bufferTimer);
+      }
+      
+      // Set a timeout to flush buffer if selection takes too long
+      bufferTimer = setTimeout(() => {
+        if (selectionBuffer.length > 0) {
+          selectionBuffer.forEach(data => state.currentTerminal.write(data));
+          selectionBuffer = [];
+        }
+        bufferTimer = null;
+      }, 1000); // Flush after 1 second max
+    } else {
+      // Normal write when not selecting
+      state.currentTerminal.write(event.data);
+    }
   };
   
   state.currentWs.onerror = (error) => {
