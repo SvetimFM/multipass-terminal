@@ -1,5 +1,7 @@
 # Multipass - Terminal for AI
 
+⚠️ **SECURITY WARNING**: This application has **NO AUTHENTICATION** and provides **FULL TERMINAL ACCESS** to your system. Only run this locally or behind a secure VPN/Tailscale connection. **NEVER** expose this to the public internet.
+
 A flexible terminal-based interface for working with any command-line AI assistant (Claude, OpenAI CLI, or custom LLMs). Multipass provides isolated workspaces called "AI Offices" with multiple "cubicles" for experimenting with AI-assisted development.
 
 ## Features
@@ -33,19 +35,48 @@ module.exports = {
 }
 ```
 
+## Prerequisites
+
+- Node.js (v16 or higher)
+- npm or yarn
+- tmux (required for session persistence)
+- git (required for AI Office functionality)
+- Unix-like operating system (Linux, macOS, WSL on Windows)
+
 ## Installation
 
-1. Clone the repository
+1. Clone the repository:
+   ```bash
+   git clone https://github.com/SvetimFM/multipass-ai-terminal.git
+   cd multipass-ai-terminal
+   ```
+
 2. Install dependencies:
    ```bash
    npm install
    ```
-3. Configure your LLM in `config/llm.config.js`
-4. Start the server:
+
+3. Copy the environment example and configure:
    ```bash
-   npm start
+   cp env.example .env
    ```
-5. Open http://localhost:3000 in your browser
+
+4. Edit `.env` to set your preferences:
+   ```bash
+   PORT=3000                    # Server port
+   HOST=127.0.0.1              # Use 127.0.0.1 for local only
+   SHELL=/bin/bash             # Your preferred shell
+   DEFAULT_WORKSPACE=$HOME/projects  # Where to store projects
+   ```
+
+5. Start the server:
+   ```bash
+   npm start     # Production mode
+   # or
+   npm run dev   # Development mode with hot reload
+   ```
+
+6. Open http://localhost:3000 in your browser
 
 ## Usage
 
@@ -66,16 +97,106 @@ module.exports = {
 
 ## Environment Variables
 
-- `PORT`: Server port (default: 3000)
-- `HOST`: Server host (default: 0.0.0.0)
-- `SHELL`: Shell to use for terminals (default: /bin/bash)
+Create a `.env` file in the root directory with these variables:
 
-## Security
+```bash
+# Server Configuration
+PORT=3000                    # Port to run the server on
+HOST=127.0.0.1              # Host to bind to (127.0.0.1 for local only)
+SHELL=/bin/bash             # Shell to use for terminal sessions
 
-- Sessions are isolated per project
-- No authentication by default (add your own if needed)
-- Runs with the permissions of the server process
+# Workspace Configuration
+DEFAULT_WORKSPACE=$HOME/projects  # Default directory for new projects
+
+# Optional: AI Assistant Configuration
+DEFAULT_LLM=claude          # Default LLM to use (claude, openai, etc.)
+
+# Session Configuration (optional)
+SESSION_TIMEOUT=86400       # Session timeout in seconds (default: 24 hours)
+MAX_SESSIONS=50            # Maximum concurrent sessions
+```
+
+## Security Considerations
+
+### ⚠️ Critical Security Information
+
+1. **No Authentication**: This application provides unrestricted terminal access to anyone who can reach the web interface
+2. **Full System Access**: Users have the same permissions as the process running the server
+3. **Session Persistence**: Terminal sessions remain active even after disconnection
+
+### Recommended Deployment Options
+
+#### Option 1: Local Only (Recommended)
+```bash
+# In your .env file
+HOST=127.0.0.1  # Only accessible from localhost
+PORT=3000
+```
+
+#### Option 2: Tailscale (Secure Remote Access)
+1. Install Tailscale: https://tailscale.com/download
+2. Set up your Tailscale network
+3. Configure Multipass to listen on your Tailscale IP:
+   ```bash
+   # In your .env file
+   HOST=0.0.0.0  # Listen on all interfaces
+   PORT=3000
+   ```
+4. Access via your Tailscale network: `http://your-machine-name:3000`
+
+#### Option 3: VPN Access
+- Deploy behind a corporate VPN or WireGuard
+- Ensure the VPN is properly configured and secured
+
+### Never Do This
+- ❌ Don't expose to the public internet
+- ❌ Don't run with root/sudo privileges
+- ❌ Don't use on shared/multi-user systems without proper isolation
+
+## Troubleshooting
+
+### Common Issues
+
+1. **"tmux: command not found"**
+   - Install tmux: `sudo apt install tmux` (Ubuntu/Debian) or `brew install tmux` (macOS)
+
+2. **"Permission denied" errors**
+   - Ensure the user running the server has write permissions to the workspace directory
+   - Check that the shell specified in `.env` is executable
+
+3. **WebSocket connection failures**
+   - Check that the PORT specified in `.env` is not already in use
+   - Ensure your firewall allows WebSocket connections
+
+4. **Sessions not persisting**
+   - Verify tmux is installed and running
+   - Check that `.claude-sessions.json` is writable
+
+### Getting Help
+
+- Check existing issues: https://github.com/SvetimFM/multipass-ai-terminal/issues
+- Join discussions: https://github.com/SvetimFM/multipass-ai-terminal/discussions
+
+## Contributing
+
+We welcome contributions! Please see our [Contributing Guidelines](CONTRIBUTING.md) for details.
+
+### Development Setup
+
+1. Fork the repository
+2. Clone your fork
+3. Install dependencies: `npm install`
+4. Create a feature branch: `git checkout -b feature/your-feature`
+5. Make your changes
+6. Run in dev mode: `npm run dev`
+7. Submit a pull request
+
+## Acknowledgments
+
+- Built with [xterm.js](https://github.com/xtermjs/xterm.js) for terminal emulation
+- Uses [node-pty](https://github.com/microsoft/node-pty) for pseudo-terminal support
+- Inspired by the need for better AI-assisted development workflows
 
 ## License
 
-MIT
+MIT - See [LICENSE](LICENSE) file for details
