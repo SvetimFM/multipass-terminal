@@ -54,3 +54,4 @@ ai-office/
 
 # VS Code history
 .history/
+.claude-projects.json

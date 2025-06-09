@@ -40,7 +40,7 @@ module.exports = {
   ERROR_SESSION_EXISTS: 'Session name already exists',
   
   // Git defaults
-  DEFAULT_GIT_REPO: 'https://github.com/SvetimFM/multipass-ai-terminal',
+  DEFAULT_GIT_REPO: process.env.DEFAULT_GIT_REPO || '',
   DEFAULT_GIT_BRANCH: 'main',
   GIT_CLONE_DEPTH: 1,
   
