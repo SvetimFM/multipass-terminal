@@ -7,7 +7,7 @@ module.exports = {
   DEFAULT_TERMINAL_ROWS: 30,
   
   // File paths
-  PROJECTS_FILE: './.multipass-projects.json',
+  PROJECTS_FILE: './.claude-projects.json',
   AI_README_FILE: '.AI_README',
   
   // Session naming
