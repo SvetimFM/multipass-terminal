@@ -206,10 +206,7 @@ async function pasteToCubicle(term, cubicleKey) {
     return;
   }
   
-  // Focus the terminal before pasting to prevent double paste issues
-  if (term && term.focus) {
-    term.focus();
-  }
+  // Don't focus the terminal as it clears the selection
   
   try {
     const text = await clipboardService.pasteFromClipboard();
@@ -1013,11 +1010,7 @@ export async function pasteToCubicleTerminal(projectId, cubicleIdx) {
     return;
   }
   
-  // Get the terminal instance and focus it before pasting
-  const terminalData = state.cubicleTerminals.get(cubicleKey);
-  if (terminalData && terminalData.term && terminalData.term.focus) {
-    terminalData.term.focus();
-  }
+  // Don't focus the terminal as it clears the selection
   
   try {
     const text = await navigator.clipboard.readText();
@@ -1115,11 +1108,7 @@ export async function sendEscToCubicle(projectId, cubicleIdx) {
     return;
   }
   
-  // Get the terminal instance and focus it
-  const terminalData = state.cubicleTerminals.get(cubicleKey);
-  if (terminalData && terminalData.term && terminalData.term.focus) {
-    terminalData.term.focus();
-  }
+  // Don't focus the terminal as it clears the selection
   
   try {
     ws.send(JSON.stringify({
