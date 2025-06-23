@@ -58,4 +58,7 @@ ai-office/
 
 # VS Code history
 .history/
+
+# Session files
+multipass-sessions.json
 .claude-projects.json
