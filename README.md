@@ -50,9 +50,12 @@ LLM_CONFIG: {
    - `'exit\n'` = types "exit" and Enter
 4. Change `default` to your AI's key name
 
-### Customizing Quick Command Buttons
+### Customizing AI Assistant & Quick Command Buttons
 
-Edit `config/buttons.config.js` to customize the quick command buttons that appear below the terminal:
+The buttons that appear in the terminal interface are fully customizable. You can edit them in two ways:
+
+1. **Through the UI**: Click the settings icon (⚙️) and look for "AI Assistant & Quick Command Buttons"
+2. **Edit the config file**: Edit `config/buttons.config.js` to customize buttons directly
 
 ```javascript
 module.exports = {

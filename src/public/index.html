@@ -64,6 +64,31 @@
         </p>
       </div>
       
+      <!-- AI Setup Prompt -->
+      <div id="ai-setup-prompt" class="hidden bg-yellow-900 border border-yellow-700 rounded-lg p-4 mb-4">
+        <div class="flex items-start gap-3">
+          <div class="text-yellow-400">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+            </svg>
+          </div>
+          <div class="flex-1">
+            <h3 class="font-semibold text-yellow-300 mb-1">AI Assistant Not Configured</h3>
+            <p class="text-sm text-gray-300 mb-3">
+              To use AI features, you need to configure your AI assistant first.
+            </p>
+            <div class="flex gap-2">
+              <button onclick="window.settings.openSettings()" class="px-3 py-1 bg-yellow-700 hover:bg-yellow-600 rounded text-sm font-medium">
+                ⚙️ Configure AI Assistant
+              </button>
+              <a href="#" onclick="event.preventDefault(); alert('Edit src/utils/constants.js and update the LLM_CONFIG section with your AI assistant details.')" class="px-3 py-1 bg-gray-700 hover:bg-gray-600 rounded text-sm">
+                📖 View Instructions
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+      
       <div class="mb-4">
         <button onclick="window.fileBrowser?.openFileBrowser ? window.fileBrowser.openFileBrowser() : alert('Loading... Please try again in a moment')" 
                 class="w-full bg-green-600 py-3 md:py-3 rounded font-semibold mb-3 priority-button hover:bg-green-700 transition-colors">
@@ -358,7 +383,7 @@
             
             <!-- Button Configuration -->
             <div class="bg-gray-700 p-4 rounded-lg">
-              <h4 class="font-semibold mb-3">Quick Command Buttons</h4>
+              <h4 class="font-semibold mb-3">AI Assistant & Quick Command Buttons</h4>
               <div class="space-y-3">
                 <div id="button-config-list" class="space-y-2 max-h-48 overflow-y-auto">
                   <!-- Buttons will be loaded here -->

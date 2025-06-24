@@ -42,6 +42,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       if (config.currentLLM) {
         state.llmConfig = config.currentLLM;
         updateLLMButtons();
+        checkAISetup();
       }
     }
   } catch (error) {
@@ -234,6 +235,21 @@ function updateLLMButtons() {
   
   if (menuTexts[0]) menuTexts[0].textContent = `Launch ${llmName} (All)`;
   if (menuTexts[1]) menuTexts[1].textContent = `Exit ${llmName} (All)`;
+}
+
+// Check if AI is properly set up
+function checkAISetup() {
+  const llmName = state.llmConfig?.name || '';
+  const llmCommand = state.llmConfig?.command || '';
+  
+  // Check if using default/custom config
+  if (llmName === 'Your AI Assistant' || llmCommand === 'your-ai-command') {
+    // Show setup prompt
+    const setupPrompt = document.getElementById('ai-setup-prompt');
+    if (setupPrompt) {
+      setupPrompt.classList.remove('hidden');
+    }
+  }
 }
 
 // Cleanup on page unload

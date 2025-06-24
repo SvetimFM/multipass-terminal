@@ -238,8 +238,35 @@ export async function loadButtonConfig() {
     
     container.innerHTML = '';
     
+    // Display AI assistant buttons
+    if (config.ai) {
+      const aiHeader = document.createElement('div');
+      aiHeader.className = 'font-semibold text-sm text-blue-400 mb-2';
+      aiHeader.textContent = 'AI Assistant Buttons';
+      container.appendChild(aiHeader);
+      
+      if (config.ai.start) {
+        const startButton = createAIButtonListItem(config.ai.start, 'start', 'AI Start Button');
+        container.appendChild(startButton);
+      }
+      
+      if (config.ai.exit) {
+        const exitButton = createAIButtonListItem(config.ai.exit, 'exit', 'AI Exit Button');
+        container.appendChild(exitButton);
+      }
+      
+      const separator = document.createElement('div');
+      separator.className = 'my-3 border-t border-gray-600';
+      container.appendChild(separator);
+    }
+    
     // Display quick commands
     if (config.quickCommands && config.quickCommands.length > 0) {
+      const cmdHeader = document.createElement('div');
+      cmdHeader.className = 'font-semibold text-sm text-gray-400 mb-2';
+      cmdHeader.textContent = 'Quick Command Buttons';
+      container.appendChild(cmdHeader);
+      
       config.quickCommands.forEach((button, index) => {
         const buttonEl = createButtonListItem(button, index);
         container.appendChild(buttonEl);
@@ -249,6 +276,25 @@ export async function loadButtonConfig() {
     console.error('Error loading button config:', error);
     showToast('Failed to load button configuration');
   }
+}
+
+// Create an AI button list item for the settings UI
+function createAIButtonListItem(button, type, description) {
+  const div = document.createElement('div');
+  div.className = 'flex items-center gap-2 p-2 bg-gray-800 rounded';
+  
+  div.innerHTML = `
+    <div class="flex-1">
+      <div class="font-semibold text-sm">${description}</div>
+      <div class="text-xs text-gray-400">${button.label} | Mobile: ${button.mobileLabel || button.label}</div>
+    </div>
+    <button onclick="window.settings.editAIButton('${type}')" 
+            class="px-2 py-1 bg-blue-600 hover:bg-blue-700 rounded text-xs">
+      Edit
+    </button>
+  `;
+  
+  return div;
 }
 
 // Create a button list item for the settings UI
@@ -272,6 +318,23 @@ function createButtonListItem(button, index) {
   `;
   
   return div;
+}
+
+// Open AI button editor
+export function editAIButton(type) {
+  if (!currentButtonConfig || !currentButtonConfig.ai || !currentButtonConfig.ai[type]) return;
+  
+  const button = currentButtonConfig.ai[type];
+  document.getElementById('button-editor-index').value = `ai.${type}`;
+  document.getElementById('button-editor-label').value = button.label || '';
+  document.getElementById('button-editor-command').value = type === 'start' ? 'AI Start (uses LLM_CONFIG)' : 'AI Exit (uses LLM_CONFIG)';
+  document.getElementById('button-editor-command').disabled = true;
+  document.getElementById('button-editor-mobile-label').value = button.mobileLabel || '';
+  document.getElementById('button-editor-style').value = button.className || 'bg-gray-600';
+  document.getElementById('button-editor-tooltip').value = button.title || '';
+  document.getElementById('button-editor-title').textContent = `Edit AI ${type.charAt(0).toUpperCase() + type.slice(1)} Button`;
+  
+  document.getElementById('button-editor-modal').classList.remove('hidden');
 }
 
 // Open button editor
@@ -314,21 +377,49 @@ export async function saveButtonEditor() {
     title: document.getElementById('button-editor-tooltip').value || undefined
   };
   
-  if (!button.label || !button.command) {
-    showToast('Label and command are required');
-    return;
-  }
-  
-  if (!currentButtonConfig) {
-    currentButtonConfig = { quickCommands: [] };
-  }
-  
-  if (index === '') {
-    // Add new button
-    currentButtonConfig.quickCommands.push(button);
+  // Check if this is an AI button
+  if (index.startsWith('ai.')) {
+    const aiType = index.split('.')[1];
+    if (!button.label) {
+      showToast('Label is required');
+      return;
+    }
+    
+    if (!currentButtonConfig) {
+      currentButtonConfig = { ai: {} };
+    }
+    if (!currentButtonConfig.ai) {
+      currentButtonConfig.ai = {};
+    }
+    
+    // For AI buttons, we don't save the command since it comes from LLM_CONFIG
+    currentButtonConfig.ai[aiType] = {
+      label: button.label,
+      mobileLabel: button.mobileLabel,
+      className: button.className,
+      title: button.title
+    };
+    
+    // Re-enable command field
+    document.getElementById('button-editor-command').disabled = false;
   } else {
-    // Update existing button
-    currentButtonConfig.quickCommands[parseInt(index)] = button;
+    // Regular quick command button
+    if (!button.label || !button.command) {
+      showToast('Label and command are required');
+      return;
+    }
+    
+    if (!currentButtonConfig) {
+      currentButtonConfig = { quickCommands: [] };
+    }
+    
+    if (index === '') {
+      // Add new button
+      currentButtonConfig.quickCommands.push(button);
+    } else {
+      // Update existing button
+      currentButtonConfig.quickCommands[parseInt(index)] = button;
+    }
   }
   
   await saveButtonConfig();
@@ -380,6 +471,8 @@ async function saveButtonConfig() {
 // Close button editor
 export function closeButtonEditor() {
   document.getElementById('button-editor-modal').classList.add('hidden');
+  // Re-enable command field in case it was disabled for AI buttons
+  document.getElementById('button-editor-command').disabled = false;
 }
 
 // Reload button configuration
@@ -406,6 +499,7 @@ export const settings = {
   // Button configuration functions
   loadButtonConfig,
   editButton,
+  editAIButton,
   addNewButton,
   saveButtonEditor,
   removeButton,
