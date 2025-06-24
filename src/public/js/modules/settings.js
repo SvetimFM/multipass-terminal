@@ -18,6 +18,9 @@ export function initializeSettings() {
   if (fontSlider) fontSlider.value = settings.fontSize;
   if (scrollbackSlider) scrollbackSlider.value = settings.scrollback;
   if (scrollbackInput) scrollbackInput.value = settings.scrollback;
+  
+  // Load button configuration
+  loadButtonConfig();
 }
 
 // Open settings modal
@@ -385,26 +388,6 @@ export async function reloadButtonConfig() {
   showToast('Button configuration reloaded');
 }
 
-// Initialize settings UI (update existing function)
-export function initializeSettings() {
-  const settings = terminalSettings.getTerminalSettings();
-  
-  // Update displays
-  updateFontSizeDisplay(settings.fontSize);
-  updateScrollbackDisplay(settings.scrollback);
-  
-  // Update sliders
-  const fontSlider = document.getElementById('font-size-slider');
-  const scrollbackSlider = document.getElementById('scrollback-slider');
-  const scrollbackInput = document.getElementById('scrollback-input');
-  
-  if (fontSlider) fontSlider.value = settings.fontSize;
-  if (scrollbackSlider) scrollbackSlider.value = settings.scrollback;
-  if (scrollbackInput) scrollbackInput.value = settings.scrollback;
-  
-  // Load button configuration
-  loadButtonConfig();
-}
 
 // Export for window object
 export const settings = {

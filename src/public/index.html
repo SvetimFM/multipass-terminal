@@ -47,8 +47,25 @@
 
     <!-- Projects View -->
     <div id="projects-view" class="p-4">
+      <!-- Welcome/Instructions Blurb -->
+      <div class="bg-gray-800 rounded-lg p-4 mb-4 border border-gray-700">
+        <h2 class="text-lg font-semibold mb-2 text-blue-400">Welcome to Multipass Terminal</h2>
+        <p class="text-sm text-gray-300 mb-2">
+          A flexible terminal interface for AI-assisted development. Get started:
+        </p>
+        <ol class="text-sm text-gray-300 space-y-1 list-decimal list-inside">
+          <li>Click "Add Project Folder" to add your project</li>
+          <li>Create an "AI Office" for isolated AI experimentation</li>
+          <li>Launch terminals with your configured AI assistant</li>
+          <li>Use the settings (⚙️) to customize buttons and commands</li>
+        </ol>
+        <p class="text-xs text-gray-400 mt-3">
+          💡 Tip: Edit <code class="bg-gray-700 px-1 rounded">src/utils/constants.js</code> to configure your AI assistant
+        </p>
+      </div>
+      
       <div class="mb-4">
-        <button onclick="window.fileBrowser.openFileBrowser()" 
+        <button onclick="window.fileBrowser?.openFileBrowser ? window.fileBrowser.openFileBrowser() : alert('Loading... Please try again in a moment')" 
                 class="w-full bg-green-600 py-3 md:py-3 rounded font-semibold mb-3 priority-button hover:bg-green-700 transition-colors">
           📁 Add Project Folder
         </button>
