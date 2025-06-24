@@ -18,7 +18,7 @@ module.exports = {
     exit: {
       label: 'Exit AI',             // Display text on button
       mobileLabel: '🛑 Exit',       // Display text on mobile button
-      exitSequence: null,           // null = uses the exitSequence from LLM_CONFIG
+      exitSequence: '\x03\x03',     // Default: Ctrl+C twice
       className: 'bg-red-600',      // CSS classes for styling
       title: 'Exit AI Assistant'    // Tooltip text
     }
