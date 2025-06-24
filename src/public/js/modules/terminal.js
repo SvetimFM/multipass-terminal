@@ -53,6 +53,11 @@ export function copyLLMCommand() {
   copyToClipboard(command, 'Command copied!');
 }
 
+// Send Shift+Tab once
+export function sendShiftTab() {
+  sendToTerminal('\x1b[Z');
+}
+
 export function toggleAutoAccept() {
   state.autoAcceptMode = !state.autoAcceptMode;
   const btn = document.getElementById('auto-accept-btn');
@@ -584,9 +589,9 @@ export function generateAIOfficeButtons() {
     }
   }
   
-  // Auto-accept button (Pulse Shift+Tab)
-  html += `<button id="grid-auto-accept-btn" onclick="window.terminal.toggleGridAutoAccept()" class="context-button" title="Pulse shift+tab cmd">
-    <span id="grid-auto-accept-icon">⏸️</span> Pulse Shift+Tab: <span id="grid-auto-accept-status">OFF</span>
+  // Pulse Shift+Tab button for grid
+  html += `<button onclick="window.terminal.broadcastToAllTerminals('\\x1b[Z')" class="context-button" title="Pulse shift+tab cmd">
+    ⏸️ Pulse Shift+Tab (All)
   </button>`;
   
   html += '<div class="w-px h-6 bg-gray-600 mx-1"></div>';
@@ -639,10 +644,10 @@ function generateDesktopButtons(config) {
     }
   }
   
-  // Auto-accept button (Pulse Shift+Tab)
+  // Pulse Shift+Tab button
   if (config.utilityButtons?.autoAccept) {
-    html += `<button id="auto-accept-btn" onclick="window.terminal.toggleAutoAccept()" class="px-3 py-1 ${config.utilityButtons.autoAccept.className} rounded text-sm" title="${config.utilityButtons.autoAccept.title}">
-      Pulse ${config.utilityButtons.autoAccept.label}: <span id="auto-accept-status">OFF</span>
+    html += `<button onclick="window.terminal.sendShiftTab()" class="px-3 py-1 ${config.utilityButtons.autoAccept.className} rounded text-sm" title="${config.utilityButtons.autoAccept.title}">
+      Pulse ${config.utilityButtons.autoAccept.label}
     </button>`;
   }
   

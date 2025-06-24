@@ -489,18 +489,26 @@ async function saveButtonConfig() {
       showToast('Button configuration saved');
       loadButtonConfig();
       
-      // Notify terminal module to regenerate buttons
-      if (window.terminal && window.terminal.generateQuickCommandButtons) {
+      // Reload button config from server to ensure we have the latest
+      const configResponse = await fetch('/api/button-config');
+      if (configResponse.ok) {
+        const latestConfig = await configResponse.json();
+        currentButtonConfig = latestConfig;
+        
         // Update state with new config
         if (window.state) {
-          window.state.buttonConfig = currentButtonConfig;
+          window.state.buttonConfig = latestConfig;
         }
-        window.terminal.generateQuickCommandButtons();
-      }
-      
-      // Check if AI is now properly configured and hide setup prompt
-      if (window.checkAISetup) {
-        window.checkAISetup();
+        
+        // Notify terminal module to regenerate buttons
+        if (window.terminal && window.terminal.generateQuickCommandButtons) {
+          window.terminal.generateQuickCommandButtons();
+        }
+        
+        // Check if AI is now properly configured and hide setup prompt
+        if (window.checkAISetup) {
+          window.checkAISetup();
+        }
       }
     } else {
       showToast('Failed to save configuration');
