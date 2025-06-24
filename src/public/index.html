@@ -159,8 +159,8 @@
         <div class="w-px bg-gray-600 mx-1"></div>
         <button onclick="window.terminal.sendLLMCommand()" class="px-3 py-1 bg-blue-600 rounded text-sm font-semibold" id="llm-button">claude</button>
         <button onclick="window.terminal.exitLLM()" class="px-3 py-1 bg-red-600 rounded text-sm font-semibold" title="Exit LLM (Ctrl+C twice)" id="exit-llm-button">Exit Claude</button>
-        <button id="auto-accept-btn" onclick="window.terminal.toggleAutoAccept()" class="px-3 py-1 bg-gray-600 rounded text-sm">
-          Auto-Accept: <span id="auto-accept-status">OFF</span>
+        <button id="auto-accept-btn" onclick="window.terminal.toggleAutoAccept()" class="px-3 py-1 bg-gray-600 rounded text-sm" title="Pulse shift+tab cmd">
+          Pulse Shift+Tab: <span id="auto-accept-status">OFF</span>
         </button>
         <button onclick="window.terminal.sendToTerminal('\x1b[Z')" class="px-3 py-1 bg-purple-600 rounded text-sm" title="Send Shift+Tab">⇧ Tab</button>
         <button onclick="window.terminal.sendToTerminal('ls -la\n')" class="px-3 py-1 bg-gray-600 rounded text-sm">ls -la</button>
@@ -212,8 +212,8 @@
             <button onclick="window.terminal.sendToTerminal('git log --oneline -10\n')" oncontextmenu="window.utils.copyToClipboard('git log --oneline -10', 'Command copied!'); return false;" class="bg-gray-600 rounded haptic-feedback">📜 Git Log</button>
             <button onclick="window.terminal.sendToTerminal('npm run\n')" oncontextmenu="window.utils.copyToClipboard('npm run', 'Command copied!'); return false;" class="bg-gray-600 rounded haptic-feedback">📦 NPM Scripts</button>
             <button onclick="window.terminal.sendToTerminal('clear\n')" oncontextmenu="window.utils.copyToClipboard('clear', 'Command copied!'); return false;" class="bg-gray-600 rounded haptic-feedback">🧹 Clear</button>
-            <button id="auto-accept-btn-mobile" onclick="window.terminal.toggleAutoAccept()" class="bg-gray-600 rounded haptic-feedback col-span-2">
-              Auto-Accept: <span id="auto-accept-status-mobile">OFF</span>
+            <button id="auto-accept-btn-mobile" onclick="window.terminal.toggleAutoAccept()" class="bg-gray-600 rounded haptic-feedback col-span-2" title="Pulse shift+tab cmd">
+              Pulse Shift+Tab: <span id="auto-accept-status-mobile">OFF</span>
             </button>
           </div>
         </div>
@@ -588,8 +588,8 @@
             <button onclick="window.terminal.broadcastToAllTerminals('clear\n')" class="swipe-item secondary-button bg-gray-600 rounded">Clear All</button>
             <button onclick="window.aiOffice.addCubicle(window.state.currentAIOfficeProject.id)" class="swipe-item secondary-button bg-green-600 rounded">+ Cubicle</button>
             <button onclick="window.aiOffice.addTerminal()" class="swipe-item secondary-button bg-blue-500 rounded">+ Terminal</button>
-            <button id="grid-auto-accept-btn-mobile" onclick="window.terminal.toggleGridAutoAccept()" class="swipe-item secondary-button bg-gray-600 rounded">
-              Accept: <span id="grid-auto-accept-status-mobile">OFF</span>
+            <button id="grid-auto-accept-btn-mobile" onclick="window.terminal.toggleGridAutoAccept()" class="swipe-item secondary-button bg-gray-600 rounded" title="Pulse shift+tab cmd">
+              Pulse Shift+Tab: <span id="grid-auto-accept-status-mobile">OFF</span>
             </button>
           </div>
         </div>

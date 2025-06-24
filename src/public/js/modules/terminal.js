@@ -584,9 +584,9 @@ export function generateAIOfficeButtons() {
     }
   }
   
-  // Auto-accept button
-  html += `<button id="grid-auto-accept-btn" onclick="window.terminal.toggleGridAutoAccept()" class="context-button">
-    <span id="grid-auto-accept-icon">⏸️</span> Auto Accept: <span id="grid-auto-accept-status">OFF</span>
+  // Auto-accept button (Pulse Shift+Tab)
+  html += `<button id="grid-auto-accept-btn" onclick="window.terminal.toggleGridAutoAccept()" class="context-button" title="Pulse shift+tab cmd">
+    <span id="grid-auto-accept-icon">⏸️</span> Pulse Shift+Tab: <span id="grid-auto-accept-status">OFF</span>
   </button>`;
   
   html += '<div class="w-px h-6 bg-gray-600 mx-1"></div>';
@@ -639,10 +639,10 @@ function generateDesktopButtons(config) {
     }
   }
   
-  // Auto-accept button
+  // Auto-accept button (Pulse Shift+Tab)
   if (config.utilityButtons?.autoAccept) {
-    html += `<button id="auto-accept-btn" onclick="window.terminal.toggleAutoAccept()" class="px-3 py-1 ${config.utilityButtons.autoAccept.className} rounded text-sm">
-      ${config.utilityButtons.autoAccept.label}: <span id="auto-accept-status">OFF</span>
+    html += `<button id="auto-accept-btn" onclick="window.terminal.toggleAutoAccept()" class="px-3 py-1 ${config.utilityButtons.autoAccept.className} rounded text-sm" title="${config.utilityButtons.autoAccept.title}">
+      Pulse ${config.utilityButtons.autoAccept.label}: <span id="auto-accept-status">OFF</span>
     </button>`;
   }
   
