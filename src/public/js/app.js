@@ -241,10 +241,11 @@ function updateLLMButtons() {
 function checkAISetup() {
   const llmName = state.llmConfig?.name || '';
   const llmCommand = state.llmConfig?.command || '';
-  const buttonCommand = state.buttonConfig?.ai?.start?.command || '';
+  const buttonCommand = state.buttonConfig?.ai?.start?.command;
   
   // Check if AI is configured either in LLM_CONFIG or button config
-  const isConfigured = (llmName !== 'Your AI Assistant' && llmCommand !== 'your-ai-command') || buttonCommand;
+  // Button command being not null/undefined means user has set a custom command
+  const isConfigured = buttonCommand || (llmName !== 'Your AI Assistant' && llmCommand !== 'your-ai-command');
   
   const setupPrompt = document.getElementById('ai-setup-prompt');
   if (setupPrompt) {
