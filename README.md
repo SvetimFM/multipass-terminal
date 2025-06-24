@@ -2,13 +2,22 @@
 
 # Multipass - Terminal UI for AI
 
-⚠️ **SECURITY WARNING**: This application has **NO AUTHENTICATION** and provides **FULL TERMINAL ACCESS** to your system. Only run this locally or behind a secure VPN/Tailscale connection. **NEVER** expose this to the public internet.
-
 A flexible terminal-based interface for working with any command-line AI assistant (Claude, OpenAI CLI, or custom LLMs). Multipass provides isolated workspaces called "AI Offices" with multiple "cubicles" for experimenting with AI-assisted development.
 
 ## The AI Office Concept
 
-Multipass introduces the "AI Office" model - a workspace isolation pattern where each project gets its own AI Office containing multiple "cubicles" (isolated Git copies). This allows AI assistants to experiment freely without affecting your main codebase, similar to how developers work in feature branches but with complete filesystem isolation. Each cubicle can be assigned different AI roles (frontend specialist, backend engineer, QA tester) working simultaneously on the same project, with changes synced back to the parent only when you're ready. The result is a safe playground for AI-driven development where mistakes are contained, experiments are encouraged, and multiple AI perspectives can collaborate without conflicts.
+Multipass is based on an "AI Office" model - a workspace isolation pattern where each project gets its own AI Office containing multiple "cubicles" (isolated Git copies). This allows AI assistants to experiment freely without affecting your main codebase, similar to how developers work in feature branches but with complete filesystem isolation. Each cubicle can be assigned different AI roles (frontend specialist, backend engineer, QA tester) working simultaneously on the same project, with changes synced back to the parent only when you're ready. The result is a safe playground for AI-driven development where mistakes are contained, experiments are encouraged, and multiple AI perspectives can collaborate without conflicts.
+
+## Notes (Please Read!)
+### On Functionality
+- Works best with projects that have a github repository to clone (additional support may be implemented if requested)
+- Make sure tmux is installed
+- No Windows support (use WSL)
+- ⚠️ **SECURITY WARNING**: This application has **NO AUTHENTICATION** and provides **FULL TERMINAL ACCESS** to your system. Only run this locally or behind a secure VPN/Tailscale connection. **NEVER** expose this to the public internet.
+
+### On Roles
+- After selecting a role in a cubicle, request the model read .AI_README file in the parent directory - its not always picked up
+- Unless .AI_README has been consumed, the model may attempt to escape cubicle - do monitor execution <3
 
 ## Features
 
@@ -21,6 +30,69 @@ Multipass introduces the "AI Office" model - a workspace isolation pattern where
 - **Session Persistence**: Terminal sessions persist across connections
 - **Quick Commands**: Customizable buttons for common commands
 - **Multi-Terminal View**: Work with multiple AI sessions simultaneously
+
+## Installation
+
+1. Clone the repository:
+   ```bash
+   git clone https://github.com/SvetimFM/multipass-ai-terminal.git
+   cd multipass-ai-terminal
+   ```
+
+2. Install dependencies:
+   ```bash
+   npm install
+   ```
+
+3. Copy the environment example and configure:
+   ```bash
+   cp env.example .env
+   ```
+
+4. Edit `.env` to set your preferences:
+   ```bash
+   PORT=3000                    # Server port
+   HOST=127.0.0.1              # Use 127.0.0.1 for local only
+   SHELL=/bin/bash             # Your preferred shell
+   DEFAULT_WORKSPACE=$HOME/projects  # Where to store projects
+   ```
+
+5. Start the server:
+   ```bash
+   npm start     # Production mode
+   # or
+   npm run dev   # Development mode with hot reload
+   ```
+
+6. Open http://localhost:3000 in your browser
+
+
+---
+
+## Prerequisites
+
+- Node.js (v16 or higher)
+- npm or yarn
+- tmux (required for session persistence)
+- git (required for AI Office functionality)
+- Unix-like operating system (Linux, macOS, WSL on Windows)
+
+## Usage
+
+### Projects
+- Click "Add Project Folder" to add a new project
+- Each project can have its own AI Office with multiple cubicles
+
+### AI Office
+- Create isolated workspaces for AI experimentation
+- Each cubicle is an independent copy of your project
+- Changes in cubicles don't affect the main project
+- Sync cubicles with parent project when needed
+
+### Sessions
+- Create new terminal sessions for any project
+- Sessions persist even if you close the browser
+- Access sessions from multiple devices
 
 ## Configuration
 ![image](https://github.com/user-attachments/assets/e67fcd23-934a-46c0-b8f8-f45e5d1546eb)
@@ -117,65 +189,7 @@ module.exports = {
 - **title**: Tooltip text shown on hover
 - **mobileLabel**: Alternative text for mobile view (optional)
 
-## Prerequisites
-
-- Node.js (v16 or higher)
-- npm or yarn
-- tmux (required for session persistence)
-- git (required for AI Office functionality)
-- Unix-like operating system (Linux, macOS, WSL on Windows)
-
-## Installation
-
-1. Clone the repository:
-   ```bash
-   git clone https://github.com/SvetimFM/multipass-ai-terminal.git
-   cd multipass-ai-terminal
-   ```
-
-2. Install dependencies:
-   ```bash
-   npm install
-   ```
-
-3. Copy the environment example and configure:
-   ```bash
-   cp env.example .env
-   ```
-
-4. Edit `.env` to set your preferences:
-   ```bash
-   PORT=3000                    # Server port
-   HOST=127.0.0.1              # Use 127.0.0.1 for local only
-   SHELL=/bin/bash             # Your preferred shell
-   DEFAULT_WORKSPACE=$HOME/projects  # Where to store projects
-   ```
-
-5. Start the server:
-   ```bash
-   npm start     # Production mode
-   # or
-   npm run dev   # Development mode with hot reload
-   ```
-
-6. Open http://localhost:3000 in your browser
-
-## Usage
-
-### Projects
-- Click "Add Project Folder" to add a new project
-- Each project can have its own AI Office with multiple cubicles
-
-### AI Office
-- Create isolated workspaces for AI experimentation
-- Each cubicle is an independent copy of your project
-- Changes in cubicles don't affect the main project
-- Sync cubicles with parent project when needed
-
-### Sessions
-- Create new terminal sessions for any project
-- Sessions persist even if you close the browser
-- Access sessions from multiple devices
+---
 
 ## Environment Variables
 
@@ -263,21 +277,11 @@ PORT=3000
 
 We welcome contributions! Please see our [Contributing Guidelines](CONTRIBUTING.md) for details.
 
-### Development Setup
-
-1. Fork the repository
-2. Clone your fork
-3. Install dependencies: `npm install`
-4. Create a feature branch: `git checkout -b feature/your-feature`
-5. Make your changes
-6. Run in dev mode: `npm run dev`
-7. Submit a pull request
-
 ## Acknowledgments
 
 - Built with [xterm.js](https://github.com/xtermjs/xterm.js) for terminal emulation
 - Uses [node-pty](https://github.com/microsoft/node-pty) for pseudo-terminal support
-- Inspired by the need for better AI-assisted development workflows
+- Inspired by the need for better AI-assisted development workflows and inhuman office design
 
 ## License
 
