@@ -54,7 +54,7 @@ async function saveProjects() {
 // Load sessions metadata from file
 async function loadSessions() {
   try {
-    const data = await fs.readFile('.claude-sessions.json', 'utf8');
+    const data = await fs.readFile('multipass-sessions.json', 'utf8');
     const saved = JSON.parse(data);
     Object.entries(saved).forEach(([name, metadata]) => sessions.set(name, metadata));
   } catch (e) {
@@ -64,7 +64,7 @@ async function loadSessions() {
 
 async function saveSessions() {
   const data = Object.fromEntries(sessions);
-  await fs.writeFile('.claude-sessions.json', JSON.stringify(data, null, 2));
+  await fs.writeFile('multipass-sessions.json', JSON.stringify(data, null, 2));
 }
 
 // Initialize and start server

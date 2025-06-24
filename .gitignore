@@ -48,9 +48,8 @@ ai-office/
 .claude/
 
 # Local project files
-.claude-projects.json
-.multipass-projects.json
-.claude-sessions.json
+multipass-projects.json
+multipass-sessions.json
 
 # Environment files
 .env
@@ -58,7 +57,3 @@ ai-office/
 
 # VS Code history
 .history/
-
-# Session files
-multipass-sessions.json
-.claude-projects.json

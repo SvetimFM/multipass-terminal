@@ -228,7 +228,7 @@ PORT=3000
 
 4. **Sessions not persisting**
    - Verify tmux is installed and running
-   - Check that `.claude-sessions.json` is writable
+   - Check that `multipass-sessions.json` is writable
 
 ### Getting Help
 
