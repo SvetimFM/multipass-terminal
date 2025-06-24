@@ -325,10 +325,17 @@ export function editAIButton(type) {
   if (!currentButtonConfig || !currentButtonConfig.ai || !currentButtonConfig.ai[type]) return;
   
   const button = currentButtonConfig.ai[type];
+  const commandField = document.getElementById('button-editor-command');
+  
   document.getElementById('button-editor-index').value = `ai.${type}`;
   document.getElementById('button-editor-label').value = button.label || '';
-  document.getElementById('button-editor-command').value = type === 'start' ? 'AI Start (uses LLM_CONFIG)' : 'AI Exit (uses LLM_CONFIG)';
-  document.getElementById('button-editor-command').disabled = true;
+  
+  // For AI buttons, show placeholder and make read-only with visual indicator
+  commandField.value = '';
+  commandField.placeholder = type === 'start' ? 'AI Start command (configured in LLM_CONFIG)' : 'AI Exit command (configured in LLM_CONFIG)';
+  commandField.readOnly = true;
+  commandField.classList.add('bg-gray-900', 'cursor-not-allowed', 'opacity-75');
+  
   document.getElementById('button-editor-mobile-label').value = button.mobileLabel || '';
   document.getElementById('button-editor-style').value = button.className || 'bg-gray-600';
   document.getElementById('button-editor-tooltip').value = button.title || '';
@@ -342,9 +349,23 @@ export function editButton(index) {
   if (!currentButtonConfig || !currentButtonConfig.quickCommands[index]) return;
   
   const button = currentButtonConfig.quickCommands[index];
+  const commandField = document.getElementById('button-editor-command');
+  
   document.getElementById('button-editor-index').value = index;
   document.getElementById('button-editor-label').value = button.label || '';
-  document.getElementById('button-editor-command').value = button.command || '';
+  
+  // Reset command field to editable state with highlight effect
+  commandField.value = button.command || '';
+  commandField.placeholder = 'Enter command (e.g., git status\\n)';
+  commandField.readOnly = false;
+  commandField.classList.remove('bg-gray-900', 'cursor-not-allowed', 'opacity-75');
+  commandField.classList.add('transition-all', 'ring-2', 'ring-blue-500', 'ring-opacity-50');
+  
+  // Remove highlight after a moment
+  setTimeout(() => {
+    commandField.classList.remove('ring-2', 'ring-blue-500', 'ring-opacity-50');
+  }, 1500);
+  
   document.getElementById('button-editor-mobile-label').value = button.mobileLabel || '';
   document.getElementById('button-editor-style').value = button.className || 'bg-gray-600';
   document.getElementById('button-editor-tooltip').value = button.title || '';
@@ -355,9 +376,17 @@ export function editButton(index) {
 
 // Add new button
 export function addNewButton() {
+  const commandField = document.getElementById('button-editor-command');
+  
   document.getElementById('button-editor-index').value = '';
   document.getElementById('button-editor-label').value = '';
-  document.getElementById('button-editor-command').value = '';
+  
+  // Reset command field to editable state
+  commandField.value = '';
+  commandField.placeholder = 'Enter command (e.g., git status\\n)';
+  commandField.readOnly = false;
+  commandField.classList.remove('bg-gray-900', 'cursor-not-allowed', 'opacity-75');
+  
   document.getElementById('button-editor-mobile-label').value = '';
   document.getElementById('button-editor-style').value = 'bg-gray-600';
   document.getElementById('button-editor-tooltip').value = '';
@@ -399,9 +428,6 @@ export async function saveButtonEditor() {
       className: button.className,
       title: button.title
     };
-    
-    // Re-enable command field
-    document.getElementById('button-editor-command').disabled = false;
   } else {
     // Regular quick command button
     if (!button.label || !button.command) {
@@ -471,8 +497,12 @@ async function saveButtonConfig() {
 // Close button editor
 export function closeButtonEditor() {
   document.getElementById('button-editor-modal').classList.add('hidden');
-  // Re-enable command field in case it was disabled for AI buttons
-  document.getElementById('button-editor-command').disabled = false;
+  
+  // Reset command field state
+  const commandField = document.getElementById('button-editor-command');
+  commandField.readOnly = false;
+  commandField.placeholder = '';
+  commandField.classList.remove('bg-gray-900', 'cursor-not-allowed', 'opacity-75', 'transition-all', 'ring-2', 'ring-blue-500', 'ring-opacity-50');
 }
 
 // Reload button configuration
