@@ -1,4 +1,4 @@
-
+![image](https://github.com/user-attachments/assets/07675a38-1e9a-4421-90eb-90126f1969af)
 
 # Multipass - Terminal UI for AI
 
