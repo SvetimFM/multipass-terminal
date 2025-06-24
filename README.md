@@ -6,6 +6,10 @@
 
 A flexible terminal-based interface for working with any command-line AI assistant (Claude, OpenAI CLI, or custom LLMs). Multipass provides isolated workspaces called "AI Offices" with multiple "cubicles" for experimenting with AI-assisted development.
 
+## The AI Office Concept
+
+Multipass introduces the "AI Office" model - a workspace isolation pattern where each project gets its own AI Office containing multiple "cubicles" (isolated Git copies). This allows AI assistants to experiment freely without affecting your main codebase, similar to how developers work in feature branches but with complete filesystem isolation. Each cubicle can be assigned different AI roles (frontend specialist, backend engineer, QA tester) working simultaneously on the same project, with changes synced back to the parent only when you're ready. The result is a safe playground for AI-driven development where mistakes are contained, experiments are encouraged, and multiple AI perspectives can collaborate without conflicts.
+
 ## Features
 
 ****
@@ -277,4 +281,4 @@ We welcome contributions! Please see our [Contributing Guidelines](CONTRIBUTING.
 
 ## License
 
-MIT - See [LICENSE](LICENSE) file for details
+GPL v2.0 - See [LICENSE](LICENSE) file for details
