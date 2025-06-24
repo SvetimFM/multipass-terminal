@@ -595,7 +595,13 @@ export function generateAIOfficeButtons() {
   if (buttonConfig.quickCommands && buttonConfig.quickCommands.length > 0) {
     buttonConfig.quickCommands.forEach(cmd => {
       // Properly escape the command for HTML attribute
-      const escapedCommand = cmd.command.replace(/\\/g, '\\\\').replace(/'/g, "\\'").replace(/"/g, '&quot;');
+      const escapedCommand = cmd.command
+        .replace(/\\/g, '\\\\')
+        .replace(/\n/g, '\\n')
+        .replace(/\r/g, '\\r')
+        .replace(/\t/g, '\\t')
+        .replace(/'/g, "\\'")
+        .replace(/"/g, '&quot;');
       html += `<button onclick="window.terminal.broadcastToAllTerminals('${escapedCommand}')" 
                       class="context-button ${cmd.className}" 
                       title="${cmd.title || ''} (Broadcast to all)">
@@ -642,7 +648,13 @@ function generateDesktopButtons(config) {
   
   // Shift+Tab button
   if (config.utilityButtons?.shiftTab) {
-    const escapedCommand = config.utilityButtons.shiftTab.command.replace(/\\/g, '\\\\').replace(/'/g, "\\'").replace(/"/g, '&quot;');
+    const escapedCommand = config.utilityButtons.shiftTab.command
+      .replace(/\\/g, '\\\\')
+      .replace(/\n/g, '\\n')
+      .replace(/\r/g, '\\r')
+      .replace(/\t/g, '\\t')
+      .replace(/'/g, "\\'")
+      .replace(/"/g, '&quot;');
     html += `<button onclick="window.terminal.sendToTerminal('${escapedCommand}')" class="px-3 py-1 ${config.utilityButtons.shiftTab.className} rounded text-sm" title="${config.utilityButtons.shiftTab.title}">${config.utilityButtons.shiftTab.label}</button>`;
   }
   
@@ -650,7 +662,13 @@ function generateDesktopButtons(config) {
   if (config.quickCommands && config.quickCommands.length > 0) {
     config.quickCommands.forEach(cmd => {
       // Properly escape the command for HTML attribute
-      const escapedCommand = cmd.command.replace(/\\/g, '\\\\').replace(/'/g, "\\'").replace(/"/g, '&quot;');
+      const escapedCommand = cmd.command
+        .replace(/\\/g, '\\\\')
+        .replace(/\n/g, '\\n')
+        .replace(/\r/g, '\\r')
+        .replace(/\t/g, '\\t')
+        .replace(/'/g, "\\'")
+        .replace(/"/g, '&quot;');
       html += `<button onclick="window.terminal.sendToTerminal('${escapedCommand}')" class="px-3 py-1 ${cmd.className} rounded text-sm" title="${cmd.title || ''}">${cmd.label}</button>`;
     });
   }
