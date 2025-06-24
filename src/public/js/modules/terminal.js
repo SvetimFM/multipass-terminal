@@ -26,19 +26,30 @@ export function exitClaude() {
 }
 
 export function exitLLM() {
-  // Send Ctrl+C twice quickly to exit LLM
+  // Check button config first, then fall back to LLM config
+  const exitSequence = state.buttonConfig?.ai?.exit?.exitSequence || state.llmConfig?.exitSequence || '\x03\x03';
   const delay = state.llmConfig?.exitDelay || 50;
-  sendToTerminal('\x03');
-  setTimeout(() => sendToTerminal('\x03'), delay);
+  
+  // Handle multi-character sequences like '\x03\x03'
+  if (exitSequence.length > 1 && exitSequence[0] === exitSequence[1]) {
+    // Same character repeated - send with delay
+    sendToTerminal(exitSequence[0]);
+    setTimeout(() => sendToTerminal(exitSequence[0]), delay);
+  } else {
+    // Single sequence or different characters
+    sendToTerminal(exitSequence);
+  }
 }
 
 export function sendLLMCommand() {
-  const command = state.llmConfig?.command || 'claude';
+  // Check button config first, then fall back to LLM config
+  const command = state.buttonConfig?.ai?.start?.command || state.llmConfig?.command || 'claude';
   sendToTerminal(command + '\n');
 }
 
 export function copyLLMCommand() {
-  const command = state.llmConfig?.command || 'claude';
+  // Check button config first, then fall back to LLM config
+  const command = state.buttonConfig?.ai?.start?.command || state.llmConfig?.command || 'claude';
   copyToClipboard(command, 'Command copied!');
 }
 
@@ -467,14 +478,24 @@ export function exitClaudeAll() {
 }
 
 export function exitLLMAll() {
-  // Send Ctrl+C twice quickly to all terminals
+  // Check button config first, then fall back to LLM config
+  const exitSequence = state.buttonConfig?.ai?.exit?.exitSequence || state.llmConfig?.exitSequence || '\x03\x03';
   const delay = state.llmConfig?.exitDelay || 50;
-  broadcastToAllTerminals('\x03');
-  setTimeout(() => broadcastToAllTerminals('\x03'), delay);
+  
+  // Handle multi-character sequences like '\x03\x03'
+  if (exitSequence.length > 1 && exitSequence[0] === exitSequence[1]) {
+    // Same character repeated - send with delay
+    broadcastToAllTerminals(exitSequence[0]);
+    setTimeout(() => broadcastToAllTerminals(exitSequence[0]), delay);
+  } else {
+    // Single sequence or different characters
+    broadcastToAllTerminals(exitSequence);
+  }
 }
 
 export function broadcastLLMCommand() {
-  const command = state.llmConfig?.command || 'claude';
+  // Check button config first, then fall back to LLM config
+  const command = state.buttonConfig?.ai?.start?.command || state.llmConfig?.command || 'claude';
   broadcastToAllTerminals(command + '\n');
 }
 

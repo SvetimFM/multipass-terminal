@@ -64,12 +64,14 @@ module.exports = {
     start: {
       label: 'AI Assistant',        // Button text
       mobileLabel: '🤖 AI',        // Mobile button text
+      command: 'claude',            // Command to launch AI (optional, defaults to LLM_CONFIG)
       className: 'bg-blue-600',     // Tailwind CSS classes
       title: 'Start AI Assistant'   // Tooltip
     },
     exit: {
       label: 'Exit AI',
       mobileLabel: '🛑 Exit',
+      exitSequence: '\\x03\\x03',    // Exit sequence (optional, defaults to LLM_CONFIG)
       className: 'bg-red-600',
       title: 'Exit AI Assistant'
     }
@@ -90,6 +92,15 @@ module.exports = {
 
 #### Button Configuration Options
 
+**For AI buttons:**
+- **label**: Text displayed on the button
+- **command** (start button): Override the AI command (optional, defaults to LLM_CONFIG)
+- **exitSequence** (exit button): Override the exit sequence (optional, defaults to LLM_CONFIG)
+- **className**: Tailwind CSS classes for styling
+- **title**: Tooltip text shown on hover
+- **mobileLabel**: Alternative text for mobile view (optional)
+
+**For Quick Command buttons:**
 - **label**: Text displayed on the button
 - **command**: The exact command sent to the terminal (include `\n` for Enter)
 - **className**: Tailwind CSS classes for styling

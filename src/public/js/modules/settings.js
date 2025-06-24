@@ -330,11 +330,16 @@ export function editAIButton(type) {
   document.getElementById('button-editor-index').value = `ai.${type}`;
   document.getElementById('button-editor-label').value = button.label || '';
   
-  // For AI buttons, show placeholder and make read-only with visual indicator
-  commandField.value = '';
-  commandField.placeholder = type === 'start' ? 'AI Start command (configured in LLM_CONFIG)' : 'AI Exit command (configured in LLM_CONFIG)';
-  commandField.readOnly = true;
-  commandField.classList.add('bg-gray-900', 'cursor-not-allowed', 'opacity-75');
+  // For AI buttons, show the command or exitSequence
+  if (type === 'start') {
+    commandField.value = button.command || '';
+    commandField.placeholder = 'Leave empty to use LLM_CONFIG command';
+  } else {
+    commandField.value = button.exitSequence || '';
+    commandField.placeholder = 'Leave empty to use LLM_CONFIG exitSequence (e.g., \\x03)';
+  }
+  commandField.readOnly = false;
+  commandField.classList.remove('bg-gray-900', 'cursor-not-allowed', 'opacity-75');
   
   document.getElementById('button-editor-mobile-label').value = button.mobileLabel || '';
   document.getElementById('button-editor-style').value = button.className || 'bg-gray-600';
@@ -421,13 +426,20 @@ export async function saveButtonEditor() {
       currentButtonConfig.ai = {};
     }
     
-    // For AI buttons, we don't save the command since it comes from LLM_CONFIG
+    // For AI buttons, save the appropriate field
     currentButtonConfig.ai[aiType] = {
       label: button.label,
       mobileLabel: button.mobileLabel,
       className: button.className,
       title: button.title
     };
+    
+    // Save command or exitSequence if provided
+    if (aiType === 'start' && button.command) {
+      currentButtonConfig.ai[aiType].command = button.command;
+    } else if (aiType === 'exit' && button.command) {
+      currentButtonConfig.ai[aiType].exitSequence = button.command;
+    }
   } else {
     // Regular quick command button
     if (!button.label || !button.command) {
