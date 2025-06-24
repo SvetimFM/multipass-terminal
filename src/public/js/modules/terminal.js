@@ -534,6 +534,54 @@ export function generateQuickCommandButtons() {
   if (mobileContainer) {
     mobileContainer.innerHTML = generateMobileButtons(buttonConfig);
   }
+  
+  // AI Office grid buttons
+  generateAIOfficeButtons();
+}
+
+// Generate buttons for AI Office grid view
+export function generateAIOfficeButtons() {
+  const buttonConfig = state.buttonConfig;
+  if (!buttonConfig) return;
+  
+  const container = document.getElementById('ai-office-quick-commands');
+  if (!container) return;
+  
+  let html = '';
+  
+  // AI buttons for broadcast
+  if (buttonConfig.ai) {
+    if (buttonConfig.ai.start) {
+      html += `<button onclick="window.terminal.broadcastLLMCommand()" class="context-button ${buttonConfig.ai.start.className} hover:bg-blue-700" id="launch-llm-all-button">
+        🤖 ${buttonConfig.ai.start.label} (All)
+      </button>`;
+    }
+    if (buttonConfig.ai.exit) {
+      html += `<button onclick="window.terminal.exitLLMAll()" class="context-button ${buttonConfig.ai.exit.className} hover:bg-red-700" id="exit-llm-all-button">
+        🛑 ${buttonConfig.ai.exit.label} (All)
+      </button>`;
+    }
+  }
+  
+  // Auto-accept button
+  html += `<button id="grid-auto-accept-btn" onclick="window.terminal.toggleGridAutoAccept()" class="context-button">
+    <span id="grid-auto-accept-icon">⏸️</span> Auto Accept: <span id="grid-auto-accept-status">OFF</span>
+  </button>`;
+  
+  html += '<div class="w-px h-6 bg-gray-600 mx-1"></div>';
+  
+  // Quick command buttons for broadcast
+  if (buttonConfig.quickCommands && buttonConfig.quickCommands.length > 0) {
+    buttonConfig.quickCommands.forEach(cmd => {
+      html += `<button onclick="window.terminal.broadcastToAllTerminals('${cmd.command.replace(/'/g, "\\'")}')" 
+                      class="context-button ${cmd.className}" 
+                      title="${cmd.title || ''} (Broadcast to all)">
+        📢 ${cmd.label}
+      </button>`;
+    });
+  }
+  
+  container.innerHTML = html;
 }
 
 function generateDesktopButtons(config) {

@@ -339,6 +339,26 @@
               </div>
             </div>
             
+            <!-- Button Configuration -->
+            <div class="bg-gray-700 p-4 rounded-lg">
+              <h4 class="font-semibold mb-3">Quick Command Buttons</h4>
+              <div class="space-y-3">
+                <div id="button-config-list" class="space-y-2 max-h-48 overflow-y-auto">
+                  <!-- Buttons will be loaded here -->
+                </div>
+                <div class="flex gap-2">
+                  <button onclick="window.settings.addNewButton()" 
+                          class="flex-1 px-3 py-2 bg-green-600 hover:bg-green-500 rounded text-sm">
+                    ➕ Add Button
+                  </button>
+                  <button onclick="window.settings.reloadButtonConfig()" 
+                          class="flex-1 px-3 py-2 bg-gray-600 hover:bg-gray-500 rounded text-sm">
+                    🔄 Reload
+                  </button>
+                </div>
+              </div>
+            </div>
+            
             <!-- Tmux Configuration -->
             <div class="bg-gray-700 p-4 rounded-lg">
               <h4 class="font-semibold mb-3">Tmux Configuration</h4>
@@ -393,19 +413,12 @@
           </div>
         </div>
         <!-- Quick Commands for All Terminals - Desktop -->
+        <div id="ai-office-quick-commands" class="mt-2 hidden md:flex gap-2 overflow-x-auto items-center">
+          <!-- Dynamic buttons will be inserted here -->
+        </div>
+        
+        <!-- Keep the existing dropdowns separate -->
         <div class="mt-2 hidden md:flex gap-2 overflow-x-auto items-center">
-          <!-- Quick Access AI Actions -->
-          <button onclick="window.terminal.broadcastLLMCommand()" class="context-button bg-blue-600 hover:bg-blue-700" id="launch-llm-all-button">
-            🤖 Launch Claude (All)
-          </button>
-          <button onclick="window.terminal.exitLLMAll()" class="context-button bg-red-600 hover:bg-red-700" id="exit-llm-all-button">
-            🛑 Exit Claude (All)
-          </button>
-          <button id="grid-auto-accept-btn" onclick="window.terminal.toggleGridAutoAccept()" class="context-button">
-            <span id="grid-auto-accept-icon">⏸️</span> Auto Accept: <span id="grid-auto-accept-status">OFF</span>
-          </button>
-          
-          <div class="w-px h-6 bg-gray-600 mx-1"></div>
           
           <!-- Commands Dropdown -->
           <div class="dropdown">
@@ -545,6 +558,72 @@
     </div>
   </div>
 
+
+  <!-- Button Editor Modal -->
+  <div id="button-editor-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-[120]">
+    <div class="bg-gray-800 w-full max-w-md mx-auto mt-20 rounded-lg shadow-xl">
+      <div class="p-4 border-b border-gray-700 flex justify-between items-center">
+        <h3 class="text-lg font-semibold" id="button-editor-title">Edit Button</h3>
+        <button onclick="window.settings.closeButtonEditor()" class="text-gray-400 hover:text-white">✕</button>
+      </div>
+      
+      <div class="p-4 space-y-4">
+        <input type="hidden" id="button-editor-index" value="">
+        
+        <div>
+          <label class="block text-sm mb-1">Button Label</label>
+          <input type="text" id="button-editor-label" 
+                 class="w-full bg-gray-700 p-2 rounded"
+                 placeholder="e.g., git status">
+        </div>
+        
+        <div>
+          <label class="block text-sm mb-1">Command to Send</label>
+          <input type="text" id="button-editor-command" 
+                 class="w-full bg-gray-700 p-2 rounded font-mono"
+                 placeholder="e.g., git status\n">
+          <div class="text-xs text-gray-400 mt-1">Use \n for Enter key</div>
+        </div>
+        
+        <div>
+          <label class="block text-sm mb-1">Mobile Label (optional)</label>
+          <input type="text" id="button-editor-mobile-label" 
+                 class="w-full bg-gray-700 p-2 rounded"
+                 placeholder="e.g., 📊 Status">
+        </div>
+        
+        <div>
+          <label class="block text-sm mb-1">Button Style</label>
+          <select id="button-editor-style" class="w-full bg-gray-700 p-2 rounded">
+            <option value="bg-gray-600">Gray (Default)</option>
+            <option value="bg-blue-600">Blue</option>
+            <option value="bg-green-600">Green</option>
+            <option value="bg-red-600">Red</option>
+            <option value="bg-purple-600">Purple</option>
+            <option value="bg-yellow-600">Yellow</option>
+          </select>
+        </div>
+        
+        <div>
+          <label class="block text-sm mb-1">Tooltip (optional)</label>
+          <input type="text" id="button-editor-tooltip" 
+                 class="w-full bg-gray-700 p-2 rounded"
+                 placeholder="e.g., Show git status">
+        </div>
+      </div>
+      
+      <div class="p-4 border-t border-gray-700 flex gap-2">
+        <button onclick="window.settings.saveButtonEditor()" 
+                class="flex-1 bg-blue-600 hover:bg-blue-700 py-2 rounded font-semibold">
+          Save
+        </button>
+        <button onclick="window.settings.closeButtonEditor()" 
+                class="flex-1 bg-gray-700 hover:bg-gray-600 py-2 rounded">
+          Cancel
+        </button>
+      </div>
+    </div>
+  </div>
 
   <!-- Loading Overlay -->
   <div id="loading-overlay" class="loading-overlay hidden">

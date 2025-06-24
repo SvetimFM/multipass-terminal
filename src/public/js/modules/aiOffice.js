@@ -281,6 +281,11 @@ export async function openAIOfficeGrid(projectId) {
   setState('currentAIOfficeProject', project);
   document.getElementById('ai-office-project-name').textContent = project.name;
   document.getElementById('ai-office-cubicle-count').textContent = project.aiOffice.cubicleCount;
+  
+  // Generate dynamic buttons for AI Office
+  if (window.terminal && window.terminal.generateAIOfficeButtons) {
+    window.terminal.generateAIOfficeButtons();
+  }
   document.getElementById('ai-office-grid').classList.remove('hidden');
   
   const container = document.getElementById('cubicle-terminals');
