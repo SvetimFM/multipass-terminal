@@ -104,6 +104,9 @@ export async function attachTerminal(sessionName) {
   // Set current session name
   document.getElementById('current-session').textContent = sessionName;
   
+  // Generate buttons from configuration
+  generateQuickCommandButtons();
+  
   // Close existing WebSocket if any
   if (state.currentWs) {
     state.currentWs.close();
@@ -513,4 +516,103 @@ function updateMobileGridAutoAcceptButton() {
       mobileBtn.classList.add('bg-gray-600');
     }
   }
+}
+
+// Generate quick command buttons dynamically from configuration
+export function generateQuickCommandButtons() {
+  const buttonConfig = state.buttonConfig;
+  if (!buttonConfig) return;
+  
+  // Desktop buttons container
+  const desktopContainer = document.querySelector('.bg-gray-700.p-2.flex.gap-2.overflow-x-auto.flex-shrink-0.hidden.md\\:flex');
+  if (desktopContainer) {
+    desktopContainer.innerHTML = generateDesktopButtons(buttonConfig);
+  }
+  
+  // Mobile buttons container
+  const mobileContainer = document.querySelector('.mobile-button-grid');
+  if (mobileContainer) {
+    mobileContainer.innerHTML = generateMobileButtons(buttonConfig);
+  }
+}
+
+function generateDesktopButtons(config) {
+  let html = '';
+  
+  // Utility buttons (Copy/Paste)
+  if (config.utilityButtons) {
+    if (config.utilityButtons.copy) {
+      html += `<button onclick="window.terminal.copyTerminalSelection()" class="px-3 py-1 ${config.utilityButtons.copy.className} rounded text-sm" title="${config.utilityButtons.copy.title}">${config.utilityButtons.copy.label}</button>`;
+    }
+    if (config.utilityButtons.paste) {
+      html += `<button onclick="window.terminal.pasteToTerminal()" class="px-3 py-1 ${config.utilityButtons.paste.className} rounded text-sm" title="${config.utilityButtons.paste.title}">${config.utilityButtons.paste.label}</button>`;
+    }
+  }
+  
+  // Separator
+  html += '<div class="w-px bg-gray-600 mx-1"></div>';
+  
+  // AI buttons
+  if (config.ai) {
+    if (config.ai.start) {
+      html += `<button onclick="window.terminal.sendLLMCommand()" class="px-3 py-1 ${config.ai.start.className} rounded text-sm font-semibold" id="llm-button" title="${config.ai.start.title}">${config.ai.start.label}</button>`;
+    }
+    if (config.ai.exit) {
+      html += `<button onclick="window.terminal.exitLLM()" class="px-3 py-1 ${config.ai.exit.className} rounded text-sm font-semibold" title="${config.ai.exit.title}" id="exit-llm-button">${config.ai.exit.label}</button>`;
+    }
+  }
+  
+  // Auto-accept button
+  if (config.utilityButtons?.autoAccept) {
+    html += `<button id="auto-accept-btn" onclick="window.terminal.toggleAutoAccept()" class="px-3 py-1 ${config.utilityButtons.autoAccept.className} rounded text-sm">
+      ${config.utilityButtons.autoAccept.label}: <span id="auto-accept-status">OFF</span>
+    </button>`;
+  }
+  
+  // Shift+Tab button
+  if (config.utilityButtons?.shiftTab) {
+    html += `<button onclick="window.terminal.sendToTerminal('${config.utilityButtons.shiftTab.command}')" class="px-3 py-1 ${config.utilityButtons.shiftTab.className} rounded text-sm" title="${config.utilityButtons.shiftTab.title}">${config.utilityButtons.shiftTab.label}</button>`;
+  }
+  
+  // Quick command buttons
+  if (config.quickCommands && config.quickCommands.length > 0) {
+    config.quickCommands.forEach(cmd => {
+      html += `<button onclick="window.terminal.sendToTerminal('${cmd.command.replace(/'/g, "\\'")}')" class="px-3 py-1 ${cmd.className} rounded text-sm" title="${cmd.title || ''}">${cmd.label}</button>`;
+    });
+  }
+  
+  return html;
+}
+
+function generateMobileButtons(config) {
+  let html = '';
+  
+  // Priority buttons for mobile
+  if (config.ai?.start) {
+    const mobileLabel = config.ai.start.mobileLabel || config.ai.start.label;
+    html += `<button onclick="window.terminal.sendLLMCommand()" class="priority-button ${config.ai.start.className} rounded haptic-feedback" oncontextmenu="window.terminal.copyLLMCommand(); return false;" id="llm-button-mobile">
+      ${mobileLabel}
+    </button>`;
+  }
+  
+  if (config.ai?.exit) {
+    const mobileLabel = config.ai.exit.mobileLabel || config.ai.exit.label;
+    html += `<button onclick="window.terminal.exitLLM()" class="priority-button ${config.ai.exit.className} rounded haptic-feedback">
+      ${mobileLabel}
+    </button>`;
+  }
+  
+  if (config.utilityButtons?.copy) {
+    html += `<button onclick="window.mobile.copyTerminalSelection()" class="priority-button ${config.utilityButtons.copy.className} rounded haptic-feedback">
+      ${config.utilityButtons.copy.label}
+    </button>`;
+  }
+  
+  if (config.utilityButtons?.paste) {
+    html += `<button onclick="window.mobile.pasteToTerminal()" class="priority-button ${config.utilityButtons.paste.className} rounded haptic-feedback">
+      ${config.utilityButtons.paste.label}
+    </button>`;
+  }
+  
+  return html;
 }

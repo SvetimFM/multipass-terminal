@@ -104,6 +104,12 @@ app.get('/api/ai-modes', (req, res) => {
   res.json(aiModes);
 });
 
+// Button Configuration endpoint
+app.get('/api/button-config', (req, res) => {
+  const buttonConfig = require('./config/buttons.config');
+  res.json(buttonConfig);
+});
+
 
 // Get home directory
 app.get('/api/home', (req, res) => {

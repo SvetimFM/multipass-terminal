@@ -48,6 +48,18 @@ document.addEventListener('DOMContentLoaded', async () => {
     console.error('Failed to fetch LLM config:', error);
   }
   
+  // Fetch button configuration
+  try {
+    const response = await fetch('/api/button-config');
+    if (response.ok) {
+      const buttonConfig = await response.json();
+      state.buttonConfig = buttonConfig;
+      // Generate buttons dynamically when terminal view is shown
+    }
+  } catch (error) {
+    console.error('Failed to fetch button config:', error);
+  }
+  
   // Load initial data
   await projects.loadProjects();
   
@@ -179,7 +191,19 @@ function updateLLMButtons() {
   const llmName = state.llmConfig?.name || 'Claude';
   const llmCommand = state.llmConfig?.command || 'claude';
   
-  // Update button text
+  // Update button configuration if loaded
+  if (state.buttonConfig && state.buttonConfig.ai) {
+    if (state.buttonConfig.ai.start) {
+      state.buttonConfig.ai.start.label = llmName;
+      state.buttonConfig.ai.start.mobileLabel = `🤖 ${llmName}`;
+    }
+    if (state.buttonConfig.ai.exit) {
+      state.buttonConfig.ai.exit.label = `Exit ${llmName}`;
+      state.buttonConfig.ai.exit.mobileLabel = '🛑 Exit';
+    }
+  }
+  
+  // Update existing button text (for buttons already rendered)
   const buttons = [
     document.getElementById('llm-button'),
     document.getElementById('llm-button-mobile'),

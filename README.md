@@ -50,6 +50,49 @@ LLM_CONFIG: {
    - `'exit\n'` = types "exit" and Enter
 4. Change `default` to your AI's key name
 
+### Customizing Quick Command Buttons
+
+Edit `config/buttons.config.js` to customize the quick command buttons that appear below the terminal:
+
+```javascript
+module.exports = {
+  // AI Assistant buttons
+  ai: {
+    start: {
+      label: 'AI Assistant',        // Button text
+      mobileLabel: '🤖 AI',        // Mobile button text
+      className: 'bg-blue-600',     // Tailwind CSS classes
+      title: 'Start AI Assistant'   // Tooltip
+    },
+    exit: {
+      label: 'Exit AI',
+      mobileLabel: '🛑 Exit',
+      className: 'bg-red-600',
+      title: 'Exit AI Assistant'
+    }
+  },
+  
+  // Quick command buttons
+  quickCommands: [
+    {
+      label: 'git status',
+      command: 'git status\n',      // Command to send to terminal
+      className: 'bg-gray-600',
+      title: 'Show git status'
+    },
+    // Add your own commands here...
+  ]
+}
+```
+
+#### Button Configuration Options
+
+- **label**: Text displayed on the button
+- **command**: The exact command sent to the terminal (include `\n` for Enter)
+- **className**: Tailwind CSS classes for styling
+- **title**: Tooltip text shown on hover
+- **mobileLabel**: Alternative text for mobile view (optional)
+
 ## Prerequisites
 
 - Node.js (v16 or higher)
