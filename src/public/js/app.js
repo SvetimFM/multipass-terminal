@@ -42,7 +42,6 @@ document.addEventListener('DOMContentLoaded', async () => {
       if (config.currentLLM) {
         state.llmConfig = config.currentLLM;
         updateLLMButtons();
-        checkAISetup();
       }
     }
   } catch (error) {
@@ -60,6 +59,9 @@ document.addEventListener('DOMContentLoaded', async () => {
   } catch (error) {
     console.error('Failed to fetch button config:', error);
   }
+  
+  // Check AI setup after both configs are loaded
+  checkAISetup();
   
   // Load initial data
   await projects.loadProjects();
