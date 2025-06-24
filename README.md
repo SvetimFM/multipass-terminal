@@ -16,24 +16,39 @@ A flexible terminal-based interface for working with any command-line AI assista
 
 ## Configuration
 
-Edit `config/llm.config.js` to configure your preferred AI assistant:
+### Configuring Your AI Assistant
+
+Edit `src/utils/constants.js` and find the `LLM_CONFIG` section to configure your AI assistant:
 
 ```javascript
-module.exports = {
-  default: 'claude', // Change to your preferred LLM
-  
+LLM_CONFIG: {
+  default: 'custom',  // Change this to match your AI assistant key below
   llms: {
-    claude: {
-      name: 'Claude',
-      command: 'claude',
-      sessionPrefix: 'claude-',
-      exitSequence: '\x03\x03', // Ctrl+C twice
-      exitDelay: 50
+    custom: {
+      name: 'Your AI Assistant',     // Display name in the UI
+      command: 'your-ai-command',    // Terminal command to launch your AI
+      sessionPrefix: 'ai-',          // Prefix for session names
+      exitSequence: '\x03',          // Key sequence to exit (e.g., '\x03' = Ctrl+C)
+      exitDelay: 50                  // Delay in ms after sending exit sequence
     },
-    // Add your custom LLM configuration here
+    // Example configurations included:
+    // - claude: Uses 'claude' command, requires Ctrl+C twice to exit
+    // - openai: Uses 'openai' command
+    // - ollama: Uses 'ollama run llama2' command
   }
 }
 ```
+
+#### Adding Your Own AI Assistant
+
+1. Add a new entry in the `llms` object
+2. Set `command` to whatever terminal command launches your AI
+3. Set `exitSequence` based on how your AI exits:
+   - `'\x03'` = Ctrl+C (most common)
+   - `'\x03\x03'` = Ctrl+C twice (for Claude)
+   - `'\x04'` = Ctrl+D
+   - `'exit\n'` = types "exit" and Enter
+4. Change `default` to your AI's key name
 
 ## Prerequisites
 

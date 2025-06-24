@@ -37,9 +37,20 @@ export async function browseFolder(folder = '') {
   }
 }
 
-export function openFileBrowser() {
+export async function openFileBrowser() {
   document.getElementById('file-browser-modal').classList.remove('hidden');
-  browseFolder(state.currentPath || '/mnt/j/DevWorkspace');
+  // Get home directory from server if not already set
+  if (!state.currentPath) {
+    try {
+      const response = await fetch('/api/home');
+      const data = await response.json();
+      browseFolder(data.home);
+    } catch (error) {
+      browseFolder('~');
+    }
+  } else {
+    browseFolder(state.currentPath);
+  }
 }
 
 export function closeFileBrowser() {

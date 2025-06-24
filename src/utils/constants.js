@@ -66,14 +66,41 @@ module.exports = {
   AI_COMMAND: process.env.AI_COMMAND || 'claude',
   
   // LLM Configuration
+  // To add your own AI assistant:
+  // 1. Add a new entry in the 'llms' object below
+  // 2. Set 'command' to the terminal command that launches your AI
+  // 3. Set 'exitSequence' to the key combination that exits your AI (e.g., '\x03' for Ctrl+C)
+  // 4. Change 'default' to your preferred AI assistant
   LLM_CONFIG: {
-    default: 'claude',
+    default: 'custom',  // Change this to your preferred LLM
     llms: {
+      custom: {
+        name: 'Your AI Assistant',  // Display name for UI
+        command: 'your-ai-command',  // Command to launch your AI in terminal
+        sessionPrefix: 'ai-',        // Prefix for session names
+        exitSequence: '\x03',        // Key sequence to exit (default: Ctrl+C)
+        exitDelay: 50                // Delay in ms after sending exit sequence
+      },
+      // Example configurations:
       claude: {
         name: 'Claude',
         command: 'claude',
         sessionPrefix: 'claude-',
-        exitSequence: '\x03\x03',
+        exitSequence: '\x03\x03',    // Claude requires Ctrl+C twice
+        exitDelay: 50
+      },
+      openai: {
+        name: 'OpenAI CLI',
+        command: 'openai',
+        sessionPrefix: 'openai-',
+        exitSequence: '\x03',
+        exitDelay: 50
+      },
+      ollama: {
+        name: 'Ollama',
+        command: 'ollama run llama2',
+        sessionPrefix: 'ollama-',
+        exitSequence: '\x03',
         exitDelay: 50
       }
     },
