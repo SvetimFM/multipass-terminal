@@ -86,9 +86,9 @@ module.exports = {
       title: 'Send Shift+Tab'
     },
     autoAccept: {
-      label: 'Auto-Accept',
+      label: 'Shift+Tab',
       className: 'bg-gray-600',
-      title: 'Toggle auto-accept mode'
+      title: 'Pulse shift+tab cmd'
     }
   },
   

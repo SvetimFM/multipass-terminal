@@ -497,6 +497,11 @@ async function saveButtonConfig() {
         }
         window.terminal.generateQuickCommandButtons();
       }
+      
+      // Check if AI is now properly configured and hide setup prompt
+      if (window.checkAISetup) {
+        window.checkAISetup();
+      }
     } else {
       showToast('Failed to save configuration');
     }

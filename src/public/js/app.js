@@ -241,16 +241,23 @@ function updateLLMButtons() {
 function checkAISetup() {
   const llmName = state.llmConfig?.name || '';
   const llmCommand = state.llmConfig?.command || '';
+  const buttonCommand = state.buttonConfig?.ai?.start?.command || '';
   
-  // Check if using default/custom config
-  if (llmName === 'Your AI Assistant' || llmCommand === 'your-ai-command') {
-    // Show setup prompt
-    const setupPrompt = document.getElementById('ai-setup-prompt');
-    if (setupPrompt) {
+  // Check if AI is configured either in LLM_CONFIG or button config
+  const isConfigured = (llmName !== 'Your AI Assistant' && llmCommand !== 'your-ai-command') || buttonCommand;
+  
+  const setupPrompt = document.getElementById('ai-setup-prompt');
+  if (setupPrompt) {
+    if (isConfigured) {
+      setupPrompt.classList.add('hidden');
+    } else {
       setupPrompt.classList.remove('hidden');
     }
   }
 }
+
+// Expose to window for settings module
+window.checkAISetup = checkAISetup;
 
 // Cleanup on page unload
 window.addEventListener('beforeunload', () => {
