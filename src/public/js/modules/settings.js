@@ -434,10 +434,10 @@ export async function saveButtonEditor() {
       title: button.title
     };
     
-    // Save command or exitSequence if provided
-    if (aiType === 'start' && button.command) {
+    // Always save command or exitSequence, even if empty
+    if (aiType === 'start') {
       currentButtonConfig.ai[aiType].command = button.command;
-    } else if (aiType === 'exit' && button.command) {
+    } else if (aiType === 'exit') {
       currentButtonConfig.ai[aiType].exitSequence = button.command;
     }
   } else {
