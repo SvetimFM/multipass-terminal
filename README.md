@@ -251,6 +251,17 @@ We welcome contributions! Please see our [Contributing Guidelines](CONTRIBUTING.
 6. Run in dev mode: `npm run dev`
 7. Submit a pull request
 
+## Support This Project
+
+If you find Multipass Terminal useful, consider supporting its development:
+
+<a href="https://buymeacoffee.com/svetimfm" target="_blank"><img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" alt="Buy Me A Coffee" style="height: 60px !important;width: 217px !important;" ></a>
+
+[![Support on Patreon](https://img.shields.io/badge/Patreon-F96854?style=for-the-badge&logo=patreon&logoColor=white)](https://www.patreon.com/c/SvetimFM)
+[![GitHub Sponsor](https://img.shields.io/badge/Sponsor-%E2%9D%A4-pink?style=for-the-badge&logo=GitHub-Sponsors&logoColor=white)](https://github.com/sponsors/SvetimFM)
+
+Your support helps maintain and improve Multipass Terminal for the community!
+
 ## Acknowledgments
 
 - Built with [xterm.js](https://github.com/xtermjs/xterm.js) for terminal emulation
