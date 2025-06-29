@@ -1,5 +1,8 @@
 # Multipass - Terminal for AI
 
+![image](https://github.com/user-attachments/assets/c190143e-b0e3-4e89-987b-d1228dbd5a56)
+
+
 ⚠️ **SECURITY WARNING**: This application has **NO AUTHENTICATION** and provides **FULL TERMINAL ACCESS** to your system. Only run this locally or behind a secure VPN/Tailscale connection. **NEVER** expose this to the public internet.
 
 A flexible terminal-based interface for working with any command-line AI assistant (Claude, OpenAI CLI, or custom LLMs). Multipass provides isolated workspaces called "AI Offices" with multiple "cubicles" for experimenting with AI-assisted development.
