@@ -32,6 +32,12 @@
             </svg>
             Sessions
           </button>
+          <button onclick="window.multiproject.showMultiproject()" class="context-button">
+            <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z"></path>
+            </svg>
+            Multiproject
+          </button>
           
           <!-- Settings -->
           <div class="w-px h-6 bg-gray-600"></div>
@@ -111,6 +117,44 @@
       </div>
     </div>
 
+    <!-- Multiproject View -->
+    <div id="multiproject-view" class="hidden h-full flex flex-col">
+      <div class="bg-gray-800 p-3 border-b border-gray-700 flex-shrink-0">
+        <div class="flex justify-between items-center">
+          <h2 class="text-lg font-semibold">Multiproject Workspace</h2>
+          <div class="flex gap-2">
+            <button onclick="window.multiproject.showSaveConfigDialog()" class="bg-green-600 px-3 py-1 rounded text-sm" title="Save current layout">
+              💾 Save Layout
+            </button>
+            <button onclick="window.multiproject.toggleLayoutsPanel()" class="bg-blue-600 px-3 py-1 rounded text-sm" title="Show saved layouts">
+              📂 Layouts
+            </button>
+            <button onclick="window.sessions.showProjects()" class="bg-gray-700 px-3 py-1 rounded text-sm">
+              Back to Projects
+            </button>
+          </div>
+        </div>
+      </div>
+      <div class="flex-1 flex overflow-hidden">
+        <!-- Saved Layouts Panel -->
+        <div id="multiproject-layouts-panel" class="hidden bg-gray-850 border-r border-gray-700 w-80 overflow-y-auto">
+          <div class="p-4">
+            <div class="flex justify-between items-center mb-4">
+              <h3 class="text-lg font-semibold">Saved Layouts</h3>
+              <button onclick="window.multiproject.toggleLayoutsPanel()" class="text-gray-400 hover:text-white">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                </svg>
+              </button>
+            </div>
+            <div id="saved-layouts-list" class="space-y-2">
+              <!-- Saved layouts will be loaded here -->
+            </div>
+          </div>
+        </div>
+        <div id="multiproject-panes" class="flex-1 bg-gray-900"></div>
+      </div>
+    </div>
 
     <!-- Terminal View -->
     <div id="terminal-view" class="hidden">
@@ -187,8 +231,8 @@
             <button onclick="window.terminal.sendToTerminal('git log --oneline -10\n')" oncontextmenu="window.utils.copyToClipboard('git log --oneline -10', 'Command copied!'); return false;" class="bg-gray-600 rounded haptic-feedback">📜 Git Log</button>
             <button onclick="window.terminal.sendToTerminal('npm run\n')" oncontextmenu="window.utils.copyToClipboard('npm run', 'Command copied!'); return false;" class="bg-gray-600 rounded haptic-feedback">📦 NPM Scripts</button>
             <button onclick="window.terminal.sendToTerminal('clear\n')" oncontextmenu="window.utils.copyToClipboard('clear', 'Command copied!'); return false;" class="bg-gray-600 rounded haptic-feedback">🧹 Clear</button>
-            <button id="auto-accept-btn-mobile" onclick="window.terminal.toggleAutoAccept()" class="bg-gray-600 rounded haptic-feedback col-span-2">
-              Auto-Accept: <span id="auto-accept-status-mobile">OFF</span>
+            <button onclick="window.terminal.broadcastToAllTerminals('\x1b[Z')" class="bg-gray-600 rounded haptic-feedback col-span-2">
+              Pulse Tab (All Terminals)
             </button>
           </div>
         </div>
@@ -563,8 +607,8 @@
             <button onclick="window.terminal.broadcastToAllTerminals('clear\n')" class="swipe-item secondary-button bg-gray-600 rounded">Clear All</button>
             <button onclick="window.aiOffice.addCubicle(window.state.currentAIOfficeProject.id)" class="swipe-item secondary-button bg-green-600 rounded">+ Cubicle</button>
             <button onclick="window.aiOffice.addTerminal()" class="swipe-item secondary-button bg-blue-500 rounded">+ Terminal</button>
-            <button id="grid-auto-accept-btn-mobile" onclick="window.terminal.toggleGridAutoAccept()" class="swipe-item secondary-button bg-gray-600 rounded">
-              Accept: <span id="grid-auto-accept-status-mobile">OFF</span>
+            <button onclick="window.terminal.broadcastToAllTerminals('\x1b[Z')" class="swipe-item secondary-button bg-gray-600 rounded">
+              Pulse Tab All
             </button>
           </div>
         </div>
@@ -600,6 +644,7 @@
                  class="w-full bg-gray-700 p-2 rounded font-mono"
                  placeholder="e.g., git status\n">
           <div class="text-xs text-gray-400 mt-1">Use \n for Enter key</div>
+          <div id="ai-button-notice" class="text-xs text-purple-400 mt-1 hidden">Leave blank to use default from LLM configuration</div>
         </div>
         
         <div>

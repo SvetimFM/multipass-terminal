@@ -10,11 +10,8 @@ export const state = {
   fitAddon: null,
   
   // UI state
-  autoAcceptMode: false,
-  gridAutoAcceptMode: false,
   resizeListener: null,
   currentAIOfficeProject: null,
-  autoAcceptInterval: null,
   
   // Settings
   terminalSettings: null,
@@ -28,7 +25,6 @@ export const state = {
   },
   
   // Constants
-  AUTO_ACCEPT_INTERVAL: 2000,
   DEFAULT_CUBICLE_COUNT: 3,
   MAX_CUBICLE_COUNT: 10
 };

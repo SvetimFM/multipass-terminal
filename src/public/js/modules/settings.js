@@ -238,8 +238,38 @@ export async function loadButtonConfig() {
     
     container.innerHTML = '';
     
+    // Display AI buttons first
+    if (config.ai) {
+      // Add section header
+      const aiHeader = document.createElement('div');
+      aiHeader.className = 'text-xs text-gray-400 uppercase tracking-wide mb-2 mt-2';
+      aiHeader.textContent = 'AI Assistant Buttons';
+      container.appendChild(aiHeader);
+      
+      if (config.ai.start) {
+        const startButton = createAIButtonListItem(config.ai.start, 'start', 'AI Start Button');
+        container.appendChild(startButton);
+      }
+      
+      if (config.ai.exit) {
+        const exitButton = createAIButtonListItem(config.ai.exit, 'exit', 'AI Exit Button');
+        container.appendChild(exitButton);
+      }
+      
+      // Add separator
+      const separator = document.createElement('div');
+      separator.className = 'border-t border-gray-700 my-3';
+      container.appendChild(separator);
+    }
+    
     // Display quick commands
     if (config.quickCommands && config.quickCommands.length > 0) {
+      // Add section header
+      const cmdHeader = document.createElement('div');
+      cmdHeader.className = 'text-xs text-gray-400 uppercase tracking-wide mb-2';
+      cmdHeader.textContent = 'Quick Command Buttons';
+      container.appendChild(cmdHeader);
+      
       config.quickCommands.forEach((button, index) => {
         const buttonEl = createButtonListItem(button, index);
         container.appendChild(buttonEl);
@@ -249,6 +279,32 @@ export async function loadButtonConfig() {
     console.error('Error loading button config:', error);
     showToast('Failed to load button configuration');
   }
+}
+
+// Create an AI button list item for the settings UI
+function createAIButtonListItem(button, type, description) {
+  const div = document.createElement('div');
+  div.className = 'flex items-center gap-2 p-2 bg-gray-800 rounded border border-gray-700';
+  
+  let commandText;
+  if (type === 'start') {
+    commandText = button.command ? `Command: ${button.command}` : 'Uses LLM config command';
+  } else {
+    commandText = button.exitSequence ? `Exit: ${button.exitSequence.replace(/\x03/g, 'Ctrl+C')}` : 'Uses LLM config exit sequence';
+  }
+  
+  div.innerHTML = `
+    <div class="flex-1">
+      <div class="font-semibold text-sm">${button.label} <span class="text-xs text-purple-400">(${description})</span></div>
+      <div class="text-xs text-gray-400 font-mono">${commandText}</div>
+    </div>
+    <button onclick="window.settings.editAIButton('${type}')" 
+            class="px-2 py-1 bg-blue-600 hover:bg-blue-700 rounded text-xs">
+      Edit
+    </button>
+  `;
+  
+  return div;
 }
 
 // Create a button list item for the settings UI
@@ -282,10 +338,46 @@ export function editButton(index) {
   document.getElementById('button-editor-index').value = index;
   document.getElementById('button-editor-label').value = button.label || '';
   document.getElementById('button-editor-command').value = button.command || '';
+  document.getElementById('button-editor-command').disabled = false;
   document.getElementById('button-editor-mobile-label').value = button.mobileLabel || '';
   document.getElementById('button-editor-style').value = button.className || 'bg-gray-600';
   document.getElementById('button-editor-tooltip').value = button.title || '';
   document.getElementById('button-editor-title').textContent = 'Edit Button';
+  
+  // Hide AI button notice
+  const notice = document.getElementById('ai-button-notice');
+  if (notice) notice.classList.add('hidden');
+  
+  document.getElementById('button-editor-modal').classList.remove('hidden');
+}
+
+// Edit AI button
+export function editAIButton(type) {
+  if (!currentButtonConfig || !currentButtonConfig.ai || !currentButtonConfig.ai[type]) return;
+  
+  const button = currentButtonConfig.ai[type];
+  document.getElementById('button-editor-index').value = `ai-${type}`;
+  document.getElementById('button-editor-label').value = button.label || '';
+  
+  // Show actual command or empty if using LLM config
+  if (type === 'start') {
+    document.getElementById('button-editor-command').value = button.command || '';
+    document.getElementById('button-editor-command').placeholder = 'e.g., claude (leave blank for LLM config)';
+  } else {
+    // For exit button, show exit sequence in a readable format
+    document.getElementById('button-editor-command').value = button.exitSequence || '';
+    document.getElementById('button-editor-command').placeholder = 'e.g., \\x03\\x03 (leave blank for LLM config)';
+  }
+  
+  document.getElementById('button-editor-command').disabled = false;
+  document.getElementById('button-editor-mobile-label').value = button.mobileLabel || '';
+  document.getElementById('button-editor-style').value = button.className || 'bg-blue-600';
+  document.getElementById('button-editor-tooltip').value = button.title || '';
+  document.getElementById('button-editor-title').textContent = `Edit AI ${type === 'start' ? 'Start' : 'Exit'} Button`;
+  
+  // Show AI button notice
+  const notice = document.getElementById('ai-button-notice');
+  if (notice) notice.classList.remove('hidden');
   
   document.getElementById('button-editor-modal').classList.remove('hidden');
 }
@@ -295,10 +387,15 @@ export function addNewButton() {
   document.getElementById('button-editor-index').value = '';
   document.getElementById('button-editor-label').value = '';
   document.getElementById('button-editor-command').value = '';
+  document.getElementById('button-editor-command').disabled = false;
   document.getElementById('button-editor-mobile-label').value = '';
   document.getElementById('button-editor-style').value = 'bg-gray-600';
   document.getElementById('button-editor-tooltip').value = '';
   document.getElementById('button-editor-title').textContent = 'Add New Button';
+  
+  // Hide AI button notice
+  const notice = document.getElementById('ai-button-notice');
+  if (notice) notice.classList.add('hidden');
   
   document.getElementById('button-editor-modal').classList.remove('hidden');
 }
@@ -314,21 +411,56 @@ export async function saveButtonEditor() {
     title: document.getElementById('button-editor-tooltip').value || undefined
   };
   
-  if (!button.label || !button.command) {
-    showToast('Label and command are required');
-    return;
-  }
-  
-  if (!currentButtonConfig) {
-    currentButtonConfig = { quickCommands: [] };
-  }
-  
-  if (index === '') {
-    // Add new button
-    currentButtonConfig.quickCommands.push(button);
+  // Check if this is an AI button
+  if (index.startsWith('ai-')) {
+    const aiType = index.substring(3); // 'start' or 'exit'
+    
+    if (!button.label) {
+      showToast('Label is required');
+      return;
+    }
+    
+    // Ensure AI section exists
+    if (!currentButtonConfig.ai) {
+      currentButtonConfig.ai = {};
+    }
+    
+    // Update AI button
+    currentButtonConfig.ai[aiType] = {
+      label: button.label,
+      mobileLabel: button.mobileLabel,
+      className: button.className,
+      title: button.title
+    };
+    
+    // Handle command/exitSequence - if empty string, save as null
+    if (aiType === 'start') {
+      currentButtonConfig.ai[aiType].command = button.command.trim() || null;
+    } else if (aiType === 'exit') {
+      currentButtonConfig.ai[aiType].exitSequence = button.command.trim() || null;
+    }
   } else {
-    // Update existing button
-    currentButtonConfig.quickCommands[parseInt(index)] = button;
+    // Regular button handling
+    if (!button.label || !button.command) {
+      showToast('Label and command are required');
+      return;
+    }
+    
+    if (!currentButtonConfig) {
+      currentButtonConfig = { quickCommands: [] };
+    }
+    
+    if (!currentButtonConfig.quickCommands) {
+      currentButtonConfig.quickCommands = [];
+    }
+    
+    if (index === '') {
+      // Add new button
+      currentButtonConfig.quickCommands.push(button);
+    } else {
+      // Update existing button
+      currentButtonConfig.quickCommands[parseInt(index)] = button;
+    }
   }
   
   await saveButtonConfig();
@@ -406,6 +538,7 @@ export const settings = {
   // Button configuration functions
   loadButtonConfig,
   editButton,
+  editAIButton,
   addNewButton,
   saveButtonEditor,
   removeButton,

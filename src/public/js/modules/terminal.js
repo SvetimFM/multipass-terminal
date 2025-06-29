@@ -26,73 +26,50 @@ export function exitClaude() {
 }
 
 export function exitLLM() {
-  // Send Ctrl+C twice quickly to exit LLM
-  const delay = state.llmConfig?.exitDelay || 50;
-  sendToTerminal('\x03');
-  setTimeout(() => sendToTerminal('\x03'), delay);
+  // Check if button config has a custom exit sequence
+  let exitSequence;
+  let delay;
+  
+  if (state.buttonConfig?.ai?.exit?.exitSequence) {
+    exitSequence = state.buttonConfig.ai.exit.exitSequence;
+    delay = 50; // Default delay for custom sequences
+  } else {
+    // Use LLM config defaults
+    exitSequence = state.llmConfig?.exitSequence || '\x03\x03';
+    delay = state.llmConfig?.exitDelay || 50;
+  }
+  
+  // Handle exit sequence - if it contains multiple Ctrl+C, split and send with delay
+  if (exitSequence === '\x03\x03') {
+    sendToTerminal('\x03');
+    setTimeout(() => sendToTerminal('\x03'), delay);
+  } else {
+    sendToTerminal(exitSequence);
+  }
 }
 
 export function sendLLMCommand() {
-  const command = state.llmConfig?.command || 'claude';
+  // Check if button config has a custom command
+  let command;
+  if (state.buttonConfig?.ai?.start?.command) {
+    command = state.buttonConfig.ai.start.command;
+  } else {
+    command = state.llmConfig?.command || 'claude';
+  }
   sendToTerminal(command + '\n');
 }
 
 export function copyLLMCommand() {
-  const command = state.llmConfig?.command || 'claude';
+  // Use same logic as sendLLMCommand to get the actual command
+  let command;
+  if (state.buttonConfig?.ai?.start?.command) {
+    command = state.buttonConfig.ai.start.command;
+  } else {
+    command = state.llmConfig?.command || 'claude';
+  }
   copyToClipboard(command, 'Command copied!');
 }
 
-export function toggleAutoAccept() {
-  state.autoAcceptMode = !state.autoAcceptMode;
-  const btn = document.getElementById('auto-accept-btn');
-  const status = document.getElementById('auto-accept-status');
-  
-  if (state.autoAcceptMode) {
-    status.textContent = 'ON';
-    btn.classList.remove('bg-gray-600');
-    btn.classList.add('bg-green-600');
-    
-    // Send Shift+Tab immediately
-    sendToTerminal('\x1b[Z');
-    
-    // Set up interval to send Shift+Tab
-    state.autoAcceptInterval = setInterval(() => {
-      if (state.currentWs && state.currentWs.readyState === WebSocket.OPEN) {
-        state.currentWs.send('\x1b[Z');
-      }
-    }, state.AUTO_ACCEPT_INTERVAL);
-  } else {
-    status.textContent = 'OFF';
-    btn.classList.remove('bg-green-600');
-    btn.classList.add('bg-gray-600');
-    
-    if (state.autoAcceptInterval) {
-      clearInterval(state.autoAcceptInterval);
-      state.autoAcceptInterval = null;
-    }
-  }
-  
-  // Update mobile button if exists
-  updateMobileAutoAcceptButton();
-}
-
-function updateMobileAutoAcceptButton() {
-  const mobileBtnStatus = document.getElementById('auto-accept-status-mobile');
-  if (mobileBtnStatus) {
-    mobileBtnStatus.textContent = state.autoAcceptMode ? 'ON' : 'OFF';
-  }
-  
-  const mobileBtn = document.getElementById('auto-accept-btn-mobile');
-  if (mobileBtn) {
-    if (state.autoAcceptMode) {
-      mobileBtn.classList.remove('bg-gray-600');
-      mobileBtn.classList.add('bg-green-600');
-    } else {
-      mobileBtn.classList.remove('bg-green-600');
-      mobileBtn.classList.add('bg-gray-600');
-    }
-  }
-}
 
 export async function attachTerminal(sessionName) {
   // Hide other views
@@ -296,12 +273,6 @@ export function closeTerminal() {
     state.resizeListener = null;
   }
   
-  // Clear auto-accept if active
-  if (state.autoAcceptInterval) {
-    clearInterval(state.autoAcceptInterval);
-    state.autoAcceptInterval = null;
-  }
-  state.autoAcceptMode = false;
   
   // Show projects view
   document.getElementById('terminal-view').classList.add('hidden');
@@ -467,56 +438,39 @@ export function exitClaudeAll() {
 }
 
 export function exitLLMAll() {
-  // Send Ctrl+C twice quickly to all terminals
-  const delay = state.llmConfig?.exitDelay || 50;
-  broadcastToAllTerminals('\x03');
-  setTimeout(() => broadcastToAllTerminals('\x03'), delay);
+  // Check if button config has a custom exit sequence
+  let exitSequence;
+  let delay;
+  
+  if (state.buttonConfig?.ai?.exit?.exitSequence) {
+    exitSequence = state.buttonConfig.ai.exit.exitSequence;
+    delay = 50; // Default delay for custom sequences
+  } else {
+    // Use LLM config defaults
+    exitSequence = state.llmConfig?.exitSequence || '\x03\x03';
+    delay = state.llmConfig?.exitDelay || 50;
+  }
+  
+  // Handle exit sequence - if it contains multiple Ctrl+C, split and send with delay
+  if (exitSequence === '\x03\x03') {
+    broadcastToAllTerminals('\x03');
+    setTimeout(() => broadcastToAllTerminals('\x03'), delay);
+  } else {
+    broadcastToAllTerminals(exitSequence);
+  }
 }
 
 export function broadcastLLMCommand() {
-  const command = state.llmConfig?.command || 'claude';
+  // Check if button config has a custom command
+  let command;
+  if (state.buttonConfig?.ai?.start?.command) {
+    command = state.buttonConfig.ai.start.command;
+  } else {
+    command = state.llmConfig?.command || 'claude';
+  }
   broadcastToAllTerminals(command + '\n');
 }
 
-export function toggleGridAutoAccept() {
-  state.gridAutoAcceptMode = !state.gridAutoAcceptMode;
-  const btn = document.getElementById('grid-auto-accept-btn');
-  const status = document.getElementById('grid-auto-accept-status');
-  
-  if (state.gridAutoAcceptMode) {
-    status.textContent = 'ON';
-    btn.classList.remove('bg-gray-600');
-    btn.classList.add('bg-green-600');
-    
-    // Send Shift+Tab once to all terminals
-    broadcastToAllTerminals('\x1b[Z');
-  } else {
-    status.textContent = 'OFF';
-    btn.classList.remove('bg-green-600');
-    btn.classList.add('bg-gray-600');
-  }
-  
-  // Update mobile button
-  updateMobileGridAutoAcceptButton();
-}
-
-function updateMobileGridAutoAcceptButton() {
-  const mobileBtnStatus = document.getElementById('grid-auto-accept-status-mobile');
-  if (mobileBtnStatus) {
-    mobileBtnStatus.textContent = state.gridAutoAcceptMode ? 'ON' : 'OFF';
-  }
-  
-  const mobileBtn = document.getElementById('grid-auto-accept-btn-mobile');
-  if (mobileBtn) {
-    if (state.gridAutoAcceptMode) {
-      mobileBtn.classList.remove('bg-gray-600');
-      mobileBtn.classList.add('bg-green-600');
-    } else {
-      mobileBtn.classList.remove('bg-green-600');
-      mobileBtn.classList.add('bg-gray-600');
-    }
-  }
-}
 
 // Generate quick command buttons dynamically from configuration
 export function generateQuickCommandButtons() {
@@ -547,41 +501,55 @@ export function generateAIOfficeButtons() {
   const container = document.getElementById('ai-office-quick-commands');
   if (!container) return;
   
-  let html = '';
+  // Clear existing content
+  container.innerHTML = '';
   
   // AI buttons for broadcast
   if (buttonConfig.ai) {
     if (buttonConfig.ai.start) {
-      html += `<button onclick="window.terminal.broadcastLLMCommand()" class="context-button ${buttonConfig.ai.start.className} hover:bg-blue-700" id="launch-llm-all-button">
-        🤖 ${buttonConfig.ai.start.label} (All)
-      </button>`;
+      const startButton = document.createElement('button');
+      startButton.onclick = () => window.terminal.broadcastLLMCommand();
+      startButton.className = `context-button ${buttonConfig.ai.start.className} hover:bg-blue-700`;
+      startButton.id = 'launch-llm-all-button';
+      startButton.innerHTML = `🤖 ${buttonConfig.ai.start.label} (All)`;
+      container.appendChild(startButton);
     }
     if (buttonConfig.ai.exit) {
-      html += `<button onclick="window.terminal.exitLLMAll()" class="context-button ${buttonConfig.ai.exit.className} hover:bg-red-700" id="exit-llm-all-button">
-        🛑 ${buttonConfig.ai.exit.label} (All)
-      </button>`;
+      const exitButton = document.createElement('button');
+      exitButton.onclick = () => window.terminal.exitLLMAll();
+      exitButton.className = `context-button ${buttonConfig.ai.exit.className} hover:bg-red-700`;
+      exitButton.id = 'exit-llm-all-button';
+      exitButton.innerHTML = `🛑 ${buttonConfig.ai.exit.label} (All)`;
+      container.appendChild(exitButton);
     }
   }
   
-  // Auto-accept button
-  html += `<button id="grid-auto-accept-btn" onclick="window.terminal.toggleGridAutoAccept()" class="context-button">
-    <span id="grid-auto-accept-icon">⏸️</span> Auto Accept: <span id="grid-auto-accept-status">OFF</span>
-  </button>`;
+  // Pulse Tab button for grid
+  if (buttonConfig.utilityButtons?.pulseTab) {
+    const pulseTabButton = document.createElement('button');
+    pulseTabButton.onclick = () => window.terminal.broadcastToAllTerminals(buttonConfig.utilityButtons.pulseTab.command);
+    pulseTabButton.className = `context-button ${buttonConfig.utilityButtons.pulseTab.className}`;
+    pulseTabButton.title = buttonConfig.utilityButtons.pulseTab.title;
+    pulseTabButton.innerHTML = `📢 ${buttonConfig.utilityButtons.pulseTab.label} (All)`;
+    container.appendChild(pulseTabButton);
+  }
   
-  html += '<div class="w-px h-6 bg-gray-600 mx-1"></div>';
+  // Add separator
+  const separator = document.createElement('div');
+  separator.className = 'w-px h-6 bg-gray-600 mx-1';
+  container.appendChild(separator);
   
   // Quick command buttons for broadcast
   if (buttonConfig.quickCommands && buttonConfig.quickCommands.length > 0) {
     buttonConfig.quickCommands.forEach(cmd => {
-      html += `<button onclick="window.terminal.broadcastToAllTerminals('${cmd.command.replace(/'/g, "\\'")}')" 
-                      class="context-button ${cmd.className}" 
-                      title="${cmd.title || ''} (Broadcast to all)">
-        📢 ${cmd.label}
-      </button>`;
+      const button = document.createElement('button');
+      button.onclick = () => window.terminal.broadcastToAllTerminals(cmd.command);
+      button.className = `context-button ${cmd.className}`;
+      button.title = `${cmd.title || ''} (Broadcast to all)`;
+      button.innerHTML = `📢 ${cmd.label}`;
+      container.appendChild(button);
     });
   }
-  
-  container.innerHTML = html;
 }
 
 function generateDesktopButtons(config) {
@@ -610,22 +578,29 @@ function generateDesktopButtons(config) {
     }
   }
   
-  // Auto-accept button
-  if (config.utilityButtons?.autoAccept) {
-    html += `<button id="auto-accept-btn" onclick="window.terminal.toggleAutoAccept()" class="px-3 py-1 ${config.utilityButtons.autoAccept.className} rounded text-sm">
-      ${config.utilityButtons.autoAccept.label}: <span id="auto-accept-status">OFF</span>
-    </button>`;
+  // Pulse Tab button (replaces auto-accept)
+  if (config.utilityButtons?.pulseTab) {
+    const escapedCommand = config.utilityButtons.pulseTab.command.replace(/'/g, "\\'").replace(/"/g, "&quot;");
+    html += `<button onclick="window.terminal.broadcastToAllTerminals('${escapedCommand}')" class="px-3 py-1 ${config.utilityButtons.pulseTab.className} rounded text-sm" title="${config.utilityButtons.pulseTab.title}">${config.utilityButtons.pulseTab.label}</button>`;
   }
   
   // Shift+Tab button
   if (config.utilityButtons?.shiftTab) {
-    html += `<button onclick="window.terminal.sendToTerminal('${config.utilityButtons.shiftTab.command}')" class="px-3 py-1 ${config.utilityButtons.shiftTab.className} rounded text-sm" title="${config.utilityButtons.shiftTab.title}">${config.utilityButtons.shiftTab.label}</button>`;
+    const escapedCommand = config.utilityButtons.shiftTab.command.replace(/'/g, "\\'").replace(/"/g, "&quot;");
+    html += `<button onclick="window.terminal.sendToTerminal('${escapedCommand}')" class="px-3 py-1 ${config.utilityButtons.shiftTab.className} rounded text-sm" title="${config.utilityButtons.shiftTab.title}">${config.utilityButtons.shiftTab.label}</button>`;
+  }
+  
+  // Escape button
+  if (config.utilityButtons?.escape) {
+    const escapedCommand = config.utilityButtons.escape.command.replace(/'/g, "\\'").replace(/"/g, "&quot;");
+    html += `<button onclick="window.terminal.sendToTerminal('${escapedCommand}')" class="px-3 py-1 ${config.utilityButtons.escape.className} rounded text-sm" title="${config.utilityButtons.escape.title}">${config.utilityButtons.escape.label}</button>`;
   }
   
   // Quick command buttons
   if (config.quickCommands && config.quickCommands.length > 0) {
     config.quickCommands.forEach(cmd => {
-      html += `<button onclick="window.terminal.sendToTerminal('${cmd.command.replace(/'/g, "\\'")}')" class="px-3 py-1 ${cmd.className} rounded text-sm" title="${cmd.title || ''}">${cmd.label}</button>`;
+      const escapedCommand = cmd.command.replace(/'/g, "\\'").replace(/"/g, "&quot;");
+      html += `<button onclick="window.terminal.sendToTerminal('${escapedCommand}')" class="px-3 py-1 ${cmd.className} rounded text-sm" title="${cmd.title || ''}">${cmd.label}</button>`;
     });
   }
   

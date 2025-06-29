@@ -198,6 +198,161 @@ body {
 
 /* Remove our viewport override - let xterm handle scrolling */
 
+/* Split Pane Styles */
+.split-root {
+  width: 100%;
+  height: 100%;
+  position: relative;
+}
+
+.split-pane {
+  position: relative;
+  overflow: hidden;
+  background: #1f2937;
+  min-width: 200px;
+  min-height: 200px;
+}
+
+.split-vertical {
+  display: flex;
+  flex-direction: row;
+  width: 100%;
+  height: 100%;
+}
+
+.split-horizontal {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
+}
+
+/* Split resize handles */
+.split-resize-handle {
+  flex-shrink: 0;
+  background: #374151;
+  position: relative;
+  z-index: 10;
+}
+
+.split-resize-vertical {
+  width: 4px;
+  cursor: col-resize;
+}
+
+.split-resize-horizontal {
+  height: 4px;
+  cursor: row-resize;
+}
+
+.split-resize-grip {
+  position: absolute;
+  background: #6b7280;
+  border-radius: 2px;
+  transition: background-color 0.2s;
+}
+
+.split-resize-vertical .split-resize-grip {
+  width: 2px;
+  height: 30px;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.split-resize-horizontal .split-resize-grip {
+  width: 30px;
+  height: 2px;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.split-resize-handle:hover .split-resize-grip {
+  background: #3b82f6;
+}
+
+/* Pane content styles */
+.pane-welcome {
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.pane-project-selector {
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Show close button on hover for empty panes */
+.pane-welcome .absolute.top-2.right-2,
+.pane-project-selector .absolute.top-2.right-2 {
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+
+.pane-welcome:hover .absolute.top-2.right-2,
+.pane-project-selector:hover .absolute.top-2.right-2 {
+  opacity: 1;
+}
+
+.pane-ai-office {
+  height: 100%;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.pane-terminal {
+  background: #1a1b26;
+  padding: 8px;
+  overflow: hidden;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Ensure resizable containers in multiproject view respect boundaries */
+.resizable-terminal-container {
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Multiproject view specific */
+#multiproject-view {
+  position: relative;
+}
+
+#multiproject-panes {
+  position: relative;
+  overflow: hidden;
+}
+
+/* Terminal stacking in panes */
+.pane-ai-office .grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.5rem;
+}
+
+/* Ensure terminals container respects pane boundaries */
+.pane-ai-office > div > div[id^="pane-terminals-"] {
+  max-height: 100%;
+  box-sizing: border-box;
+}
+
+/* Prevent text selection during resize */
+.resizing * {
+  user-select: none !important;
+  -webkit-user-select: none !important;
+  -moz-user-select: none !important;
+  -ms-user-select: none !important;
+}
+
 /* Prevent terminal text selection while resizing */
 .resizing .xterm {
   pointer-events: none;
@@ -231,6 +386,11 @@ body {
   flex: 1;
   min-height: 0;
   height: auto;
+}
+
+/* Multiproject layouts panel */
+.bg-gray-850 {
+  background-color: #1a1f2e;
 }
 
 /* Dropdown menus */

@@ -11,6 +11,7 @@ import * as mobile from './modules/mobile.js';
 import { terminalSettings, initializeFontSizeControls } from './modules/terminalSettings.js';
 import { terminalResize } from './modules/terminalResize.js';
 import { settings } from './modules/settings.js';
+import { multiprojectManager } from './modules/multiproject.js';
 
 // Expose modules to window for onclick handlers
 window.utils = utils;
@@ -25,6 +26,7 @@ window.state = state;
 window.terminalSettings = terminalSettings;
 window.terminalResize = terminalResize;
 window.settings = settings;
+window.multiproject = multiprojectManager;
 
 // Initialize application
 document.addEventListener('DOMContentLoaded', async () => {

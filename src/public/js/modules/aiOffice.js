@@ -312,6 +312,9 @@ export async function openAIOfficeGrid(projectId) {
       // Create terminals for each cubicle
       project.aiOffice.cubicles.forEach((cubicle, idx) => {
         const currentMode = cubicle.aiMode || 'default';
+        // Escape cubicle path for safe use in onclick handlers
+        const escapedPath = cubicle.path.replace(/'/g, "\\'").replace(/"/g, "&quot;");
+        
         const termDiv = document.createElement('div');
         termDiv.className = 'bg-gray-800 rounded overflow-hidden shadow-lg border border-gray-700';
         termDiv.innerHTML = `
@@ -344,7 +347,7 @@ export async function openAIOfficeGrid(projectId) {
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path>
                   </svg>
                 </button>
-                <button onclick="window.aiOffice.openCubicleInFileExplorer('${cubicle.path}')" 
+                <button onclick="window.aiOffice.openCubicleInFileExplorer('${escapedPath}')" 
                         class="text-gray-400 hover:text-blue-400 p-1.5 rounded hover:bg-gray-800 transition-colors" 
                         title="Open in file explorer">
                   <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -411,7 +414,7 @@ export async function openAIOfficeGrid(projectId) {
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path>
                   </svg>
                 </button>
-                <button onclick="window.aiOffice.openCubicleInFileExplorer('${cubicle.path}')" 
+                <button onclick="window.aiOffice.openCubicleInFileExplorer('${escapedPath}')" 
                         class="text-gray-400 hover:text-blue-400 p-1.5 rounded hover:bg-gray-800 transition-colors" 
                         title="Open in file explorer">
                   <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -446,6 +449,9 @@ export async function openAIOfficeGrid(projectId) {
         
         setTimeout(async () => await initCubicleTerminal(project, cubicle, idx, true), 100 * idx);
       });
+      
+      // Load existing regular terminals after cubicles
+      setTimeout(async () => await loadExistingTerminals(project), 100 * project.aiOffice.cubicles.length);
     });
 }
 
@@ -468,8 +474,8 @@ export function closeAIOfficeGrid() {
   document.getElementById('ai-office-grid').classList.add('hidden');
 }
 
-export async function initCubicleTerminal(project, cubicle, idx, isGrid = false) {
-  const terminalId = isGrid ? `cubicle-grid-terminal-${project.id}-${idx}` : `cubicle-terminal-${idx}`;
+export async function initCubicleTerminal(project, cubicle, idx, isGrid = false, customTerminalId = null) {
+  const terminalId = customTerminalId || (isGrid ? `cubicle-grid-terminal-${project.id}-${idx}` : `cubicle-terminal-${idx}`);
   const container = document.getElementById(terminalId);
   
   console.log('Initializing cubicle terminal:', { terminalId, container, project, cubicle, idx });
@@ -550,10 +556,12 @@ export async function initCubicleTerminal(project, cubicle, idx, isGrid = false)
   }, 50);
   
   // Store terminal and websocket reference for this cubicle
-  state.cubicleTerminals.set(`${project.id}-${idx}`, { term, fitAddon });
+  // Use custom terminal ID if provided for multiproject panes
+  const terminalKey = customTerminalId ? customTerminalId.replace('-cubicle-', '-') : `${project.id}-${idx}`;
+  state.cubicleTerminals.set(terminalKey, { term, fitAddon });
   
   // Setup copy/paste support
-  setupCubicleCopyPaste(term, `${project.id}-${idx}`);
+  setupCubicleCopyPaste(term, terminalKey);
   
   // Setup proper mouse wheel scrolling
   setupCubicleMouseWheel(term);
@@ -660,7 +668,7 @@ export async function initCubicleTerminal(project, cubicle, idx, isGrid = false)
   });
   
   // Store WebSocket
-  state.cubicleWebSockets.set(`${project.id}-${idx}`, ws);
+  state.cubicleWebSockets.set(terminalKey, ws);
   
   // Handle resize for grid view with debouncing
   if (isGrid) {
@@ -826,13 +834,35 @@ export async function pasteToProjectTerminal(sessionName) {
   }
 }
 
-export async function addTerminal() {
-  if (!state.currentAIOfficeProject) return;
-  
+// Load existing regular terminals for this project
+async function loadExistingTerminals(project) {
+  try {
+    const response = await fetch('/api/sessions');
+    const data = await response.json();
+    
+    // Filter for non-cubicle sessions belonging to this project
+    const regularSessions = data.sessions.filter(session => 
+      session.projectId === project.id && !session.isCubicle
+    );
+    
+    // Create terminal UI for each existing session
+    const container = document.getElementById('cubicle-terminals');
+    for (const session of regularSessions) {
+      await createTerminalUI(session.name, project, true);
+    }
+  } catch (error) {
+    console.error('Failed to load existing terminals:', error);
+  }
+}
+
+// Create terminal UI (used by both addTerminal and loadExistingTerminals)
+async function createTerminalUI(sessionName, project, existingSession = false) {
   const container = document.getElementById('cubicle-terminals');
-  const terminalCount = container.children.length;
-  const terminalName = `terminal-${terminalCount + 1}`;
-  const sessionName = `ai-office-${state.currentAIOfficeProject.id}-${terminalName}`;
+  
+  // Extract display name from session name
+  const displayName = sessionName.startsWith(`ai-office-${project.id}-`) 
+    ? sessionName.replace(`ai-office-${project.id}-`, '')
+    : sessionName;
   
   // Create terminal div
   const termDiv = document.createElement('div');
@@ -843,7 +873,7 @@ export async function addTerminal() {
         <!-- Left section: Name and path -->
         <div class="flex items-center gap-3 min-w-0">
           <div class="flex items-center gap-2">
-            <span class="font-semibold text-gray-200">${terminalName}</span>
+            <span class="font-semibold text-gray-200">📺 ${displayName}</span>
             <span class="text-xs text-gray-500">│</span>
             <span class="text-xs text-gray-400 font-mono">Project Root</span>
           </div>
@@ -872,8 +902,90 @@ export async function addTerminal() {
   `;
   container.appendChild(termDiv);
   
-  // Initialize terminal in project root directory
-  setTimeout(() => initProjectTerminal(state.currentAIOfficeProject, sessionName), 100);
+  // Initialize terminal
+  if (existingSession) {
+    // For existing sessions, just connect to them
+    setTimeout(() => connectToExistingTerminal(project, sessionName), 100);
+  } else {
+    // For new sessions, create and initialize
+    setTimeout(() => initProjectTerminal(project, sessionName), 100);
+  }
+}
+
+export async function addTerminal() {
+  if (!state.currentAIOfficeProject) return;
+  
+  const container = document.getElementById('cubicle-terminals');
+  const terminalCount = container.children.length;
+  const terminalName = `terminal-${terminalCount + 1}`;
+  const sessionName = `ai-office-${state.currentAIOfficeProject.id}-${terminalName}`;
+  
+  // Use the new createTerminalUI function
+  await createTerminalUI(sessionName, state.currentAIOfficeProject, false);
+}
+
+// Connect to an existing terminal session
+async function connectToExistingTerminal(project, sessionName) {
+  const container = document.getElementById(`terminal-grid-${sessionName}`);
+  if (!container) {
+    console.error('Container not found for terminal:', sessionName);
+    return;
+  }
+  
+  const settings = getTerminalSettings();
+  const terminalOptions = {
+    fontSize: settings.fontSize,
+    fontFamily: settings.fontFamily,
+    theme: settings.theme,
+    scrollback: settings.scrollback,
+    rightClickSelectsWord: false
+  };
+  
+  const { terminal: term, fitAddon } = TerminalFactory.createGridTerminal(container, terminalOptions);
+  
+  // Setup proper mouse wheel scrolling
+  setupCubicleMouseWheel(term);
+  
+  // Connect to existing session via WebSocket
+  const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+  const ws = new WebSocket(`${protocol}//${window.location.host}/terminal/${sessionName}`);
+  
+  ws.onopen = () => {
+    term.write('\r\n*** Connected to existing session ***\r\n');
+    fitAddon.fit();
+    
+    // Send initial resize to ensure sync
+    const dimensions = fitAddon.proposeDimensions();
+    if (dimensions) {
+      ws.send(JSON.stringify({
+        type: 'resize',
+        cols: dimensions.cols,
+        rows: dimensions.rows
+      }));
+    }
+  };
+  
+  ws.onmessage = (event) => {
+    term.write(event.data);
+  };
+  
+  term.onData((data) => {
+    if (ws.readyState === WebSocket.OPEN) {
+      try {
+        ws.send(JSON.stringify({
+          type: 'input',
+          data: data
+        }));
+      } catch (e) {
+        // Fallback to raw send
+        ws.send(data);
+      }
+    }
+  });
+  
+  // Store terminal and websocket for cleanup
+  state.cubicleTerminals.set(sessionName, { term, fitAddon });
+  state.cubicleWebSockets.set(sessionName, ws);
 }
 
 function initProjectTerminal(project, sessionName) {

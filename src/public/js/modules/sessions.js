@@ -86,11 +86,15 @@ export async function killSession(name) {
 
 export function showSessions() {
   document.getElementById('projects-view').classList.add('hidden');
+  const multiprojectView = document.getElementById('multiproject-view');
+  if (multiprojectView) multiprojectView.classList.add('hidden');
   document.getElementById('sessions-view').classList.remove('hidden');
   loadSessions();
 }
 
 export function showProjects() {
   document.getElementById('sessions-view').classList.add('hidden');
+  const multiprojectView = document.getElementById('multiproject-view');
+  if (multiprojectView) multiprojectView.classList.add('hidden');
   document.getElementById('projects-view').classList.remove('hidden');
 }
