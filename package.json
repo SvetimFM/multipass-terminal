@@ -1,6 +1,6 @@
 {
   "name": "multipass-terminal",
-  "version": "2.0.0",
+  "version": "2.2.0",
   "description": "LLM-agnostic terminal interface with isolated AI workspaces for development",
   "main": "multipass-refactored.js",
   "scripts": {
